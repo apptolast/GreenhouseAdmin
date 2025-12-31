@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.apptolast.greenhouse.admin.presentation.ui.screens.ClientDetailScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.ClientsScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.DashboardScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.SettingsScreen
@@ -31,12 +33,37 @@ fun AppNavigation() {
         composable<ClientsRoute> {
             ClientsScreen(
                 onNavigate = { route ->
-                    when (route) {
-                        "dashboard" -> navController.navigate(DashboardRoute) {
+                    when {
+                        route == "dashboard" -> navController.navigate(DashboardRoute) {
                             popUpTo(DashboardRoute) { inclusive = true }
                         }
 
-                        "settings" -> navController.navigate(SettingsRoute)
+                        route == "settings" -> navController.navigate(SettingsRoute)
+                        route.startsWith("client_detail/") -> {
+                            val clientId = route.removePrefix("client_detail/")
+                            navController.navigate(ClientDetailRoute(clientId))
+                        }
+                    }
+                }
+            )
+        }
+
+        composable<ClientDetailRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<ClientDetailRoute>()
+            ClientDetailScreen(
+                clientId = route.clientId,
+                onNavigate = { routeName ->
+                    when {
+                        routeName == "back" -> navController.popBackStack()
+                        routeName == "clients" -> navController.navigate(ClientsRoute) {
+                            popUpTo(ClientsRoute) { inclusive = true }
+                        }
+
+                        routeName == "dashboard" -> navController.navigate(DashboardRoute) {
+                            popUpTo(DashboardRoute) { inclusive = true }
+                        }
+
+                        routeName == "settings" -> navController.navigate(SettingsRoute)
                     }
                 }
             )

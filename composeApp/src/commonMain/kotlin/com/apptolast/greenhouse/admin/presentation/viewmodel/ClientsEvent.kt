@@ -102,16 +102,6 @@ sealed interface ClientsEvent {
     ) : ClientsEvent
 
     /**
-     * User toggled client selection.
-     */
-    data class OnClientSelectionToggled(val clientId: String) : ClientsEvent
-
-    /**
-     * User toggled select all.
-     */
-    data object OnSelectAllToggled : ClientsEvent
-
-    /**
      * User changed page.
      */
     data class OnPageChanged(val page: Int) : ClientsEvent

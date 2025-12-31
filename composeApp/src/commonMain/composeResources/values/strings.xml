@@ -98,4 +98,27 @@
     <string name="dialog_delete_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
     <string name="button_delete">Delete</string>
     <string name="error_delete_client_failed">Failed to delete client. Please try again.</string>
+
+    <!-- Client Detail Screen -->
+    <string name="client_detail_back">Back to List</string>
+    <string name="client_detail_ref">Ref: CLI-%1$s</string>
+    <string name="client_detail_since">Since %1$s</string>
+
+    <!-- Client Detail Tabs -->
+    <string name="tab_general">General</string>
+    <string name="tab_greenhouses">Greenhouses</string>
+    <string name="tab_sectors">Sectors</string>
+    <string name="tab_devices">Devices</string>
+    <string name="tab_alerts">Alerts</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Contact Details Card -->
+    <string name="card_contact_details">Contact Details</string>
+    <string name="label_primary_email">PRIMARY EMAIL</string>
+    <string name="label_phone_number">PHONE NUMBER</string>
+    <string name="label_address">ADDRESS</string>
+
+    <!-- Coming Soon -->
+    <string name="coming_soon">Coming Soon</string>
+    <string name="coming_soon_message">This feature is under development</string>
 </resources>

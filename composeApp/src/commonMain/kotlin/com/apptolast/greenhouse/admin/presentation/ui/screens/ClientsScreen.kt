@@ -105,6 +105,7 @@ private fun ClientsScreenContent(
             ClientsContent(
                 uiState = uiState,
                 onEvent = onEvent,
+                onNavigate = onNavigate,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxSize()
@@ -182,6 +183,7 @@ private fun ClientsScreenContent(
 private fun ClientsContent(
     uiState: ClientsUiState,
     onEvent: (ClientsEvent) -> Unit,
+    onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -241,10 +243,9 @@ private fun ClientsContent(
                         // Table
                         ClientsTable(
                             clients = uiState.paginatedClients,
-                            selectedIds = uiState.selectedClientIds,
-                            allSelected = uiState.allSelected,
-                            onSelectAllToggled = { onEvent(ClientsEvent.OnSelectAllToggled) },
-                            onClientSelectionToggled = { onEvent(ClientsEvent.OnClientSelectionToggled(it)) },
+                            onClientClicked = { client ->
+                                onNavigate("client_detail/${client.id}")
+                            },
                             onEditClient = { onEvent(ClientsEvent.OnEditClientClicked(it)) },
                             onDeleteClient = { onEvent(ClientsEvent.OnDeleteClientClicked(it)) },
                             modifier = Modifier.weight(1f)

@@ -87,8 +87,6 @@ class ClientsViewModel(
                 location = event.location,
                 status = event.status
             )
-            is ClientsEvent.OnClientSelectionToggled -> toggleClientSelection(event.clientId)
-            is ClientsEvent.OnSelectAllToggled -> toggleSelectAll()
             is ClientsEvent.OnPageChanged -> changePage(event.page)
             is ClientsEvent.OnPageSizeChanged -> changePageSize(event.size)
             is ClientsEvent.DismissError -> dismissError()
@@ -396,29 +394,6 @@ class ClientsViewModel(
                         )
                     }
                 }
-        }
-    }
-
-    private fun toggleClientSelection(clientId: String) {
-        _uiState.update { state ->
-            val newSelection = if (clientId in state.selectedClientIds) {
-                state.selectedClientIds - clientId
-            } else {
-                state.selectedClientIds + clientId
-            }
-            state.copy(selectedClientIds = newSelection)
-        }
-    }
-
-    private fun toggleSelectAll() {
-        _uiState.update { state ->
-            val visibleIds = state.paginatedClients.map { it.id }.toSet()
-            val newSelection = if (state.allSelected) {
-                state.selectedClientIds - visibleIds
-            } else {
-                state.selectedClientIds + visibleIds
-            }
-            state.copy(selectedClientIds = newSelection)
         }
     }
 

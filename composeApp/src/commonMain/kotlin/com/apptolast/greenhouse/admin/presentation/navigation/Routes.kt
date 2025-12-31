@@ -14,4 +14,7 @@ object DashboardRoute
 object ClientsRoute
 
 @Serializable
+data class ClientDetailRoute(val clientId: String)
+
+@Serializable
 object SettingsRoute

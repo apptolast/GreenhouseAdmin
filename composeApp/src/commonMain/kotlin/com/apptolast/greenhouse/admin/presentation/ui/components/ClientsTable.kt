@@ -1,6 +1,7 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,8 +20,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,10 +57,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ClientsTable(
     clients: List<Client>,
-    selectedIds: Set<String>,
-    allSelected: Boolean,
-    onSelectAllToggled: () -> Unit,
-    onClientSelectionToggled: (String) -> Unit,
+    onClientClicked: (Client) -> Unit,
     onEditClient: (Client) -> Unit,
     onDeleteClient: (Client) -> Unit,
     modifier: Modifier = Modifier
@@ -75,10 +71,7 @@ fun ClientsTable(
     ) {
         Column {
             // Header row
-            ClientTableHeader(
-                allSelected = allSelected,
-                onSelectAllToggled = onSelectAllToggled
-            )
+            ClientTableHeader()
 
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
@@ -92,8 +85,7 @@ fun ClientsTable(
                 ) { client ->
                     ClientTableRow(
                         client = client,
-                        isSelected = client.id in selectedIds,
-                        onSelectionToggled = { onClientSelectionToggled(client.id) },
+                        onClick = { onClientClicked(client) },
                         onEdit = { onEditClient(client) },
                         onDelete = { onDeleteClient(client) }
                     )
@@ -108,8 +100,6 @@ fun ClientsTable(
 
 @Composable
 private fun ClientTableHeader(
-    allSelected: Boolean,
-    onSelectAllToggled: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -118,18 +108,6 @@ private fun ClientTableHeader(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(
-            checked = allSelected,
-            onCheckedChange = { onSelectAllToggled() },
-            colors = CheckboxDefaults.colors(
-                checkedColor = MaterialTheme.colorScheme.primary,
-                uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            modifier = Modifier.size(20.dp)
-        )
-
-        Spacer(modifier = Modifier.width(16.dp))
-
         // NAME column
         Text(
             text = stringResource(Res.string.header_name),
@@ -193,8 +171,7 @@ private fun ClientTableHeader(
 @Composable
 private fun ClientTableRow(
     client: Client,
-    isSelected: Boolean,
-    onSelectionToggled: () -> Unit,
+    onClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
@@ -202,21 +179,10 @@ private fun ClientTableRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(
-            checked = isSelected,
-            onCheckedChange = { onSelectionToggled() },
-            colors = CheckboxDefaults.colors(
-                checkedColor = MaterialTheme.colorScheme.primary,
-                uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            modifier = Modifier.size(20.dp)
-        )
-
-        Spacer(modifier = Modifier.width(16.dp))
-
         // NAME column with avatar
         Row(
             modifier = Modifier.weight(1.2f),
@@ -316,8 +282,11 @@ private fun ClientTableRow(
     }
 }
 
+/**
+ * Avatar component for displaying client initials with color-coded background.
+ */
 @Composable
-private fun ClientAvatar(
+fun ClientAvatar(
     initials: String,
     modifier: Modifier = Modifier
 ) {
@@ -349,8 +318,11 @@ private fun ClientAvatar(
     }
 }
 
+/**
+ * Badge component for displaying client status with colored indicator.
+ */
 @Composable
-private fun ClientStatusBadge(
+fun ClientStatusBadge(
     status: ClientStatus,
     modifier: Modifier = Modifier
 ) {

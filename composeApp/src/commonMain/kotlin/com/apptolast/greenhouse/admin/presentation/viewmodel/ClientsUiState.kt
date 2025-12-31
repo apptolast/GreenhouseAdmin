@@ -36,9 +36,6 @@ data class ClientsUiState(
     // Pagination
     val pagination: PaginationInfo = PaginationInfo(),
 
-    // Selection state (for bulk actions)
-    val selectedClientIds: Set<String> = emptySet(),
-
     // Create dialog states
     val showNewClientDialog: Boolean = false,
     val isCreatingClient: Boolean = false,
@@ -101,11 +98,4 @@ data class ClientsUiState(
      */
     val isError: Boolean
         get() = error != null && !hasContent
-
-    /**
-     * Returns true if all visible clients are selected.
-     */
-    val allSelected: Boolean
-        get() = paginatedClients.isNotEmpty() &&
-                paginatedClients.all { it.id in selectedClientIds }
 }
