@@ -1,5 +1,9 @@
 package com.apptolast.greenhouse.admin.di
 
+import com.apptolast.greenhouse.admin.data.repository.DashboardRepositoryImpl
+import com.apptolast.greenhouse.admin.domain.repository.DashboardRepository
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 /**
@@ -7,12 +11,12 @@ import org.koin.dsl.module
  * Contains HTTP clients, API services, and repository implementations.
  */
 val dataModule = module {
-    // HTTP Client
+    // HTTP Client (uncomment when API is ready)
     // single { createHttpClient() }
 
-    // API Services
-    // singleOf(::ApiService)
+    // API Services (uncomment when API is ready)
+    // singleOf(::DashboardApiServiceImpl) bind DashboardApiService::class
 
     // Repositories
-    // singleOf(::RepositoryImpl) bind Repository::class
+    singleOf(::DashboardRepositoryImpl) bind DashboardRepository::class
 }

@@ -8,4 +8,10 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
-object HomeRoute
+object DashboardRoute
+
+@Serializable
+object ClientsRoute
+
+@Serializable
+object SettingsRoute

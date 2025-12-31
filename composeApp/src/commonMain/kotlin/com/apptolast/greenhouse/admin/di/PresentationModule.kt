@@ -1,5 +1,7 @@
 package com.apptolast.greenhouse.admin.di
 
+import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardViewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 /**
@@ -7,6 +9,6 @@ import org.koin.dsl.module
  * Contains ViewModels for the MVVM architecture.
  */
 val presentationModule = module {
-    // ViewModels will be added here
-    // viewModelOf(::SomeViewModel)
+    // Dashboard
+    viewModelOf(::DashboardViewModel)
 }
