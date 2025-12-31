@@ -4,6 +4,8 @@ import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.domain.repository.ClientsRepository
 import kotlinx.coroutines.delay
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Mock implementation of ClientsRepository.
@@ -11,115 +13,127 @@ import kotlinx.coroutines.delay
  */
 class ClientsRepositoryImpl : ClientsRepository {
 
-    private val mockClients = listOf(
+    private val currentTime = 1735689600000L // 2025-01-01 00:00:00 UTC
+
+    private var mockClients = listOf(
         Client(
             id = "1",
-            firstName = "Elena",
-            lastName = "Rodriguez",
+            name = "Elena Rodriguez",
             email = "elena@freshveg.com",
-            company = "FreshVeg Distributors",
-            city = "Almeria",
+            phone = "+34 612 345 678",
+            province = "Almeria",
             country = "Spain",
-            greenhouseCount = 12,
+            location = "Calle Mayor 123",
+            createdAt = currentTime - 86400000L * 30,
+            updatedAt = currentTime,
             status = ClientStatus.ACTIVE
         ),
         Client(
             id = "2",
-            firstName = "Jean",
-            lastName = "Pierre",
+            name = "Jean Pierre",
             email = "j.pierre@organicfarms.fr",
-            company = "Organic Farms Ltd.",
-            city = "Nantes",
+            phone = "+33 6 12 34 56 78",
+            province = "Loire-Atlantique",
             country = "France",
-            greenhouseCount = 4,
+            location = "15 Rue des Vignes",
+            createdAt = currentTime - 86400000L * 60,
+            updatedAt = currentTime - 86400000L * 5,
             status = ClientStatus.PENDING
         ),
         Client(
             id = "3",
-            firstName = "Thomas",
-            lastName = "Klein",
+            name = "Thomas Klein",
             email = "tklein@greenhouse.de",
-            company = "Bavaria Grow",
-            city = "Munich",
+            phone = "+49 170 1234567",
+            province = "Bavaria",
             country = "Germany",
-            greenhouseCount = 28,
+            location = "Hauptstraße 45",
+            createdAt = currentTime - 86400000L * 90,
+            updatedAt = currentTime - 86400000L * 15,
             status = ClientStatus.INACTIVE
         ),
         Client(
             id = "4",
-            firstName = "Maria",
-            lastName = "Muller",
+            name = "Maria Muller",
             email = "maria@eco-grow.at",
-            company = "EcoGrow Austria",
-            city = "Vienna",
+            phone = "+43 660 1234567",
+            province = "Vienna",
             country = "Austria",
-            greenhouseCount = 8,
+            location = "Mariahilfer Str. 88",
+            createdAt = currentTime - 86400000L * 45,
+            updatedAt = currentTime - 86400000L * 2,
             status = ClientStatus.ACTIVE
         ),
         Client(
             id = "5",
-            firstName = "Ahmed",
-            lastName = "Salah",
+            name = "Ahmed Salah",
             email = "ahmed@nileagri.eg",
-            company = "Nile AgriCorp",
-            city = "Cairo",
+            phone = "+20 100 123 4567",
+            province = "Cairo Governorate",
             country = "Egypt",
-            greenhouseCount = 54,
+            location = "Tahrir Square 10",
+            createdAt = currentTime - 86400000L * 120,
+            updatedAt = currentTime - 86400000L * 10,
             status = ClientStatus.PENDING
         ),
         Client(
             id = "6",
-            firstName = "Sofia",
-            lastName = "Bianchi",
+            name = "Sofia Bianchi",
             email = "sofia@italgreen.it",
-            company = "ItalGreen S.r.l.",
-            city = "Milan",
+            phone = "+39 333 1234567",
+            province = "Lombardy",
             country = "Italy",
-            greenhouseCount = 15,
+            location = "Via Roma 55",
+            createdAt = currentTime - 86400000L * 75,
+            updatedAt = currentTime - 86400000L * 3,
             status = ClientStatus.ACTIVE
         ),
         Client(
             id = "7",
-            firstName = "Carlos",
-            lastName = "Mendez",
+            name = "Carlos Mendez",
             email = "carlos@agritech.mx",
-            company = "AgriTech Mexico",
-            city = "Guadalajara",
+            phone = "+52 33 1234 5678",
+            province = "Jalisco",
             country = "Mexico",
-            greenhouseCount = 32,
+            location = "Av. Vallarta 2020",
+            createdAt = currentTime - 86400000L * 200,
+            updatedAt = currentTime - 86400000L * 7,
             status = ClientStatus.ACTIVE
         ),
         Client(
             id = "8",
-            firstName = "Anna",
-            lastName = "Kowalski",
+            name = "Anna Kowalski",
             email = "anna@greenpl.pl",
-            company = "GreenPL",
-            city = "Warsaw",
+            phone = "+48 600 123 456",
+            province = "Masovian",
             country = "Poland",
-            greenhouseCount = 7,
+            location = "ul. Marszałkowska 100",
+            createdAt = currentTime - 86400000L * 150,
+            updatedAt = currentTime - 86400000L * 20,
             status = ClientStatus.PENDING
         ),
         Client(
             id = "9",
-            firstName = "David",
-            lastName = "Smith",
+            name = "David Smith",
             email = "david@ukfarms.co.uk",
-            company = "UK Farms Ltd",
-            city = "London",
+            phone = "+44 7700 900123",
+            province = "Greater London",
             country = "United Kingdom",
-            greenhouseCount = 19,
+            location = "10 Downing Gardens",
+            createdAt = currentTime - 86400000L * 365,
+            updatedAt = currentTime - 86400000L * 1,
             status = ClientStatus.ACTIVE
         ),
         Client(
             id = "10",
-            firstName = "Yuki",
-            lastName = "Tanaka",
+            name = "Yuki Tanaka",
             email = "yuki@japangrow.jp",
-            company = "Japan Grow Inc.",
-            city = "Tokyo",
+            phone = "+81 90 1234 5678",
+            province = "Tokyo",
             country = "Japan",
-            greenhouseCount = 45,
+            location = "1-1-1 Shibuya",
+            createdAt = currentTime - 86400000L * 180,
+            updatedAt = currentTime,
             status = ClientStatus.ACTIVE
         )
     )
@@ -135,14 +149,43 @@ class ClientsRepositoryImpl : ClientsRepository {
             ?: throw NoSuchElementException("Client with id $id not found")
     }
 
-    override suspend fun getLocations(): Result<List<String>> = runCatching {
+    override suspend fun getProvinces(): Result<List<String>> = runCatching {
+        delay(200)
+        mockClients.map { it.province }.distinct().sorted()
+    }
+
+    override suspend fun getCountries(): Result<List<String>> = runCatching {
         delay(200)
         mockClients.map { it.country }.distinct().sorted()
     }
 
     override suspend fun deleteClient(id: String): Result<Unit> = runCatching {
         delay(400)
-        // In mock, we just simulate success
-        // In real implementation, this would call the API
+        mockClients = mockClients.filter { it.id != id }
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    override suspend fun createClient(client: Client): Result<Client> = runCatching {
+        delay(800)
+        val newClient = client.copy(
+            id = Uuid.random().toString(),
+            createdAt = currentTime,
+            updatedAt = currentTime
+        )
+        mockClients = mockClients + newClient
+        newClient
+    }
+
+    override suspend fun updateClient(client: Client): Result<Client> = runCatching {
+        delay(500)
+        val index = mockClients.indexOfFirst { it.id == client.id }
+        if (index == -1) {
+            throw NoSuchElementException("Client with id ${client.id} not found")
+        }
+        val updatedClient = client.copy(updatedAt = currentTime)
+        mockClients = mockClients.toMutableList().apply {
+            set(index, updatedClient)
+        }
+        updatedClient
     }
 }

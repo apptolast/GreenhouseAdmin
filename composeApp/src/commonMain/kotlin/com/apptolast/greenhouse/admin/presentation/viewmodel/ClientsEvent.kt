@@ -1,6 +1,7 @@
 package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import com.apptolast.greenhouse.admin.data.model.Client
+import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.ClientStatusFilter
 
 /**
@@ -29,9 +30,9 @@ sealed interface ClientsEvent {
     data class OnStatusFilterChanged(val filter: ClientStatusFilter) : ClientsEvent
 
     /**
-     * User changed location filter.
+     * User changed province filter.
      */
-    data class OnLocationFilterChanged(val location: String?) : ClientsEvent
+    data class OnProvinceFilterChanged(val province: String?) : ClientsEvent
 
     /**
      * User clicked on a client row.
@@ -62,6 +63,43 @@ sealed interface ClientsEvent {
      * User clicked new client button.
      */
     data object OnNewClientClicked : ClientsEvent
+
+    /**
+     * User dismissed the new client dialog.
+     */
+    data object OnDismissNewClientDialog : ClientsEvent
+
+    /**
+     * User submitted the new client form.
+     */
+    data class OnSubmitNewClient(
+        val name: String,
+        val email: String,
+        val phone: String,
+        val province: String,
+        val country: String,
+        val location: String,
+        val status: ClientStatus
+    ) : ClientsEvent
+
+    /**
+     * User dismissed the edit client dialog.
+     */
+    data object OnDismissEditClientDialog : ClientsEvent
+
+    /**
+     * User submitted the edit client form.
+     */
+    data class OnSubmitEditClient(
+        val id: String,
+        val name: String,
+        val email: String,
+        val phone: String,
+        val province: String,
+        val country: String,
+        val location: String,
+        val status: ClientStatus
+    ) : ClientsEvent
 
     /**
      * User toggled client selection.

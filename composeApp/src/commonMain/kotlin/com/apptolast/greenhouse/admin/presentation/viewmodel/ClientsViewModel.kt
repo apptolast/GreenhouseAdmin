@@ -3,6 +3,7 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptolast.greenhouse.admin.data.model.Client
+import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.ClientStatusFilter
 import com.apptolast.greenhouse.admin.data.model.PaginationInfo
 import com.apptolast.greenhouse.admin.domain.repository.ClientsRepository
@@ -57,13 +58,35 @@ class ClientsViewModel(
             is ClientsEvent.RefreshClients -> refreshClients()
             is ClientsEvent.OnSearchQueryChanged -> updateSearchQuery(event.query)
             is ClientsEvent.OnStatusFilterChanged -> updateStatusFilter(event.filter)
-            is ClientsEvent.OnLocationFilterChanged -> updateLocationFilter(event.location)
+            is ClientsEvent.OnProvinceFilterChanged -> updateProvinceFilter(event.province)
             is ClientsEvent.OnClientClicked -> handleClientClick(event.client)
             is ClientsEvent.OnEditClientClicked -> handleEditClient(event.client)
             is ClientsEvent.OnDeleteClientClicked -> showDeleteConfirmation(event.client)
             is ClientsEvent.OnConfirmDelete -> confirmDelete()
             is ClientsEvent.OnCancelDelete -> cancelDelete()
-            is ClientsEvent.OnNewClientClicked -> handleNewClient()
+            is ClientsEvent.OnNewClientClicked -> showNewClientDialog()
+            is ClientsEvent.OnDismissNewClientDialog -> dismissNewClientDialog()
+            is ClientsEvent.OnSubmitNewClient -> submitNewClient(
+                name = event.name,
+                email = event.email,
+                phone = event.phone,
+                province = event.province,
+                country = event.country,
+                location = event.location,
+                status = event.status
+            )
+
+            is ClientsEvent.OnDismissEditClientDialog -> dismissEditClientDialog()
+            is ClientsEvent.OnSubmitEditClient -> submitEditClient(
+                id = event.id,
+                name = event.name,
+                email = event.email,
+                phone = event.phone,
+                province = event.province,
+                country = event.country,
+                location = event.location,
+                status = event.status
+            )
             is ClientsEvent.OnClientSelectionToggled -> toggleClientSelection(event.clientId)
             is ClientsEvent.OnSelectAllToggled -> toggleSelectAll()
             is ClientsEvent.OnPageChanged -> changePage(event.page)
@@ -92,14 +115,16 @@ class ClientsViewModel(
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             val clientsResult = repository.getClients()
-            val locationsResult = repository.getLocations()
+            val provincesResult = repository.getProvinces()
+            val countriesResult = repository.getCountries()
 
             _uiState.update { currentState ->
                 val clients = clientsResult.getOrDefault(emptyList())
                 currentState.copy(
                     isLoading = false,
                     clients = clients,
-                    locations = locationsResult.getOrDefault(emptyList()),
+                    provinces = provincesResult.getOrDefault(emptyList()),
+                    countries = countriesResult.getOrDefault(emptyList()),
                     pagination = currentState.pagination.copy(totalItems = clients.size),
                     error = clientsResult.exceptionOrNull()?.message
                 )
@@ -146,10 +171,10 @@ class ClientsViewModel(
         }
     }
 
-    private fun updateLocationFilter(location: String?) {
+    private fun updateProvinceFilter(province: String?) {
         _uiState.update {
             it.copy(
-                locationFilter = location,
+                provinceFilter = province,
                 pagination = it.pagination.copy(currentPage = 0)
             )
         }
@@ -160,7 +185,13 @@ class ClientsViewModel(
     }
 
     private fun handleEditClient(client: Client) {
-        // Navigate to edit client - handled by UI layer
+        _uiState.update {
+            it.copy(
+                showEditClientDialog = true,
+                clientToEdit = client,
+                updateClientError = null
+            )
+        }
     }
 
     private fun showDeleteConfirmation(client: Client) {
@@ -176,23 +207,29 @@ class ClientsViewModel(
         val clientToDelete = _uiState.value.clientToDelete ?: return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(showDeleteConfirmation = false) }
+            _uiState.update {
+                it.copy(
+                    isDeletingClient = true,
+                    deleteClientError = null
+                )
+            }
 
             repository.deleteClient(clientToDelete.id)
                 .onSuccess {
-                    // Remove from local list (in real app, would refetch)
                     _uiState.update { state ->
                         state.copy(
                             clients = state.clients.filter { it.id != clientToDelete.id },
-                            clientToDelete = null
+                            showDeleteConfirmation = false,
+                            clientToDelete = null,
+                            isDeletingClient = false
                         )
                     }
                 }
                 .onFailure { error ->
                     _uiState.update {
                         it.copy(
-                            error = error.message,
-                            clientToDelete = null
+                            isDeletingClient = false,
+                            deleteClientError = error.message
                         )
                     }
                 }
@@ -203,13 +240,163 @@ class ClientsViewModel(
         _uiState.update {
             it.copy(
                 showDeleteConfirmation = false,
-                clientToDelete = null
+                clientToDelete = null,
+                isDeletingClient = false,
+                deleteClientError = null
             )
         }
     }
 
-    private fun handleNewClient() {
-        // Navigate to create client - handled by UI layer
+    private fun showNewClientDialog() {
+        _uiState.update {
+            it.copy(
+                showNewClientDialog = true,
+                createClientError = null
+            )
+        }
+    }
+
+    private fun dismissNewClientDialog() {
+        _uiState.update {
+            it.copy(
+                showNewClientDialog = false,
+                isCreatingClient = false,
+                createClientError = null
+            )
+        }
+    }
+
+    private fun submitNewClient(
+        name: String,
+        email: String,
+        phone: String,
+        province: String,
+        country: String,
+        location: String,
+        status: ClientStatus
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCreatingClient = true, createClientError = null) }
+
+            val newClient = Client(
+                id = "", // Will be generated by repository
+                name = name.trim(),
+                email = email.trim(),
+                phone = phone.trim(),
+                province = province,
+                country = country,
+                location = location.trim(),
+                createdAt = 0L, // Will be set by repository
+                updatedAt = 0L, // Will be set by repository
+                status = status
+            )
+
+            repository.createClient(newClient)
+                .onSuccess { createdClient ->
+                    _uiState.update { state ->
+                        val updatedClients = state.clients + createdClient
+                        val updatedProvinces = if (createdClient.province !in state.provinces) {
+                            (state.provinces + createdClient.province).sorted()
+                        } else {
+                            state.provinces
+                        }
+                        val updatedCountries = if (createdClient.country !in state.countries) {
+                            (state.countries + createdClient.country).sorted()
+                        } else {
+                            state.countries
+                        }
+                        state.copy(
+                            clients = updatedClients,
+                            provinces = updatedProvinces,
+                            countries = updatedCountries,
+                            showNewClientDialog = false,
+                            isCreatingClient = false,
+                            pagination = state.pagination.copy(totalItems = updatedClients.size)
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isCreatingClient = false,
+                            createClientError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun dismissEditClientDialog() {
+        _uiState.update {
+            it.copy(
+                showEditClientDialog = false,
+                clientToEdit = null,
+                isUpdatingClient = false,
+                updateClientError = null
+            )
+        }
+    }
+
+    private fun submitEditClient(
+        id: String,
+        name: String,
+        email: String,
+        phone: String,
+        province: String,
+        country: String,
+        location: String,
+        status: ClientStatus
+    ) {
+        val existingClient = _uiState.value.clientToEdit ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUpdatingClient = true, updateClientError = null) }
+
+            val updatedClient = existingClient.copy(
+                name = name.trim(),
+                email = email.trim(),
+                phone = phone.trim(),
+                province = province,
+                country = country,
+                location = location.trim(),
+                status = status
+            )
+
+            repository.updateClient(updatedClient)
+                .onSuccess { resultClient ->
+                    _uiState.update { state ->
+                        val updatedClients = state.clients.map {
+                            if (it.id == resultClient.id) resultClient else it
+                        }
+                        val updatedProvinces = if (resultClient.province !in state.provinces) {
+                            (state.provinces + resultClient.province).sorted()
+                        } else {
+                            state.provinces
+                        }
+                        val updatedCountries = if (resultClient.country !in state.countries) {
+                            (state.countries + resultClient.country).sorted()
+                        } else {
+                            state.countries
+                        }
+                        state.copy(
+                            clients = updatedClients,
+                            provinces = updatedProvinces,
+                            countries = updatedCountries,
+                            showEditClientDialog = false,
+                            clientToEdit = null,
+                            isUpdatingClient = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isUpdatingClient = false,
+                            updateClientError = error.message
+                        )
+                    }
+                }
+        }
     }
 
     private fun toggleClientSelection(clientId: String) {

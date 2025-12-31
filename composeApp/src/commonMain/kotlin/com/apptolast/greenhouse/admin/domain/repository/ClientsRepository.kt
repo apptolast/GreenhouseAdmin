@@ -21,10 +21,30 @@ interface ClientsRepository {
     suspend fun getClientById(id: String): Result<Client>
 
     /**
-     * Fetches unique locations (countries) from all clients.
-     * @return Result containing list of location strings or error
+     * Fetches unique provinces from all clients.
+     * @return Result containing list of province strings or error
      */
-    suspend fun getLocations(): Result<List<String>>
+    suspend fun getProvinces(): Result<List<String>>
+
+    /**
+     * Fetches unique countries from all clients.
+     * @return Result containing list of country strings or error
+     */
+    suspend fun getCountries(): Result<List<String>>
+
+    /**
+     * Creates a new client.
+     * @param client The client data to create
+     * @return Result containing the created Client or error
+     */
+    suspend fun createClient(client: Client): Result<Client>
+
+    /**
+     * Updates an existing client.
+     * @param client The client data to update (must include valid id)
+     * @return Result containing the updated Client or error
+     */
+    suspend fun updateClient(client: Client): Result<Client>
 
     /**
      * Deletes a client by ID.

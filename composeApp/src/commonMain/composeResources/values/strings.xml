@@ -24,19 +24,20 @@
 
     <!-- Clients Screen -->
     <string name="clients_title">Client List</string>
-    <string name="clients_subtitle">Manage your agricultural partners and their greenhouse access permissions.</string>
-    <string name="search_clients_placeholder">Search by name, company, or email...</string>
+    <string name="clients_subtitle">Manage your clients and their access permissions.</string>
+    <string name="search_clients_placeholder">Search by name or email...</string>
     <string name="filter_status_all">Status: All</string>
     <string name="filter_status">Status</string>
-    <string name="filter_location">Location</string>
+    <string name="filter_province">Province</string>
     <string name="filter_all">All</string>
     <string name="new_client">New Client</string>
 
     <!-- Client Table Headers -->
     <string name="header_name">NAME</string>
-    <string name="header_company">COMPANY</string>
-    <string name="header_city">CITY</string>
-    <string name="header_greenhouses">GREENHOUSES</string>
+    <string name="header_email">EMAIL</string>
+    <string name="header_phone">PHONE</string>
+    <string name="header_province">PROVINCE</string>
+    <string name="header_location">LOCATION</string>
     <string name="header_status">STATUS</string>
     <string name="header_actions">ACTIONS</string>
 
@@ -64,4 +65,37 @@
     <string name="pagination_previous">Previous page</string>
     <string name="pagination_next">Next page</string>
     <string name="settings_coming_soon">Settings - Coming Soon</string>
+
+    <!-- New Client Dialog -->
+    <string name="dialog_new_client_title">Create New Client</string>
+    <string name="dialog_new_client_subtitle">Add a new client to your network</string>
+    <string name="label_name">Full Name</string>
+    <string name="label_email">Email Address</string>
+    <string name="label_phone">Phone Number</string>
+    <string name="label_province">Province</string>
+    <string name="label_country">Country</string>
+    <string name="label_location">Location/Address</string>
+    <string name="label_status">Initial Status</string>
+    <string name="button_create">Create Client</string>
+    <string name="button_cancel">Cancel</string>
+
+    <!-- Validation Errors -->
+    <string name="error_name_min_length">Name must be at least 2 characters</string>
+    <string name="error_email_invalid">Please enter a valid email address</string>
+    <string name="error_phone_required">Phone number is required</string>
+    <string name="error_province_required">Please select a province</string>
+    <string name="error_country_required">Please select a country</string>
+    <string name="error_create_client_failed">Failed to create client. Please try again.</string>
+
+    <!-- Edit Client Dialog -->
+    <string name="dialog_edit_client_title">Edit Client</string>
+    <string name="dialog_edit_client_subtitle">Update client information</string>
+    <string name="button_save">Save Changes</string>
+    <string name="error_update_client_failed">Failed to update client. Please try again.</string>
+
+    <!-- Delete Confirmation Dialog -->
+    <string name="dialog_delete_title">Delete Client?</string>
+    <string name="dialog_delete_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
+    <string name="button_delete">Delete</string>
+    <string name="error_delete_client_failed">Failed to delete client. Please try again.</string>
 </resources>

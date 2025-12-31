@@ -25,12 +25,13 @@ data class ClientsUiState(
 
     // Data states
     val clients: List<Client> = emptyList(),
-    val locations: List<String> = emptyList(),
+    val provinces: List<String> = emptyList(),
+    val countries: List<String> = emptyList(),
 
     // Filter states
     val searchQuery: String = "",
     val statusFilter: ClientStatusFilter = ClientStatusFilter.ALL,
-    val locationFilter: String? = null,
+    val provinceFilter: String? = null,
 
     // Pagination
     val pagination: PaginationInfo = PaginationInfo(),
@@ -38,9 +39,22 @@ data class ClientsUiState(
     // Selection state (for bulk actions)
     val selectedClientIds: Set<String> = emptySet(),
 
-    // Dialog states
+    // Create dialog states
+    val showNewClientDialog: Boolean = false,
+    val isCreatingClient: Boolean = false,
+    val createClientError: String? = null,
+
+    // Edit dialog states
+    val showEditClientDialog: Boolean = false,
+    val clientToEdit: Client? = null,
+    val isUpdatingClient: Boolean = false,
+    val updateClientError: String? = null,
+
+    // Delete dialog states
     val showDeleteConfirmation: Boolean = false,
-    val clientToDelete: Client? = null
+    val clientToDelete: Client? = null,
+    val isDeletingClient: Boolean = false,
+    val deleteClientError: String? = null
 ) {
     /**
      * Returns filtered clients based on current filters.
@@ -48,16 +62,15 @@ data class ClientsUiState(
     val filteredClients: List<Client>
         get() = clients.filter { client ->
             val matchesSearch = searchQuery.isEmpty() ||
-                    client.fullName.contains(searchQuery, ignoreCase = true) ||
-                    client.company.contains(searchQuery, ignoreCase = true) ||
+                    client.name.contains(searchQuery, ignoreCase = true) ||
                     client.email.contains(searchQuery, ignoreCase = true)
 
             val matchesStatus = statusFilter.matches(client.status)
 
-            val matchesLocation = locationFilter == null ||
-                    client.country == locationFilter
+            val matchesProvince = provinceFilter == null ||
+                    client.province == provinceFilter
 
-            matchesSearch && matchesStatus && matchesLocation
+            matchesSearch && matchesStatus && matchesProvince
         }
 
     /**

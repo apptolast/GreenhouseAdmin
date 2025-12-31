@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.ClientStatusFilter
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.filter_all
-import greenhouseadmin.composeapp.generated.resources.filter_location
+import greenhouseadmin.composeapp.generated.resources.filter_province
 import greenhouseadmin.composeapp.generated.resources.filter_status
 import greenhouseadmin.composeapp.generated.resources.new_client
 import greenhouseadmin.composeapp.generated.resources.search_clients_placeholder
@@ -42,17 +42,17 @@ import greenhouseadmin.composeapp.generated.resources.status_pending
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Filter bar for the clients list with search, status filter, location filter, and new client button.
+ * Filter bar for the clients list with search, status filter, province filter, and new client button.
  */
 @Composable
 fun ClientsFilters(
     searchQuery: String,
     statusFilter: ClientStatusFilter,
-    locationFilter: String?,
-    locations: List<String>,
+    provinceFilter: String?,
+    provinces: List<String>,
     onSearchQueryChanged: (String) -> Unit,
     onStatusFilterChanged: (ClientStatusFilter) -> Unit,
-    onLocationFilterChanged: (String?) -> Unit,
+    onProvinceFilterChanged: (String?) -> Unit,
     onNewClientClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -103,11 +103,11 @@ fun ClientsFilters(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // Location filter dropdown
-        LocationFilterDropdown(
-            selectedLocation = locationFilter,
-            locations = locations,
-            onLocationSelected = onLocationFilterChanged
+        // Province filter dropdown
+        ProvinceFilterDropdown(
+            selectedProvince = provinceFilter,
+            provinces = provinces,
+            onProvinceSelected = onProvinceFilterChanged
         )
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -190,16 +190,16 @@ private fun StatusFilterDropdown(
 }
 
 @Composable
-private fun LocationFilterDropdown(
-    selectedLocation: String?,
-    locations: List<String>,
-    onLocationSelected: (String?) -> Unit,
+private fun ProvinceFilterDropdown(
+    selectedProvince: String?,
+    provinces: List<String>,
+    onProvinceSelected: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    val displayText = selectedLocation
-        ?: (stringResource(Res.string.filter_location))
+    val displayText = selectedProvince
+        ?: stringResource(Res.string.filter_province)
 
     OutlinedButton(
         onClick = { expanded = true },
@@ -227,17 +227,17 @@ private fun LocationFilterDropdown(
         DropdownMenuItem(
             text = { Text(stringResource(Res.string.filter_all)) },
             onClick = {
-                onLocationSelected(null)
+                onProvinceSelected(null)
                 expanded = false
             }
         )
 
-        // Location options
-        locations.forEach { location ->
+        // Province options
+        provinces.forEach { province ->
             DropdownMenuItem(
-                text = { Text(location) },
+                text = { Text(province) },
                 onClick = {
-                    onLocationSelected(location)
+                    onProvinceSelected(province)
                     expanded = false
                 }
             )

@@ -24,19 +24,20 @@
 
     <!-- Clients Screen -->
     <string name="clients_title">Lista de Clientes</string>
-    <string name="clients_subtitle">Gestiona tus socios agricolas y sus permisos de acceso a invernaderos.</string>
-    <string name="search_clients_placeholder">Buscar por nombre, empresa o email...</string>
+    <string name="clients_subtitle">Gestiona tus clientes y sus permisos de acceso.</string>
+    <string name="search_clients_placeholder">Buscar por nombre o email...</string>
     <string name="filter_status_all">Estado: Todos</string>
     <string name="filter_status">Estado</string>
-    <string name="filter_location">Ubicacion</string>
+    <string name="filter_province">Provincia</string>
     <string name="filter_all">Todos</string>
     <string name="new_client">Nuevo Cliente</string>
 
     <!-- Client Table Headers -->
     <string name="header_name">NOMBRE</string>
-    <string name="header_company">EMPRESA</string>
-    <string name="header_city">CIUDAD</string>
-    <string name="header_greenhouses">INVERNADEROS</string>
+    <string name="header_email">EMAIL</string>
+    <string name="header_phone">TELÉFONO</string>
+    <string name="header_province">PROVINCIA</string>
+    <string name="header_location">UBICACIÓN</string>
     <string name="header_status">ESTADO</string>
     <string name="header_actions">ACCIONES</string>
 
@@ -46,7 +47,7 @@
     <string name="status_inactive">Inactivo</string>
 
     <!-- Pagination -->
-    <string name="rows_per_page">Filas por pagina:</string>
+    <string name="rows_per_page">Filas por página:</string>
     <string name="pagination_info">%1$d-%2$d de %3$d</string>
 
     <!-- Actions -->
@@ -61,7 +62,40 @@
     <string name="search">Buscar</string>
     <string name="search_dashboard_placeholder">Buscar clientes, invernaderos o dispositivos...</string>
     <string name="alerts">Alertas</string>
-    <string name="pagination_previous">Pagina anterior</string>
-    <string name="pagination_next">Pagina siguiente</string>
-    <string name="settings_coming_soon">Ajustes - Proximamente</string>
+    <string name="pagination_previous">Página anterior</string>
+    <string name="pagination_next">Página siguiente</string>
+    <string name="settings_coming_soon">Ajustes - Próximamente</string>
+
+    <!-- New Client Dialog -->
+    <string name="dialog_new_client_title">Crear Nuevo Cliente</string>
+    <string name="dialog_new_client_subtitle">Añade un nuevo cliente a tu red</string>
+    <string name="label_name">Nombre Completo</string>
+    <string name="label_email">Correo Electrónico</string>
+    <string name="label_phone">Teléfono</string>
+    <string name="label_province">Provincia</string>
+    <string name="label_country">País</string>
+    <string name="label_location">Ubicación/Dirección</string>
+    <string name="label_status">Estado Inicial</string>
+    <string name="button_create">Crear Cliente</string>
+    <string name="button_cancel">Cancelar</string>
+
+    <!-- Validation Errors -->
+    <string name="error_name_min_length">El nombre debe tener al menos 2 caracteres</string>
+    <string name="error_email_invalid">Por favor, introduce un email válido</string>
+    <string name="error_phone_required">El teléfono es obligatorio</string>
+    <string name="error_province_required">Por favor, selecciona una provincia</string>
+    <string name="error_country_required">Por favor, selecciona un país</string>
+    <string name="error_create_client_failed">Error al crear el cliente. Por favor, inténtalo de nuevo.</string>
+
+    <!-- Edit Client Dialog -->
+    <string name="dialog_edit_client_title">Editar Cliente</string>
+    <string name="dialog_edit_client_subtitle">Actualizar información del cliente</string>
+    <string name="button_save">Guardar Cambios</string>
+    <string name="error_update_client_failed">Error al actualizar el cliente. Por favor, inténtalo de nuevo.</string>
+
+    <!-- Delete Confirmation Dialog -->
+    <string name="dialog_delete_title">¿Eliminar Cliente?</string>
+    <string name="dialog_delete_message">¿Estás seguro de que quieres eliminar a "%1$s"? Esta acción no se puede deshacer.</string>
+    <string name="button_delete">Eliminar</string>
+    <string name="error_delete_client_failed">Error al eliminar el cliente. Por favor, inténtalo de nuevo.</string>
 </resources>

@@ -4,27 +4,29 @@ import kotlinx.serialization.Serializable
 
 /**
  * Represents a client in the system.
+ * MVP structure with simplified fields.
  */
 @Serializable
 data class Client(
     val id: String,
-    val firstName: String,
-    val lastName: String,
+    val name: String,
     val email: String,
-    val company: String,
-    val city: String,
+    val phone: String,
+    val province: String,
     val country: String,
-    val greenhouseCount: Int,
+    val location: String,
+    val createdAt: Long,
+    val updatedAt: Long,
     val status: ClientStatus
 ) {
-    val fullName: String
-        get() = "$firstName $lastName"
-
     val initials: String
-        get() = "${firstName.firstOrNull()?.uppercaseChar() ?: ""}${lastName.firstOrNull()?.uppercaseChar() ?: ""}"
+        get() = name.split(" ")
+            .take(2)
+            .mapNotNull { it.firstOrNull()?.uppercaseChar() }
+            .joinToString("")
 
-    val location: String
-        get() = "$city, $country"
+    val fullLocation: String
+        get() = "$province, $country"
 }
 
 /**

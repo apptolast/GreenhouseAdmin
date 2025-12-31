@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Client
@@ -40,10 +41,11 @@ import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
-import greenhouseadmin.composeapp.generated.resources.header_city
-import greenhouseadmin.composeapp.generated.resources.header_company
-import greenhouseadmin.composeapp.generated.resources.header_greenhouses
+import greenhouseadmin.composeapp.generated.resources.header_email
+import greenhouseadmin.composeapp.generated.resources.header_location
 import greenhouseadmin.composeapp.generated.resources.header_name
+import greenhouseadmin.composeapp.generated.resources.header_phone
+import greenhouseadmin.composeapp.generated.resources.header_province
 import greenhouseadmin.composeapp.generated.resources.header_status
 import greenhouseadmin.composeapp.generated.resources.status_active
 import greenhouseadmin.composeapp.generated.resources.status_inactive
@@ -133,32 +135,39 @@ private fun ClientTableHeader(
             text = stringResource(Res.string.header_name),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(1.2f)
         )
 
-        // COMPANY column
+        // EMAIL column
         Text(
-            text = stringResource(Res.string.header_company),
+            text = stringResource(Res.string.header_email),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1.5f)
         )
 
-        // CITY column
+        // PHONE column
         Text(
-            text = stringResource(Res.string.header_city),
+            text = stringResource(Res.string.header_phone),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
 
-        // GREENHOUSES column
+        // PROVINCE column
         Text(
-            text = stringResource(Res.string.header_greenhouses),
+            text = stringResource(Res.string.header_province),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            modifier = Modifier.weight(1f)
+        )
+
+        // LOCATION column
+        Text(
+            text = stringResource(Res.string.header_location),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
         )
 
         // STATUS column
@@ -166,8 +175,8 @@ private fun ClientTableHeader(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            modifier = Modifier.weight(0.8f),
+            textAlign = TextAlign.Center
         )
 
         // ACTIONS column
@@ -176,7 +185,7 @@ private fun ClientTableHeader(
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.width(80.dp),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -210,7 +219,7 @@ private fun ClientTableRow(
 
         // NAME column with avatar
         Row(
-            modifier = Modifier.weight(1.5f),
+            modifier = Modifier.weight(1.2f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             ClientAvatar(
@@ -218,72 +227,59 @@ private fun ClientTableRow(
                 modifier = Modifier.size(36.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = client.fullName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-
-        // COMPANY column
-        Column(
-            modifier = Modifier.weight(1.5f)
-        ) {
             Text(
-                text = client.company,
+                text = client.name,
                 style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Text(
-                text = client.email,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
         }
 
-        // CITY column
+        // EMAIL column
         Text(
-            text = client.location,
+            text = client.email,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
-            maxLines = 2,
+            modifier = Modifier.weight(1.5f),
+            maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
 
-        // GREENHOUSES column
-        Box(
+        // PHONE column
+        Text(
+            text = client.phone,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
-            ) {
-                Text(
-                    text = client.greenhouseCount.toString(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        // PROVINCE column
+        Text(
+            text = client.province,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        // LOCATION column
+        Text(
+            text = client.location,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
 
         // STATUS column
         Box(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.8f),
             contentAlignment = Alignment.Center
         ) {
             ClientStatusBadge(status = client.status)
