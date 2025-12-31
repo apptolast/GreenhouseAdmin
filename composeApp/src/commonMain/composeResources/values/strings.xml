@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <!-- App -->
+    <string name="app_name">Greenhouse Admin</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_clients">Clients</string>
+    <string name="nav_settings">Settings</string>
+    <string name="menu_label">MENU</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_overview">Dashboard Overview</string>
+    <string name="breadcrumb_clients">Dashboard / Clients</string>
+    <string name="breadcrumb_settings">Dashboard / Settings</string>
+    <string name="total_clients">Total Clients</string>
+    <string name="total_greenhouses">Total Greenhouses</string>
+    <string name="active_devices">Active Devices</string>
+    <string name="active_alerts">Active Alerts</string>
+    <string name="this_month">+%1$d this month</string>
+    <string name="percent_active">%1$d%% Active</string>
+    <string name="all_online">All online</string>
+    <string name="requires_attention">Requires Attention</string>
+
+    <!-- Clients Screen -->
+    <string name="clients_title">Client List</string>
+    <string name="clients_subtitle">Manage your agricultural partners and their greenhouse access permissions.</string>
+    <string name="search_clients_placeholder">Search by name, company, or email...</string>
+    <string name="filter_status_all">Status: All</string>
+    <string name="filter_status">Status</string>
+    <string name="filter_location">Location</string>
+    <string name="filter_all">All</string>
+    <string name="new_client">New Client</string>
+
+    <!-- Client Table Headers -->
+    <string name="header_name">NAME</string>
+    <string name="header_company">COMPANY</string>
+    <string name="header_city">CITY</string>
+    <string name="header_greenhouses">GREENHOUSES</string>
+    <string name="header_status">STATUS</string>
+    <string name="header_actions">ACTIONS</string>
+
+    <!-- Client Status -->
+    <string name="status_active">Active</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_inactive">Inactive</string>
+
+    <!-- Pagination -->
+    <string name="rows_per_page">Rows per page:</string>
+    <string name="pagination_info">%1$d-%2$d of %3$d</string>
+
+    <!-- Actions -->
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_retry">Retry</string>
+
+    <!-- Common -->
+    <string name="loading">Loading...</string>
+    <string name="error_title">Error</string>
+    <string name="error_unknown">Unknown error occurred</string>
+    <string name="search">Search</string>
+    <string name="search_dashboard_placeholder">Search clients, greenhouses, or devices...</string>
+    <string name="alerts">Alerts</string>
+    <string name="pagination_previous">Previous page</string>
+    <string name="pagination_next">Next page</string>
+    <string name="settings_coming_soon">Settings - Coming Soon</string>
+</resources>

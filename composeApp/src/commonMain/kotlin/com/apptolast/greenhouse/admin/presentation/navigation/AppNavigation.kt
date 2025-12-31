@@ -29,7 +29,17 @@ fun AppNavigation() {
         }
 
         composable<ClientsRoute> {
-            ClientsScreen()
+            ClientsScreen(
+                onNavigate = { route ->
+                    when (route) {
+                        "dashboard" -> navController.navigate(DashboardRoute) {
+                            popUpTo(DashboardRoute) { inclusive = true }
+                        }
+
+                        "settings" -> navController.navigate(SettingsRoute)
+                    }
+                }
+            )
         }
 
         composable<SettingsRoute> {

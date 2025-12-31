@@ -18,6 +18,11 @@ import com.apptolast.greenhouse.admin.presentation.ui.components.StatsGrid
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardEvent
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardUiState
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardViewModel
+import greenhouseadmin.composeapp.generated.resources.Res
+import greenhouseadmin.composeapp.generated.resources.app_name
+import greenhouseadmin.composeapp.generated.resources.dashboard_overview
+import greenhouseadmin.composeapp.generated.resources.error_unknown
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -75,8 +80,8 @@ private fun DashboardContent(
         ) {
             // Top bar
             DashboardTopBar(
-                title = "Greenhouse Admin",
-                subtitle = "Dashboard Overview",
+                title = stringResource(Res.string.app_name),
+                subtitle = stringResource(Res.string.dashboard_overview),
                 searchQuery = uiState.searchQuery,
                 alertCount = uiState.alertCount,
                 onSearchQueryChange = { onEvent(DashboardEvent.OnSearchQueryChanged(it)) },
@@ -96,7 +101,7 @@ private fun DashboardContent(
 
                     uiState.isError -> {
                         ErrorContent(
-                            message = uiState.error ?: "Unknown error occurred",
+                            message = uiState.error ?: stringResource(Res.string.error_unknown),
                             onRetry = { onEvent(DashboardEvent.LoadDashboard) }
                         )
                     }

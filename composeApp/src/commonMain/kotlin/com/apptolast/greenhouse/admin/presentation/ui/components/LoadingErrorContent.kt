@@ -16,6 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import greenhouseadmin.composeapp.generated.resources.Res
+import greenhouseadmin.composeapp.generated.resources.action_retry
+import greenhouseadmin.composeapp.generated.resources.error_title
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Loading indicator component.
@@ -51,7 +55,7 @@ fun ErrorContent(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Error",
+            text = stringResource(Res.string.error_title),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.error
         )
@@ -72,7 +76,7 @@ fun ErrorContent(
                 containerColor = MaterialTheme.colorScheme.primary
             )
         ) {
-            Text(text = "Retry")
+            Text(text = stringResource(Res.string.action_retry))
         }
     }
 }

@@ -29,6 +29,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.MenuIcon
 import com.apptolast.greenhouse.admin.data.model.MenuItem
+import greenhouseadmin.composeapp.generated.resources.Res
+import greenhouseadmin.composeapp.generated.resources.app_name
+import greenhouseadmin.composeapp.generated.resources.menu_label
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Sidebar navigation component for the dashboard.
@@ -73,7 +77,7 @@ fun SidebarNavigation(
             Spacer(modifier = Modifier.width(12.dp))
 
             Text(
-                text = "Greenhouse Admin",
+                text = stringResource(Res.string.app_name),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -83,7 +87,7 @@ fun SidebarNavigation(
 
         // Menu label
         Text(
-            text = "MENU",
+            text = stringResource(Res.string.menu_label),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
             modifier = Modifier.padding(start = 12.dp, bottom = 8.dp)

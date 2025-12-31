@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <!-- App -->
+    <string name="app_name">Greenhouse Admin</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Panel</string>
+    <string name="nav_clients">Clientes</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="menu_label">MENU</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_overview">Resumen del Panel</string>
+    <string name="breadcrumb_clients">Panel / Clientes</string>
+    <string name="breadcrumb_settings">Panel / Ajustes</string>
+    <string name="total_clients">Total Clientes</string>
+    <string name="total_greenhouses">Total Invernaderos</string>
+    <string name="active_devices">Dispositivos Activos</string>
+    <string name="active_alerts">Alertas Activas</string>
+    <string name="this_month">+%1$d este mes</string>
+    <string name="percent_active">%1$d%% Activos</string>
+    <string name="all_online">Todos en linea</string>
+    <string name="requires_attention">Requiere Atencion</string>
+
+    <!-- Clients Screen -->
+    <string name="clients_title">Lista de Clientes</string>
+    <string name="clients_subtitle">Gestiona tus socios agricolas y sus permisos de acceso a invernaderos.</string>
+    <string name="search_clients_placeholder">Buscar por nombre, empresa o email...</string>
+    <string name="filter_status_all">Estado: Todos</string>
+    <string name="filter_status">Estado</string>
+    <string name="filter_location">Ubicacion</string>
+    <string name="filter_all">Todos</string>
+    <string name="new_client">Nuevo Cliente</string>
+
+    <!-- Client Table Headers -->
+    <string name="header_name">NOMBRE</string>
+    <string name="header_company">EMPRESA</string>
+    <string name="header_city">CIUDAD</string>
+    <string name="header_greenhouses">INVERNADEROS</string>
+    <string name="header_status">ESTADO</string>
+    <string name="header_actions">ACCIONES</string>
+
+    <!-- Client Status -->
+    <string name="status_active">Activo</string>
+    <string name="status_pending">Pendiente</string>
+    <string name="status_inactive">Inactivo</string>
+
+    <!-- Pagination -->
+    <string name="rows_per_page">Filas por pagina:</string>
+    <string name="pagination_info">%1$d-%2$d de %3$d</string>
+
+    <!-- Actions -->
+    <string name="action_edit">Editar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_retry">Reintentar</string>
+
+    <!-- Common -->
+    <string name="loading">Cargando...</string>
+    <string name="error_title">Error</string>
+    <string name="error_unknown">Ha ocurrido un error desconocido</string>
+    <string name="search">Buscar</string>
+    <string name="search_dashboard_placeholder">Buscar clientes, invernaderos o dispositivos...</string>
+    <string name="alerts">Alertas</string>
+    <string name="pagination_previous">Pagina anterior</string>
+    <string name="pagination_next">Pagina siguiente</string>
+    <string name="settings_coming_soon">Ajustes - Proximamente</string>
+</resources>

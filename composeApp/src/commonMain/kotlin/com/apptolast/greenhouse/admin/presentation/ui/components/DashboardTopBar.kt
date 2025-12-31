@@ -24,6 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import greenhouseadmin.composeapp.generated.resources.Res
+import greenhouseadmin.composeapp.generated.resources.alerts
+import greenhouseadmin.composeapp.generated.resources.search
+import greenhouseadmin.composeapp.generated.resources.search_dashboard_placeholder
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Top bar component for the dashboard.
@@ -73,7 +78,7 @@ fun DashboardTopBar(
                     .height(48.dp),
                 placeholder = {
                     Text(
-                        text = "Search clients, greenhouses, or devices...",
+                        text = stringResource(Res.string.search_dashboard_placeholder),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
@@ -81,7 +86,7 @@ fun DashboardTopBar(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
+                        contentDescription = stringResource(Res.string.search),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
@@ -116,7 +121,7 @@ fun DashboardTopBar(
                 IconButton(onClick = onAlertClick) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
-                        contentDescription = "Alerts",
+                        contentDescription = stringResource(Res.string.alerts),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
