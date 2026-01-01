@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailTab
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.tab_alerts
@@ -24,6 +25,7 @@ import greenhouseadmin.composeapp.generated.resources.tab_sectors
 import greenhouseadmin.composeapp.generated.resources.tab_settings
 import greenhouseadmin.composeapp.generated.resources.tab_users
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Tab bar for client detail screen navigation.
@@ -31,7 +33,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ClientDetailTabBar(
     selectedTab: ClientDetailTab,
-    onTabSelected: (ClientDetailTab) -> Unit,
+    onTabSelected: (ClientDetailTab) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -92,5 +94,21 @@ private fun TabItem(
                     .background(MaterialTheme.colorScheme.primary)
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun ClientDetailTabBarPreview() {
+    GreenhouseAdminTheme {
+        ClientDetailTabBar(selectedTab = ClientDetailTab.GENERAL)
+    }
+}
+
+@Preview
+@Composable
+private fun ClientDetailTabBarUsersSelectedPreview() {
+    GreenhouseAdminTheme {
+        ClientDetailTabBar(selectedTab = ClientDetailTab.USERS)
     }
 }

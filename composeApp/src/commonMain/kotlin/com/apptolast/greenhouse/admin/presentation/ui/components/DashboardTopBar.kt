@@ -24,11 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.alerts
 import greenhouseadmin.composeapp.generated.resources.search
 import greenhouseadmin.composeapp.generated.resources.search_dashboard_placeholder
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Top bar component for the dashboard.
@@ -40,8 +42,8 @@ fun DashboardTopBar(
     subtitle: String,
     searchQuery: String,
     alertCount: Int,
-    onSearchQueryChange: (String) -> Unit,
-    onAlertClick: () -> Unit,
+    onSearchQueryChange: (String) -> Unit = {},
+    onAlertClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -127,5 +129,31 @@ fun DashboardTopBar(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun DashboardTopBarPreview() {
+    GreenhouseAdminTheme {
+        DashboardTopBar(
+            title = "Dashboard",
+            subtitle = "Welcome back, Admin",
+            searchQuery = "",
+            alertCount = 5
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun DashboardTopBarNoAlertsPreview() {
+    GreenhouseAdminTheme {
+        DashboardTopBar(
+            title = "Dashboard",
+            subtitle = "Welcome back, Admin",
+            searchQuery = "greenhouse",
+            alertCount = 0
+        )
     }
 }

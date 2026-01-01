@@ -26,11 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.PaginationInfo
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.pagination_next
 import greenhouseadmin.composeapp.generated.resources.pagination_previous
 import greenhouseadmin.composeapp.generated.resources.rows_per_page
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Pagination controls for client list.
@@ -38,8 +40,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ClientsPagination(
     pagination: PaginationInfo,
-    onPageChanged: (Int) -> Unit,
-    onPageSizeChanged: (Int) -> Unit,
+    onPageChanged: (Int) -> Unit = {},
+    onPageSizeChanged: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -152,5 +154,33 @@ private fun PageSizeSelector(
                 }
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun ClientsPaginationPreview() {
+    GreenhouseAdminTheme {
+        ClientsPagination(
+            pagination = PaginationInfo(
+                currentPage = 1,
+                pageSize = 10,
+                totalItems = 156
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ClientsPaginationFirstPagePreview() {
+    GreenhouseAdminTheme {
+        ClientsPagination(
+            pagination = PaginationInfo(
+                currentPage = 0,
+                pageSize = 10,
+                totalItems = 50
+            )
+        )
     }
 }

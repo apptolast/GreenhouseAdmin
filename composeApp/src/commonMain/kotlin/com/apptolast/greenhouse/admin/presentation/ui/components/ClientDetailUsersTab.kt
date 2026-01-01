@@ -26,12 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.new_user
 import greenhouseadmin.composeapp.generated.resources.users_empty
 import greenhouseadmin.composeapp.generated.resources.users_subtitle
 import greenhouseadmin.composeapp.generated.resources.users_title
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Users tab content for the client detail screen.
@@ -40,12 +42,12 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ClientDetailUsersTab(
     users: List<User>,
-    isLoading: Boolean,
-    error: String?,
-    onAddUser: () -> Unit,
-    onEditUser: (User) -> Unit,
-    onDeleteUser: (User) -> Unit,
-    onRetry: () -> Unit,
+    isLoading: Boolean = false,
+    error: String? = null,
+    onAddUser: () -> Unit = {},
+    onEditUser: (User) -> Unit = {},
+    onDeleteUser: (User) -> Unit = {},
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -143,5 +145,48 @@ private fun EmptyUsersContent(modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+private object ClientDetailUsersTabPreviewData {
+    val sampleUsers = listOf(
+        User(
+            id = "1",
+            name = "Ana Martinez",
+            email = "ana@freshveg.com",
+            phone = "+34 612 111 222",
+            clientId = "client1"
+        ),
+        User(
+            id = "2",
+            name = "Carlos Ruiz",
+            email = "carlos@freshveg.com",
+            phone = "+34 623 222 333",
+            clientId = "client1"
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun ClientDetailUsersTabPreview() {
+    GreenhouseAdminTheme {
+        ClientDetailUsersTab(users = ClientDetailUsersTabPreviewData.sampleUsers)
+    }
+}
+
+@Preview
+@Composable
+private fun ClientDetailUsersTabEmptyPreview() {
+    GreenhouseAdminTheme {
+        ClientDetailUsersTab(users = emptyList())
+    }
+}
+
+@Preview
+@Composable
+private fun ClientDetailUsersTabLoadingPreview() {
+    GreenhouseAdminTheme {
+        ClientDetailUsersTab(users = emptyList(), isLoading = true)
     }
 }

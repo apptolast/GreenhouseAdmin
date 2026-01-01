@@ -29,10 +29,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.MenuIcon
 import com.apptolast.greenhouse.admin.data.model.MenuItem
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.app_name
 import greenhouseadmin.composeapp.generated.resources.menu_label
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Sidebar navigation component for the dashboard.
@@ -42,7 +44,7 @@ import org.jetbrains.compose.resources.stringResource
 fun SidebarNavigation(
     menuItems: List<MenuItem>,
     selectedItemId: String,
-    onItemSelected: (String) -> Unit,
+    onItemSelected: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -161,5 +163,35 @@ private fun getIconForMenuItem(icon: MenuIcon): ImageVector {
         MenuIcon.DASHBOARD -> Icons.Default.Home
         MenuIcon.CLIENTS -> Icons.Default.Person
         MenuIcon.SETTINGS -> Icons.Default.Settings
+    }
+}
+
+private object SidebarPreviewData {
+    val menuItems = listOf(
+        MenuItem(id = "dashboard", title = "Dashboard", icon = MenuIcon.DASHBOARD, route = "dashboard"),
+        MenuItem(id = "clients", title = "Clients", icon = MenuIcon.CLIENTS, route = "clients"),
+        MenuItem(id = "settings", title = "Settings", icon = MenuIcon.SETTINGS, route = "settings")
+    )
+}
+
+@Preview
+@Composable
+private fun SidebarNavigationPreview() {
+    GreenhouseAdminTheme {
+        SidebarNavigation(
+            menuItems = SidebarPreviewData.menuItems,
+            selectedItemId = "dashboard"
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun SidebarNavigationClientsSelectedPreview() {
+    GreenhouseAdminTheme {
+        SidebarNavigation(
+            menuItems = SidebarPreviewData.menuItems,
+            selectedItemId = "clients"
+        )
     }
 }

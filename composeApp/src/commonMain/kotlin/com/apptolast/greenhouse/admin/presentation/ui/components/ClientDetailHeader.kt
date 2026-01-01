@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Client
+import com.apptolast.greenhouse.admin.data.model.ClientStatus
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
@@ -32,6 +34,7 @@ import greenhouseadmin.composeapp.generated.resources.client_detail_back
 import greenhouseadmin.composeapp.generated.resources.client_detail_ref
 import greenhouseadmin.composeapp.generated.resources.client_detail_since
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Header component for the client detail screen.
@@ -40,9 +43,9 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ClientDetailHeader(
     client: Client,
-    onBackClick: () -> Unit,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit,
+    onBackClick: () -> Unit = {},
+    onEditClick: () -> Unit = {},
+    onDeleteClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -189,3 +192,26 @@ private fun formatDate(timestamp: Long): String {
 
 private fun isLeapYear(year: Int): Boolean =
     (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+
+private object ClientDetailHeaderPreviewData {
+    val sampleClient = Client(
+        id = "12345",
+        name = "Elena Rodriguez",
+        email = "elena@freshveg.com",
+        phone = "+34 612 345 678",
+        province = "Almeria",
+        country = "Spain",
+        location = "Calle Mayor 123",
+        createdAt = 1735689600000L,
+        updatedAt = 1735689600000L,
+        status = ClientStatus.ACTIVE
+    )
+}
+
+@Preview
+@Composable
+private fun ClientDetailHeaderPreview() {
+    GreenhouseAdminTheme {
+        ClientDetailHeader(client = ClientDetailHeaderPreviewData.sampleClient)
+    }
+}

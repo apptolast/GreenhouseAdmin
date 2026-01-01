@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
@@ -42,6 +43,7 @@ import greenhouseadmin.composeapp.generated.resources.header_email
 import greenhouseadmin.composeapp.generated.resources.header_name
 import greenhouseadmin.composeapp.generated.resources.header_phone
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Table displaying list of users with headers and rows.
@@ -49,8 +51,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun UsersTable(
     users: List<User>,
-    onEditUser: (User) -> Unit,
-    onDeleteUser: (User) -> Unit,
+    onEditUser: (User) -> Unit = {},
+    onDeleteUser: (User) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -250,5 +252,47 @@ fun UserAvatar(
             color = Color.White,
             fontWeight = FontWeight.Bold
         )
+    }
+}
+
+private object UsersTablePreviewData {
+    val sampleUsers = listOf(
+        User(
+            id = "1",
+            name = "Ana Martinez",
+            email = "ana@freshveg.com",
+            phone = "+34 612 111 222",
+            clientId = "client1"
+        ),
+        User(
+            id = "2",
+            name = "Carlos Ruiz",
+            email = "carlos@freshveg.com",
+            phone = "+34 623 222 333",
+            clientId = "client1"
+        ),
+        User(
+            id = "3",
+            name = "Sofia Fernandez",
+            email = "sofia@freshveg.com",
+            phone = "+34 634 333 444",
+            clientId = "client1"
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun UsersTablePreview() {
+    GreenhouseAdminTheme {
+        UsersTable(users = UsersTablePreviewData.sampleUsers)
+    }
+}
+
+@Preview
+@Composable
+private fun UserAvatarPreview() {
+    GreenhouseAdminTheme {
+        UserAvatar(initials = "AM")
     }
 }

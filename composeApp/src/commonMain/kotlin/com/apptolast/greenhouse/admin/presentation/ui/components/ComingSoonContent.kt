@@ -16,10 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.coming_soon
 import greenhouseadmin.composeapp.generated.resources.coming_soon_message
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Placeholder content for tabs that are not yet implemented.
@@ -58,5 +60,13 @@ fun ComingSoonContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             textAlign = TextAlign.Center
         )
+    }
+}
+
+@Preview
+@Composable
+private fun ComingSoonContentPreview() {
+    GreenhouseAdminTheme {
+        ComingSoonContent(tabName = "Settings")
     }
 }

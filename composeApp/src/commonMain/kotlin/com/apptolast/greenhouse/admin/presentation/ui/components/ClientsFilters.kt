@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.ClientStatusFilter
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.filter_all
 import greenhouseadmin.composeapp.generated.resources.filter_province
@@ -40,6 +41,7 @@ import greenhouseadmin.composeapp.generated.resources.status_active
 import greenhouseadmin.composeapp.generated.resources.status_inactive
 import greenhouseadmin.composeapp.generated.resources.status_pending
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Filter bar for the clients list with search, status filter, province filter, and new client button.
@@ -50,10 +52,10 @@ fun ClientsFilters(
     statusFilter: ClientStatusFilter,
     provinceFilter: String?,
     provinces: List<String>,
-    onSearchQueryChanged: (String) -> Unit,
-    onStatusFilterChanged: (ClientStatusFilter) -> Unit,
-    onProvinceFilterChanged: (String?) -> Unit,
-    onNewClientClicked: () -> Unit,
+    onSearchQueryChanged: (String) -> Unit = {},
+    onStatusFilterChanged: (ClientStatusFilter) -> Unit = {},
+    onProvinceFilterChanged: (String?) -> Unit = {},
+    onNewClientClicked: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -242,5 +244,31 @@ private fun ProvinceFilterDropdown(
                 }
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun ClientsFiltersPreview() {
+    GreenhouseAdminTheme {
+        ClientsFilters(
+            searchQuery = "",
+            statusFilter = ClientStatusFilter.ALL,
+            provinceFilter = null,
+            provinces = listOf("Almeria", "Murcia", "Valencia", "Granada")
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ClientsFiltersWithSearchPreview() {
+    GreenhouseAdminTheme {
+        ClientsFilters(
+            searchQuery = "Elena",
+            statusFilter = ClientStatusFilter.ACTIVE,
+            provinceFilter = "Almeria",
+            provinces = listOf("Almeria", "Murcia", "Valencia", "Granada")
+        )
     }
 }

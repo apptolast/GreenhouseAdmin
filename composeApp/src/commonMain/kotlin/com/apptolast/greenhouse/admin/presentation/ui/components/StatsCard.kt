@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
@@ -30,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.StatCard
 import com.apptolast.greenhouse.admin.data.model.StatCardIcon
 import com.apptolast.greenhouse.admin.data.model.StatCardSubtitleColor
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Reusable stats card component for dashboard metrics.
@@ -125,5 +128,46 @@ private fun getIconForStatCard(icon: StatCardIcon): ImageVector {
         StatCardIcon.GREENHOUSE -> Icons.Outlined.Home
         StatCardIcon.DEVICES -> Icons.Default.Settings
         StatCardIcon.ALERT -> Icons.Default.Notifications
+    }
+}
+
+private object StatsCardPreviewData {
+    val sampleCard = StatCard(
+        id = "1",
+        title = "Total Clients",
+        value = "156",
+        subtitle = "+12% from last month",
+        icon = StatCardIcon.PEOPLE,
+        subtitleColor = StatCardSubtitleColor.SUCCESS
+    )
+    val alertCard = StatCard(
+        id = "2",
+        title = "Active Alerts",
+        value = "8",
+        subtitle = "3 critical",
+        icon = StatCardIcon.ALERT,
+        subtitleColor = StatCardSubtitleColor.WARNING
+    )
+}
+
+@Preview
+@Composable
+private fun StatsCardPreview() {
+    GreenhouseAdminTheme {
+        StatsCard(
+            statCard = StatsCardPreviewData.sampleCard,
+            modifier = Modifier.width(280.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun StatsCardAlertPreview() {
+    GreenhouseAdminTheme {
+        StatsCard(
+            statCard = StatsCardPreviewData.alertCard,
+            modifier = Modifier.width(280.dp)
+        )
     }
 }

@@ -30,7 +30,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.apptolast.greenhouse.admin.data.model.User
 import com.apptolast.greenhouse.admin.data.model.UserFormData
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.UserFormMode
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.button_cancel
@@ -47,6 +49,7 @@ import greenhouseadmin.composeapp.generated.resources.label_email
 import greenhouseadmin.composeapp.generated.resources.label_name
 import greenhouseadmin.composeapp.generated.resources.label_phone
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Dialog for creating or editing a user.
@@ -54,10 +57,10 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun UserFormDialog(
     mode: UserFormMode,
-    isSubmitting: Boolean,
-    error: String?,
-    onSubmit: (name: String, email: String, phone: String) -> Unit,
-    onDismiss: () -> Unit,
+    isSubmitting: Boolean = false,
+    error: String? = null,
+    onSubmit: (name: String, email: String, phone: String) -> Unit = { _, _, _ -> },
+    onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val initialFormData = remember(mode) {
@@ -272,5 +275,31 @@ private fun UserFormTextField(
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
+    }
+}
+
+private object UserFormDialogPreviewData {
+    val sampleUser = User(
+        id = "1",
+        name = "Ana Martinez",
+        email = "ana@freshveg.com",
+        phone = "+34 612 111 222",
+        clientId = "client1"
+    )
+}
+
+@Preview
+@Composable
+private fun UserFormDialogCreatePreview() {
+    GreenhouseAdminTheme {
+        UserFormDialog(mode = UserFormMode.Create)
+    }
+}
+
+@Preview
+@Composable
+private fun UserFormDialogEditPreview() {
+    GreenhouseAdminTheme {
+        UserFormDialog(mode = UserFormMode.Edit(UserFormDialogPreviewData.sampleUser))
     }
 }

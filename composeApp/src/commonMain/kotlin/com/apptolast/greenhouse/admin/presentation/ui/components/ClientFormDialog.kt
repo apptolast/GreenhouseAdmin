@@ -37,6 +37,7 @@ import androidx.compose.ui.window.Dialog
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.NewClientFormData
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.button_cancel
 import greenhouseadmin.composeapp.generated.resources.button_create
@@ -61,6 +62,7 @@ import greenhouseadmin.composeapp.generated.resources.status_active
 import greenhouseadmin.composeapp.generated.resources.status_inactive
 import greenhouseadmin.composeapp.generated.resources.status_pending
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Represents the mode for the client form dialog.
@@ -78,8 +80,8 @@ fun ClientFormDialog(
     mode: ClientFormMode,
     provinces: List<String>,
     countries: List<String>,
-    isSubmitting: Boolean,
-    error: String?,
+    isSubmitting: Boolean = false,
+    error: String? = null,
     onSubmit: (
         id: String?,
         name: String,
@@ -89,8 +91,8 @@ fun ClientFormDialog(
         country: String,
         location: String,
         status: ClientStatus
-    ) -> Unit,
-    onDismiss: () -> Unit,
+    ) -> Unit = { _, _, _, _, _, _, _, _ -> },
+    onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val initialFormData = remember(mode) {
@@ -512,5 +514,46 @@ private fun StatusDropdown(
                 )
             }
         }
+    }
+}
+
+private object ClientFormDialogPreviewData {
+    val provinces = listOf("Almeria", "Murcia", "Valencia", "Granada")
+    val countries = listOf("Spain", "Portugal", "France")
+    val sampleClient = Client(
+        id = "1",
+        name = "Elena Rodriguez",
+        email = "elena@freshveg.com",
+        phone = "+34 612 345 678",
+        province = "Almeria",
+        country = "Spain",
+        location = "Calle Mayor 123",
+        createdAt = 1735689600000L,
+        updatedAt = 1735689600000L,
+        status = ClientStatus.ACTIVE
+    )
+}
+
+@Preview
+@Composable
+private fun ClientFormDialogCreatePreview() {
+    GreenhouseAdminTheme {
+        ClientFormDialog(
+            mode = ClientFormMode.Create,
+            provinces = ClientFormDialogPreviewData.provinces,
+            countries = ClientFormDialogPreviewData.countries
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ClientFormDialogEditPreview() {
+    GreenhouseAdminTheme {
+        ClientFormDialog(
+            mode = ClientFormMode.Edit(ClientFormDialogPreviewData.sampleClient),
+            provinces = ClientFormDialogPreviewData.provinces,
+            countries = ClientFormDialogPreviewData.countries
+        )
     }
 }
