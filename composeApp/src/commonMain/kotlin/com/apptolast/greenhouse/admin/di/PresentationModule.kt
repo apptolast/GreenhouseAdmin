@@ -20,6 +20,6 @@ val presentationModule = module {
 
     // Client Detail (with clientId parameter)
     viewModel { (clientId: String) ->
-        ClientDetailViewModel(clientId, get(), get())
+        ClientDetailViewModel(clientId, get(), get(), get())
     }
 }

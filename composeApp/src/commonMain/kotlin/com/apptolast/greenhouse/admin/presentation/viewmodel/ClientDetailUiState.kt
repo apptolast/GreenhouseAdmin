@@ -2,6 +2,7 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.MenuItem
+import com.apptolast.greenhouse.admin.data.model.User
 
 /**
  * Represents the complete UI state for the Client Detail screen.
@@ -35,7 +36,24 @@ data class ClientDetailUiState(
     val deleteClientError: String? = null,
 
     // Navigation signal for after successful delete
-    val shouldNavigateBack: Boolean = false
+    val shouldNavigateBack: Boolean = false,
+
+    // Users tab state
+    val users: List<User> = emptyList(),
+    val isLoadingUsers: Boolean = false,
+    val usersError: String? = null,
+
+    // User form dialog states
+    val showUserFormDialog: Boolean = false,
+    val userFormMode: UserFormMode = UserFormMode.Create,
+    val isSubmittingUser: Boolean = false,
+    val submitUserError: String? = null,
+
+    // User delete dialog states
+    val showDeleteUserConfirmation: Boolean = false,
+    val userToDelete: User? = null,
+    val isDeletingUser: Boolean = false,
+    val deleteUserError: String? = null
 ) {
     /**
      * Returns true if in error state with no content.
@@ -55,9 +73,18 @@ data class ClientDetailUiState(
  */
 enum class ClientDetailTab {
     GENERAL,
+    USERS,
     GREENHOUSES,
     SECTORS,
     DEVICES,
     ALERTS,
     SETTINGS
+}
+
+/**
+ * Mode for the user form dialog.
+ */
+sealed interface UserFormMode {
+    data object Create : UserFormMode
+    data class Edit(val user: User) : UserFormMode
 }

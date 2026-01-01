@@ -22,6 +22,7 @@ import greenhouseadmin.composeapp.generated.resources.tab_general
 import greenhouseadmin.composeapp.generated.resources.tab_greenhouses
 import greenhouseadmin.composeapp.generated.resources.tab_sectors
 import greenhouseadmin.composeapp.generated.resources.tab_settings
+import greenhouseadmin.composeapp.generated.resources.tab_users
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -59,6 +60,7 @@ private fun TabItem(
 ) {
     val tabText = when (tab) {
         ClientDetailTab.GENERAL -> stringResource(Res.string.tab_general)
+        ClientDetailTab.USERS -> stringResource(Res.string.tab_users)
         ClientDetailTab.GREENHOUSES -> stringResource(Res.string.tab_greenhouses)
         ClientDetailTab.SECTORS -> stringResource(Res.string.tab_sectors)
         ClientDetailTab.DEVICES -> stringResource(Res.string.tab_devices)

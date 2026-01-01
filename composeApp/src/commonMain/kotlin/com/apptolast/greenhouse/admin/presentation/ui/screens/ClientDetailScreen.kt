@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.presentation.ui.components.ClientDetailGeneralTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.ClientDetailHeader
 import com.apptolast.greenhouse.admin.presentation.ui.components.ClientDetailTabBar
+import com.apptolast.greenhouse.admin.presentation.ui.components.ClientDetailUsersTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.ClientFormDialog
 import com.apptolast.greenhouse.admin.presentation.ui.components.ClientFormMode
 import com.apptolast.greenhouse.admin.presentation.ui.components.ComingSoonContent
@@ -28,6 +29,7 @@ import com.apptolast.greenhouse.admin.presentation.ui.components.DeleteConfirmat
 import com.apptolast.greenhouse.admin.presentation.ui.components.ErrorContent
 import com.apptolast.greenhouse.admin.presentation.ui.components.LoadingContent
 import com.apptolast.greenhouse.admin.presentation.ui.components.SidebarNavigation
+import com.apptolast.greenhouse.admin.presentation.ui.components.UserFormDialog
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailEvent
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailTab
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailUiState
@@ -190,6 +192,30 @@ private fun ClientDetailScreenContent(
             onDismiss = { onEvent(ClientDetailEvent.OnCancelDelete) }
         )
     }
+
+    // User Form Dialog
+    if (uiState.showUserFormDialog) {
+        UserFormDialog(
+            mode = uiState.userFormMode,
+            isSubmitting = uiState.isSubmittingUser,
+            error = uiState.submitUserError,
+            onSubmit = { name, email, phone ->
+                onEvent(ClientDetailEvent.OnSubmitUserForm(name, email, phone))
+            },
+            onDismiss = { onEvent(ClientDetailEvent.OnDismissUserFormDialog) }
+        )
+    }
+
+    // User Delete Confirmation Dialog
+    if (uiState.showDeleteUserConfirmation && uiState.userToDelete != null) {
+        DeleteConfirmationDialog(
+            clientName = uiState.userToDelete.name,
+            isDeleting = uiState.isDeletingUser,
+            error = uiState.deleteUserError,
+            onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteUser) },
+            onDismiss = { onEvent(ClientDetailEvent.OnCancelDeleteUser) }
+        )
+    }
 }
 
 @Composable
@@ -227,6 +253,18 @@ private fun ClientDetailContent(
         when (uiState.selectedTab) {
             ClientDetailTab.GENERAL -> {
                 ClientDetailGeneralTab(client = client)
+            }
+
+            ClientDetailTab.USERS -> {
+                ClientDetailUsersTab(
+                    users = uiState.users,
+                    isLoading = uiState.isLoadingUsers,
+                    error = uiState.usersError,
+                    onAddUser = { onEvent(ClientDetailEvent.OnAddUserClicked) },
+                    onEditUser = { user -> onEvent(ClientDetailEvent.OnEditUserClicked(user)) },
+                    onDeleteUser = { user -> onEvent(ClientDetailEvent.OnDeleteUserClicked(user)) },
+                    onRetry = { onEvent(ClientDetailEvent.LoadUsers) }
+                )
             }
 
             ClientDetailTab.GREENHOUSES -> {

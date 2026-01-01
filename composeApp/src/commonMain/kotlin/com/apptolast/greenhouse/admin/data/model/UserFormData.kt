@@ -1,0 +1,52 @@
+package com.apptolast.greenhouse.admin.data.model
+
+/**
+ * Form data for creating or editing a user.
+ * Manages form state and validation.
+ */
+data class UserFormData(
+    val name: String = "",
+    val email: String = "",
+    val phone: String = ""
+) {
+    /**
+     * Validation errors for each field.
+     */
+    data class ValidationErrors(
+        val name: String? = null,
+        val email: String? = null,
+        val phone: String? = null
+    ) {
+        val hasErrors: Boolean
+            get() = name != null || email != null || phone != null
+    }
+
+    /**
+     * Validates the form and returns any errors.
+     */
+    fun validate(): ValidationErrors {
+        return ValidationErrors(
+            name = if (name.length < 2) "error_name_min_length" else null,
+            email = if (!isValidEmail(email)) "error_email_invalid" else null,
+            phone = if (phone.isBlank()) "error_phone_required" else null
+        )
+    }
+
+    /**
+     * Returns true if all required fields are valid.
+     */
+    val isValid: Boolean
+        get() = name.length >= 2 &&
+                isValidEmail(email) &&
+                phone.isNotBlank()
+
+    companion object {
+        private val EMAIL_REGEX = Regex(
+            "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+        )
+
+        fun isValidEmail(email: String): Boolean {
+            return email.isNotBlank() && EMAIL_REGEX.matches(email)
+        }
+    }
+}
