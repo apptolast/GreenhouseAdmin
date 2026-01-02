@@ -1,4 +1,4 @@
-package com.apptolast.greenhouse.admin.presentation.ui.components
+package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientAvatar
+import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientStatusBadge
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete

@@ -1,4 +1,4 @@
-package com.apptolast.greenhouse.admin.presentation.ui.components
+package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

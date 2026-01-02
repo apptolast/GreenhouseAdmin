@@ -1,4 +1,4 @@
-package com.apptolast.greenhouse.admin.presentation.ui.components
+package com.apptolast.greenhouse.admin.presentation.ui.components.clients.list
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement

@@ -23,18 +23,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
-import com.apptolast.greenhouse.admin.presentation.ui.components.ClientDetailGeneralTab
-import com.apptolast.greenhouse.admin.presentation.ui.components.ClientDetailHeader
-import com.apptolast.greenhouse.admin.presentation.ui.components.ClientDetailTabBar
-import com.apptolast.greenhouse.admin.presentation.ui.components.ClientDetailUsersTab
-import com.apptolast.greenhouse.admin.presentation.ui.components.ClientFormDialog
-import com.apptolast.greenhouse.admin.presentation.ui.components.ClientFormMode
-import com.apptolast.greenhouse.admin.presentation.ui.components.ComingSoonContent
-import com.apptolast.greenhouse.admin.presentation.ui.components.DashboardTopBar
-import com.apptolast.greenhouse.admin.presentation.ui.components.DeleteConfirmationDialog
-import com.apptolast.greenhouse.admin.presentation.ui.components.ErrorContent
-import com.apptolast.greenhouse.admin.presentation.ui.components.LoadingContent
-import com.apptolast.greenhouse.admin.presentation.ui.components.UserFormDialog
+import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailGeneralTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailHeader
+import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailTabBar
+import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailUsersTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.ComingSoonContent
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.DashboardTopBar
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.LoadingContent
+import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.ClientFormDialog
+import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.ClientFormMode
+import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.DeleteConfirmationDialog
+import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.UserFormDialog
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailEvent
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailTab
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailUiState
@@ -87,8 +87,8 @@ fun ClientDetailScreen(
 @Composable
 private fun ClientDetailScreenContent(
     uiState: ClientDetailUiState,
-    onEvent: (ClientDetailEvent) -> Unit,
-    onNavigateBack: () -> Unit
+    onEvent: (ClientDetailEvent) -> Unit = {},
+    onNavigateBack: () -> Unit = {},
 ) {
     val client = uiState.client
 
@@ -300,3 +300,4 @@ private fun ClientDetailContent(
         }
     }
 }
+

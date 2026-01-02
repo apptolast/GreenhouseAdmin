@@ -9,10 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import com.apptolast.greenhouse.admin.presentation.ui.components.DashboardTopBar
-import com.apptolast.greenhouse.admin.presentation.ui.components.ErrorContent
-import com.apptolast.greenhouse.admin.presentation.ui.components.LoadingContent
-import com.apptolast.greenhouse.admin.presentation.ui.components.StatsGrid
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.DashboardTopBar
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.LoadingContent
+import com.apptolast.greenhouse.admin.presentation.ui.components.dashboard.StatsGrid
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardEvent
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardUiState
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardViewModel
