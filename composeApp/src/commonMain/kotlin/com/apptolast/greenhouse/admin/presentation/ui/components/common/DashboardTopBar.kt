@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.alerts
@@ -160,12 +161,14 @@ fun DashboardTopBar(
 @Composable
 private fun DashboardTopBarPreview() {
     GreenhouseAdminTheme {
-        DashboardTopBar(
-            title = "Dashboard",
-            subtitle = "Welcome back, Admin",
-            searchQuery = "",
-            alertCount = 5
-        )
+        ProvideAppWindowInfo {
+            DashboardTopBar(
+                title = "Dashboard",
+                subtitle = "Welcome back, Admin",
+                searchQuery = "",
+                alertCount = 5
+            )
+        }
     }
 }
 
@@ -173,11 +176,13 @@ private fun DashboardTopBarPreview() {
 @Composable
 private fun DashboardTopBarNoAlertsPreview() {
     GreenhouseAdminTheme {
-        DashboardTopBar(
-            title = "Dashboard",
-            subtitle = "Welcome back, Admin",
-            searchQuery = "greenhouse",
-            alertCount = 0
-        )
+        ProvideAppWindowInfo {
+            DashboardTopBar(
+                title = "Dashboard",
+                subtitle = "Welcome back, Admin",
+                searchQuery = "greenhouse",
+                alertCount = 0
+            )
+        }
     }
 }

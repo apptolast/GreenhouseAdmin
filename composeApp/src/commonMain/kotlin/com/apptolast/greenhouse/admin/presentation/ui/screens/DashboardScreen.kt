@@ -9,10 +9,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.apptolast.greenhouse.admin.data.model.StatCard
+import com.apptolast.greenhouse.admin.data.model.StatCardIcon
+import com.apptolast.greenhouse.admin.data.model.StatCardSubtitleColor
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.DashboardTopBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.LoadingContent
 import com.apptolast.greenhouse.admin.presentation.ui.components.dashboard.StatsGrid
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardEvent
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardUiState
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardViewModel
@@ -21,6 +26,7 @@ import greenhouseadmin.composeapp.generated.resources.app_name
 import greenhouseadmin.composeapp.generated.resources.dashboard_overview
 import greenhouseadmin.composeapp.generated.resources.error_unknown
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -89,6 +95,89 @@ private fun DashboardContent(
                     )
                 }
             }
+        }
+    }
+}
+
+private object DashboardScreenPreviewData {
+    val sampleStatCards = listOf(
+        StatCard(
+            id = "1",
+            title = "Total Clients",
+            value = "156",
+            subtitle = "+12% this month",
+            subtitleColor = StatCardSubtitleColor.SUCCESS,
+            icon = StatCardIcon.PEOPLE
+        ),
+        StatCard(
+            id = "2",
+            title = "Greenhouses",
+            value = "423",
+            subtitle = "+5% this month",
+            subtitleColor = StatCardSubtitleColor.DEFAULT,
+            icon = StatCardIcon.GREENHOUSE
+        ),
+        StatCard(
+            id = "3",
+            title = "Active Devices",
+            value = "1,247",
+            subtitle = "98% online",
+            subtitleColor = StatCardSubtitleColor.SUCCESS,
+            icon = StatCardIcon.DEVICES
+        ),
+        StatCard(
+            id = "4",
+            title = "Alerts",
+            value = "23",
+            subtitle = "5 critical",
+            subtitleColor = StatCardSubtitleColor.WARNING,
+            icon = StatCardIcon.ALERT
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun DashboardContentPreview() {
+    GreenhouseAdminTheme {
+        ProvideAppWindowInfo {
+            DashboardContent(
+                uiState = DashboardUiState(
+                    isLoading = false,
+                    statCards = DashboardScreenPreviewData.sampleStatCards,
+                    alertCount = 23
+                ),
+                onEvent = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun DashboardContentLoadingPreview() {
+    GreenhouseAdminTheme {
+        ProvideAppWindowInfo {
+            DashboardContent(
+                uiState = DashboardUiState(isLoading = true),
+                onEvent = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun DashboardContentErrorPreview() {
+    GreenhouseAdminTheme {
+        ProvideAppWindowInfo {
+            DashboardContent(
+                uiState = DashboardUiState(
+                    isLoading = false,
+                    error = "Failed to load dashboard data"
+                ),
+                onEvent = {}
+            )
         }
     }
 }

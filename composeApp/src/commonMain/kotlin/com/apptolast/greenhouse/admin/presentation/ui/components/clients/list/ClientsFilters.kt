@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.ClientStatusFilter
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.filter_all
@@ -398,12 +399,14 @@ private fun ProvinceFilterDropdown(
 @Composable
 private fun ClientsFiltersPreview() {
     GreenhouseAdminTheme {
-        ClientsFilters(
-            searchQuery = "",
-            statusFilter = ClientStatusFilter.ALL,
-            provinceFilter = null,
-            provinces = listOf("Almeria", "Murcia", "Valencia", "Granada")
-        )
+        ProvideAppWindowInfo {
+            ClientsFilters(
+                searchQuery = "",
+                statusFilter = ClientStatusFilter.ALL,
+                provinceFilter = null,
+                provinces = listOf("Almeria", "Murcia", "Valencia", "Granada")
+            )
+        }
     }
 }
 
@@ -411,11 +414,13 @@ private fun ClientsFiltersPreview() {
 @Composable
 private fun ClientsFiltersWithSearchPreview() {
     GreenhouseAdminTheme {
-        ClientsFilters(
-            searchQuery = "Elena",
-            statusFilter = ClientStatusFilter.ACTIVE,
-            provinceFilter = "Almeria",
-            provinces = listOf("Almeria", "Murcia", "Valencia", "Granada")
-        )
+        ProvideAppWindowInfo {
+            ClientsFilters(
+                searchQuery = "Elena",
+                statusFilter = ClientStatusFilter.ACTIVE,
+                provinceFilter = "Almeria",
+                provinces = listOf("Almeria", "Murcia", "Valencia", "Granada")
+            )
+        }
     }
 }

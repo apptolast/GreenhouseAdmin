@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientAvatar
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientStatusBadge
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
@@ -349,6 +350,8 @@ private object ClientDetailHeaderPreviewData {
 @Composable
 private fun ClientDetailHeaderPreview() {
     GreenhouseAdminTheme {
-        ClientDetailHeader(client = ClientDetailHeaderPreviewData.sampleClient)
+        ProvideAppWindowInfo {
+            ClientDetailHeader(client = ClientDetailHeaderPreviewData.sampleClient)
+        }
     }
 }

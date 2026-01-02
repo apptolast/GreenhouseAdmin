@@ -16,8 +16,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.data.model.Client
+import com.apptolast.greenhouse.admin.data.model.ClientStatus
+import com.apptolast.greenhouse.admin.data.model.PaginationInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientsCards
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientsFilters
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientsPagination
@@ -28,6 +32,7 @@ import com.apptolast.greenhouse.admin.presentation.ui.components.common.LoadingC
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.ClientFormDialog
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.ClientFormMode
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.DeleteConfirmationDialog
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientsEvent
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientsUiState
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientsViewModel
@@ -38,6 +43,7 @@ import greenhouseadmin.composeapp.generated.resources.clients_subtitle
 import greenhouseadmin.composeapp.generated.resources.clients_title
 import greenhouseadmin.composeapp.generated.resources.error_unknown
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -270,6 +276,97 @@ private fun ClientsContent(
                     onPageSizeChanged = { onEvent(ClientsEvent.OnPageSizeChanged(it)) }
                 )
             }
+        }
+    }
+}
+
+private object ClientsScreenPreviewData {
+    val sampleClients = listOf(
+        Client(
+            id = "1",
+            name = "Fresh Vegetables Co.",
+            email = "contact@freshveg.com",
+            phone = "+34 612 345 678",
+            province = "Almeria",
+            country = "Spain",
+            location = "Calle Mayor 123",
+            createdAt = 1735689600000L,
+            updatedAt = 1735689600000L,
+            status = ClientStatus.ACTIVE
+        ),
+        Client(
+            id = "2",
+            name = "Green Gardens Ltd.",
+            email = "info@greengardens.com",
+            phone = "+34 623 456 789",
+            province = "Murcia",
+            country = "Spain",
+            location = "Av. Principal 45",
+            createdAt = 1733097600000L,
+            updatedAt = 1735689600000L,
+            status = ClientStatus.ACTIVE
+        ),
+        Client(
+            id = "3",
+            name = "Bio Farms Andalucia",
+            email = "hello@biofarms.es",
+            phone = "+34 634 567 890",
+            province = "Granada",
+            country = "Spain",
+            location = "Ctra. Nacional 340",
+            createdAt = 1730419200000L,
+            updatedAt = 1735689600000L,
+            status = ClientStatus.PENDING
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun ClientsScreenContentPreview() {
+    GreenhouseAdminTheme {
+        ProvideAppWindowInfo {
+            ClientsScreenContent(
+                uiState = ClientsUiState(
+                    isLoading = false,
+                    clients = ClientsScreenPreviewData.sampleClients,
+                    provinces = listOf("Almeria", "Murcia", "Granada"),
+                    pagination = PaginationInfo(totalItems = 3)
+                ),
+                onEvent = {},
+                onNavigate = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ClientsScreenContentLoadingPreview() {
+    GreenhouseAdminTheme {
+        ProvideAppWindowInfo {
+            ClientsScreenContent(
+                uiState = ClientsUiState(isLoading = true),
+                onEvent = {},
+                onNavigate = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ClientsScreenContentErrorPreview() {
+    GreenhouseAdminTheme {
+        ProvideAppWindowInfo {
+            ClientsScreenContent(
+                uiState = ClientsUiState(
+                    isLoading = false,
+                    error = "Failed to load clients"
+                ),
+                onEvent = {},
+                onNavigate = {}
+            )
         }
     }
 }

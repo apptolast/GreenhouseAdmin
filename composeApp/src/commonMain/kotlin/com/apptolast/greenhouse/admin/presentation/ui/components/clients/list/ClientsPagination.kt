@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.PaginationInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.pagination_next
@@ -171,13 +172,15 @@ private fun PageSizeSelector(
 @Composable
 private fun ClientsPaginationPreview() {
     GreenhouseAdminTheme {
-        ClientsPagination(
-            pagination = PaginationInfo(
-                currentPage = 1,
-                pageSize = 10,
-                totalItems = 156
+        ProvideAppWindowInfo {
+            ClientsPagination(
+                pagination = PaginationInfo(
+                    currentPage = 1,
+                    pageSize = 10,
+                    totalItems = 156
+                )
             )
-        )
+        }
     }
 }
 
@@ -185,12 +188,14 @@ private fun ClientsPaginationPreview() {
 @Composable
 private fun ClientsPaginationFirstPagePreview() {
     GreenhouseAdminTheme {
-        ClientsPagination(
-            pagination = PaginationInfo(
-                currentPage = 0,
-                pageSize = 10,
-                totalItems = 50
+        ProvideAppWindowInfo {
+            ClientsPagination(
+                pagination = PaginationInfo(
+                    currentPage = 0,
+                    pageSize = 10,
+                    totalItems = 50
+                )
             )
-        )
+        }
     }
 }

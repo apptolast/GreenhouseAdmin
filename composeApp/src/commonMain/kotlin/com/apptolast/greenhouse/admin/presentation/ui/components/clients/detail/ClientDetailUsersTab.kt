@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.User
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
@@ -179,7 +180,9 @@ private object ClientDetailUsersTabPreviewData {
 @Composable
 private fun ClientDetailUsersTabPreview() {
     GreenhouseAdminTheme {
-        ClientDetailUsersTab(users = ClientDetailUsersTabPreviewData.sampleUsers)
+        ProvideAppWindowInfo {
+            ClientDetailUsersTab(users = ClientDetailUsersTabPreviewData.sampleUsers)
+        }
     }
 }
 
@@ -187,7 +190,9 @@ private fun ClientDetailUsersTabPreview() {
 @Composable
 private fun ClientDetailUsersTabEmptyPreview() {
     GreenhouseAdminTheme {
-        ClientDetailUsersTab(users = emptyList())
+        ProvideAppWindowInfo {
+            ClientDetailUsersTab(users = emptyList())
+        }
     }
 }
 
@@ -195,6 +200,8 @@ private fun ClientDetailUsersTabEmptyPreview() {
 @Composable
 private fun ClientDetailUsersTabLoadingPreview() {
     GreenhouseAdminTheme {
-        ClientDetailUsersTab(users = emptyList(), isLoading = true)
+        ProvideAppWindowInfo {
+            ClientDetailUsersTab(users = emptyList(), isLoading = true)
+        }
     }
 }

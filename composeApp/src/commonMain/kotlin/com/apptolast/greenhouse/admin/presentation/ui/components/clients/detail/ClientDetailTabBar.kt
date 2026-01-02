@@ -9,16 +9,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailTab
 import greenhouseadmin.composeapp.generated.resources.Res
@@ -48,20 +47,12 @@ fun ClientDetailTabBar(
 
     if (windowInfo.isCompact) {
         // Scrollable tabs for mobile
-        ScrollableTabRow(
+        SecondaryScrollableTabRow(
             selectedTabIndex = ClientDetailTab.entries.indexOf(selectedTab),
             modifier = modifier,
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onSurface,
             edgePadding = 0.dp,
-            indicator = { tabPositions ->
-                if (tabPositions.isNotEmpty()) {
-                    TabRowDefaults.SecondaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[ClientDetailTab.entries.indexOf(selectedTab)]),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            },
             divider = {}
         ) {
             ClientDetailTab.entries.forEach { tab ->
@@ -156,7 +147,9 @@ private fun TabItem(
 @Composable
 private fun ClientDetailTabBarPreview() {
     GreenhouseAdminTheme {
-        ClientDetailTabBar(selectedTab = ClientDetailTab.GENERAL)
+        ProvideAppWindowInfo {
+            ClientDetailTabBar(selectedTab = ClientDetailTab.GENERAL)
+        }
     }
 }
 
@@ -164,6 +157,8 @@ private fun ClientDetailTabBarPreview() {
 @Composable
 private fun ClientDetailTabBarUsersSelectedPreview() {
     GreenhouseAdminTheme {
-        ClientDetailTabBar(selectedTab = ClientDetailTab.USERS)
+        ProvideAppWindowInfo {
+            ClientDetailTabBar(selectedTab = ClientDetailTab.USERS)
+        }
     }
 }

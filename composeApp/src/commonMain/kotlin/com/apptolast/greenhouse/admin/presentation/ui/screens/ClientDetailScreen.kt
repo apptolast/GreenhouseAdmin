@@ -21,8 +21,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.data.model.Client
+import com.apptolast.greenhouse.admin.data.model.ClientStatus
+import com.apptolast.greenhouse.admin.data.model.User
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailGeneralTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailHeader
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailTabBar
@@ -35,6 +39,7 @@ import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.ClientF
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.ClientFormMode
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.DeleteConfirmationDialog
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.UserFormDialog
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailEvent
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailTab
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailUiState
@@ -50,6 +55,7 @@ import greenhouseadmin.composeapp.generated.resources.tab_greenhouses
 import greenhouseadmin.composeapp.generated.resources.tab_sectors
 import greenhouseadmin.composeapp.generated.resources.tab_settings
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -207,7 +213,7 @@ private fun ClientDetailScreenContent(
 @Composable
 private fun ClientDetailContent(
     uiState: ClientDetailUiState,
-    client: com.apptolast.greenhouse.admin.data.model.Client,
+    client: Client,
     onEvent: (ClientDetailEvent) -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -297,6 +303,106 @@ private fun ClientDetailContent(
                     contentDescription = stringResource(Res.string.new_user)
                 )
             }
+        }
+    }
+}
+
+private object ClientDetailScreenPreviewData {
+    val sampleClient = Client(
+        id = "12345",
+        name = "Fresh Vegetables Co.",
+        email = "contact@freshveg.com",
+        phone = "+34 612 345 678",
+        province = "Almeria",
+        country = "Spain",
+        location = "Calle Mayor 123",
+        createdAt = 1735689600000L,
+        updatedAt = 1735689600000L,
+        status = ClientStatus.ACTIVE
+    )
+
+    val sampleUsers = listOf(
+        User(
+            id = "1",
+            name = "Ana Martinez",
+            email = "ana@freshveg.com",
+            phone = "+34 612 111 222",
+            clientId = "12345"
+        ),
+        User(
+            id = "2",
+            name = "Carlos Ruiz",
+            email = "carlos@freshveg.com",
+            phone = "+34 623 222 333",
+            clientId = "12345"
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun ClientDetailScreenContentPreview() {
+    GreenhouseAdminTheme {
+        ProvideAppWindowInfo {
+            ClientDetailScreenContent(
+                uiState = ClientDetailUiState(
+                    isLoading = false,
+                    client = ClientDetailScreenPreviewData.sampleClient,
+                    selectedTab = ClientDetailTab.GENERAL
+                ),
+                onEvent = {},
+                onNavigateBack = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ClientDetailScreenContentUsersTabPreview() {
+    GreenhouseAdminTheme {
+        ProvideAppWindowInfo {
+            ClientDetailScreenContent(
+                uiState = ClientDetailUiState(
+                    isLoading = false,
+                    client = ClientDetailScreenPreviewData.sampleClient,
+                    selectedTab = ClientDetailTab.USERS,
+                    users = ClientDetailScreenPreviewData.sampleUsers
+                ),
+                onEvent = {},
+                onNavigateBack = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ClientDetailScreenContentLoadingPreview() {
+    GreenhouseAdminTheme {
+        ProvideAppWindowInfo {
+            ClientDetailScreenContent(
+                uiState = ClientDetailUiState(isLoading = true),
+                onEvent = {},
+                onNavigateBack = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ClientDetailScreenContentErrorPreview() {
+    GreenhouseAdminTheme {
+        ProvideAppWindowInfo {
+            ClientDetailScreenContent(
+                uiState = ClientDetailUiState(
+                    isLoading = false,
+                    error = "Failed to load client details"
+                ),
+                onEvent = {},
+                onNavigateBack = {}
+            )
         }
     }
 }
