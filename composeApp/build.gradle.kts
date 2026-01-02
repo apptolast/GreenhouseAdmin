@@ -71,6 +71,10 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.viewmodel.navigation)
+            // Material 3 Adaptive (for responsive layouts)
+            implementation(libs.compose.material3.adaptive)
+            implementation(libs.compose.material3.adaptive.layout)
+            implementation(libs.compose.material3.adaptive.navigation)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

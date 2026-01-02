@@ -1,4 +1,4 @@
-package com.apptolast.greenhouse.admin.presentation.ui.components
+package com.apptolast.greenhouse.admin.presentation.ui.components.clients.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
@@ -50,6 +51,7 @@ import greenhouseadmin.composeapp.generated.resources.status_active
 import greenhouseadmin.composeapp.generated.resources.status_inactive
 import greenhouseadmin.composeapp.generated.resources.status_pending
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Table displaying list of clients with headers and rows.
@@ -57,9 +59,9 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ClientsTable(
     clients: List<Client>,
-    onClientClicked: (Client) -> Unit,
-    onEditClient: (Client) -> Unit,
-    onDeleteClient: (Client) -> Unit,
+    onClientClicked: (Client) -> Unit = {},
+    onEditClient: (Client) -> Unit = {},
+    onDeleteClient: (Client) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -368,5 +370,86 @@ fun ClientStatusBadge(
             style = MaterialTheme.typography.labelSmall,
             color = textColor
         )
+    }
+}
+
+private object ClientsTablePreviewData {
+    val sampleClients = listOf(
+        Client(
+            id = "1",
+            name = "Elena Rodriguez",
+            email = "elena@freshveg.com",
+            phone = "+34 612 345 678",
+            province = "Almeria",
+            country = "Spain",
+            location = "Calle Mayor 123",
+            createdAt = 1735689600000L,
+            updatedAt = 1735689600000L,
+            status = ClientStatus.ACTIVE
+        ),
+        Client(
+            id = "2",
+            name = "Juan Garcia",
+            email = "juan@greenfields.es",
+            phone = "+34 623 456 789",
+            province = "Murcia",
+            country = "Spain",
+            location = "Av. Libertad 45",
+            createdAt = 1735689600000L,
+            updatedAt = 1735689600000L,
+            status = ClientStatus.PENDING
+        ),
+        Client(
+            id = "3",
+            name = "Maria Lopez",
+            email = "maria@organicfarm.com",
+            phone = "+34 634 567 890",
+            province = "Valencia",
+            country = "Spain",
+            location = "Plaza Central 8",
+            createdAt = 1735689600000L,
+            updatedAt = 1735689600000L,
+            status = ClientStatus.INACTIVE
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun ClientsTablePreview() {
+    GreenhouseAdminTheme {
+        ClientsTable(clients = ClientsTablePreviewData.sampleClients)
+    }
+}
+
+@Preview
+@Composable
+private fun ClientAvatarPreview() {
+    GreenhouseAdminTheme {
+        ClientAvatar(initials = "ER")
+    }
+}
+
+@Preview
+@Composable
+private fun ClientStatusBadgeActivePreview() {
+    GreenhouseAdminTheme {
+        ClientStatusBadge(status = ClientStatus.ACTIVE)
+    }
+}
+
+@Preview
+@Composable
+private fun ClientStatusBadgePendingPreview() {
+    GreenhouseAdminTheme {
+        ClientStatusBadge(status = ClientStatus.PENDING)
+    }
+}
+
+@Preview
+@Composable
+private fun ClientStatusBadgeInactivePreview() {
+    GreenhouseAdminTheme {
+        ClientStatusBadge(status = ClientStatus.INACTIVE)
     }
 }

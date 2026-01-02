@@ -3,8 +3,10 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
+import com.apptolast.greenhouse.admin.data.model.User
 import com.apptolast.greenhouse.admin.domain.repository.ClientsRepository
 import com.apptolast.greenhouse.admin.domain.repository.DashboardRepository
+import com.apptolast.greenhouse.admin.domain.repository.UsersRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +19,8 @@ import kotlinx.coroutines.launch
 class ClientDetailViewModel(
     private val clientId: String,
     private val clientsRepository: ClientsRepository,
-    private val dashboardRepository: DashboardRepository
+    private val dashboardRepository: DashboardRepository,
+    private val usersRepository: UsersRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ClientDetailUiState())
@@ -76,6 +79,16 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnTopBarSearchQueryChanged -> updateTopBarSearchQuery(event.query)
             is ClientDetailEvent.OnAlertIconClicked -> handleAlertClick()
             is ClientDetailEvent.OnNavigationHandled -> resetNavigationFlag()
+
+            // Users events
+            is ClientDetailEvent.LoadUsers -> loadUsers()
+            is ClientDetailEvent.OnAddUserClicked -> showUserFormDialog(UserFormMode.Create)
+            is ClientDetailEvent.OnEditUserClicked -> showUserFormDialog(UserFormMode.Edit(event.user))
+            is ClientDetailEvent.OnDeleteUserClicked -> showDeleteUserConfirmation(event.user)
+            is ClientDetailEvent.OnConfirmDeleteUser -> confirmDeleteUser()
+            is ClientDetailEvent.OnCancelDeleteUser -> cancelDeleteUser()
+            is ClientDetailEvent.OnDismissUserFormDialog -> dismissUserFormDialog()
+            is ClientDetailEvent.OnSubmitUserForm -> submitUserForm(event.name, event.email, event.phone)
         }
     }
 
@@ -106,6 +119,10 @@ class ClientDetailViewModel(
 
     private fun selectTab(tab: ClientDetailTab) {
         _uiState.update { it.copy(selectedTab = tab) }
+        // Load users when USERS tab is selected and not already loaded
+        if (tab == ClientDetailTab.USERS && _uiState.value.users.isEmpty() && !_uiState.value.isLoadingUsers) {
+            loadUsers()
+        }
     }
 
     private fun showEditDialog() {
@@ -237,5 +254,148 @@ class ClientDetailViewModel(
 
     private fun handleAlertClick() {
         // Handle alert click - could navigate to alerts screen
+    }
+
+    // === Users Tab Methods ===
+
+    private fun loadUsers() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingUsers = true, usersError = null) }
+
+            usersRepository.getUsersByClientId(clientId)
+                .onSuccess { users ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingUsers = false,
+                            users = users
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingUsers = false,
+                            usersError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showUserFormDialog(mode: UserFormMode) {
+        _uiState.update {
+            it.copy(
+                showUserFormDialog = true,
+                userFormMode = mode,
+                submitUserError = null
+            )
+        }
+    }
+
+    private fun dismissUserFormDialog() {
+        _uiState.update {
+            it.copy(
+                showUserFormDialog = false,
+                isSubmittingUser = false,
+                submitUserError = null
+            )
+        }
+    }
+
+    private fun submitUserForm(name: String, email: String, phone: String) {
+        val mode = _uiState.value.userFormMode
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingUser = true, submitUserError = null) }
+
+            val result = when (mode) {
+                is UserFormMode.Create -> {
+                    val newUser = User(
+                        id = "",
+                        name = name.trim(),
+                        email = email.trim(),
+                        phone = phone.trim(),
+                        clientId = clientId
+                    )
+                    usersRepository.createUser(newUser)
+                }
+
+                is UserFormMode.Edit -> {
+                    val updatedUser = mode.user.copy(
+                        name = name.trim(),
+                        email = email.trim(),
+                        phone = phone.trim()
+                    )
+                    usersRepository.updateUser(updatedUser)
+                }
+            }
+
+            result
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            showUserFormDialog = false,
+                            isSubmittingUser = false
+                        )
+                    }
+                    loadUsers() // Reload users from repository to ensure sync
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingUser = false,
+                            submitUserError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showDeleteUserConfirmation(user: User) {
+        _uiState.update {
+            it.copy(
+                showDeleteUserConfirmation = true,
+                userToDelete = user,
+                deleteUserError = null
+            )
+        }
+    }
+
+    private fun cancelDeleteUser() {
+        _uiState.update {
+            it.copy(
+                showDeleteUserConfirmation = false,
+                userToDelete = null,
+                deleteUserError = null
+            )
+        }
+    }
+
+    private fun confirmDeleteUser() {
+        val user = _uiState.value.userToDelete ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingUser = true, deleteUserError = null) }
+
+            usersRepository.deleteUser(user.id)
+                .onSuccess {
+                    _uiState.update { state ->
+                        state.copy(
+                            users = state.users.filter { it.id != user.id },
+                            showDeleteUserConfirmation = false,
+                            userToDelete = null,
+                            isDeletingUser = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isDeletingUser = false,
+                            deleteUserError = error.message
+                        )
+                    }
+                }
+        }
     }
 }

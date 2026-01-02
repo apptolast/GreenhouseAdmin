@@ -106,6 +106,7 @@
 
     <!-- Client Detail Tabs -->
     <string name="tab_general">General</string>
+    <string name="tab_users">Usuarios</string>
     <string name="tab_greenhouses">Invernaderos</string>
     <string name="tab_sectors">Sectores</string>
     <string name="tab_devices">Dispositivos</string>
@@ -121,4 +122,22 @@
     <!-- Coming Soon -->
     <string name="coming_soon">Próximamente</string>
     <string name="coming_soon_message">Esta funcionalidad está en desarrollo</string>
+
+    <!-- Users Tab -->
+    <string name="users_title">Usuarios del Cliente</string>
+    <string name="users_subtitle">Gestiona los usuarios con acceso a este cliente.</string>
+    <string name="new_user">Nuevo Usuario</string>
+    <string name="users_empty">No se encontraron usuarios para este cliente.</string>
+
+    <!-- User Dialogs -->
+    <string name="dialog_new_user_title">Añadir Nuevo Usuario</string>
+    <string name="dialog_new_user_subtitle">Añade un usuario a este cliente</string>
+    <string name="button_create_user">Añadir Usuario</string>
+    <string name="dialog_edit_user_title">Editar Usuario</string>
+    <string name="dialog_edit_user_subtitle">Actualizar información del usuario</string>
+
+    <!-- User Errors -->
+    <string name="error_create_user_failed">Error al crear el usuario. Por favor, inténtalo de nuevo.</string>
+    <string name="error_update_user_failed">Error al actualizar el usuario. Por favor, inténtalo de nuevo.</string>
+    <string name="error_delete_user_failed">Error al eliminar el usuario. Por favor, inténtalo de nuevo.</string>
 </resources>

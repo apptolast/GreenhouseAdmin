@@ -2,8 +2,10 @@ package com.apptolast.greenhouse.admin.di
 
 import com.apptolast.greenhouse.admin.data.repository.ClientsRepositoryImpl
 import com.apptolast.greenhouse.admin.data.repository.DashboardRepositoryImpl
+import com.apptolast.greenhouse.admin.data.repository.UsersRepositoryImpl
 import com.apptolast.greenhouse.admin.domain.repository.ClientsRepository
 import com.apptolast.greenhouse.admin.domain.repository.DashboardRepository
+import com.apptolast.greenhouse.admin.domain.repository.UsersRepository
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -22,4 +24,5 @@ val dataModule = module {
     // Repositories
     singleOf(::DashboardRepositoryImpl) bind DashboardRepository::class
     singleOf(::ClientsRepositoryImpl) bind ClientsRepository::class
+    singleOf(::UsersRepositoryImpl) bind UsersRepository::class
 }

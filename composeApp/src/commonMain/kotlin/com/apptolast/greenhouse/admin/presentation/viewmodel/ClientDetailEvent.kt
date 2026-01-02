@@ -1,6 +1,7 @@
 package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
+import com.apptolast.greenhouse.admin.data.model.User
 
 /**
  * Sealed interface representing all possible user intents/events on the Client Detail screen.
@@ -79,4 +80,50 @@ sealed interface ClientDetailEvent {
      * Navigation completed, reset navigation flag.
      */
     data object OnNavigationHandled : ClientDetailEvent
+
+    // === Users Tab Events ===
+
+    /**
+     * Load users for the current client.
+     */
+    data object LoadUsers : ClientDetailEvent
+
+    /**
+     * User clicked "Add User" button.
+     */
+    data object OnAddUserClicked : ClientDetailEvent
+
+    /**
+     * User clicked edit on a specific user.
+     */
+    data class OnEditUserClicked(val user: User) : ClientDetailEvent
+
+    /**
+     * User clicked delete on a specific user.
+     */
+    data class OnDeleteUserClicked(val user: User) : ClientDetailEvent
+
+    /**
+     * User confirmed delete action for a user.
+     */
+    data object OnConfirmDeleteUser : ClientDetailEvent
+
+    /**
+     * User cancelled delete action for a user.
+     */
+    data object OnCancelDeleteUser : ClientDetailEvent
+
+    /**
+     * User dismissed the user form dialog.
+     */
+    data object OnDismissUserFormDialog : ClientDetailEvent
+
+    /**
+     * User submitted the user form (create or edit).
+     */
+    data class OnSubmitUserForm(
+        val name: String,
+        val email: String,
+        val phone: String
+    ) : ClientDetailEvent
 }

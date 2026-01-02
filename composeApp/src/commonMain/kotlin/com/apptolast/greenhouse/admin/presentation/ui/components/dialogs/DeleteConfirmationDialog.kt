@@ -1,4 +1,4 @@
-package com.apptolast.greenhouse.admin.presentation.ui.components
+package com.apptolast.greenhouse.admin.presentation.ui.components.dialogs
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,12 +27,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.button_cancel
 import greenhouseadmin.composeapp.generated.resources.button_delete
 import greenhouseadmin.composeapp.generated.resources.dialog_delete_message
 import greenhouseadmin.composeapp.generated.resources.dialog_delete_title
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Confirmation dialog for deleting a client.
@@ -40,10 +42,10 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun DeleteConfirmationDialog(
     clientName: String,
-    isDeleting: Boolean,
-    error: String?,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
+    isDeleting: Boolean = false,
+    error: String? = null,
+    onConfirm: () -> Unit = {},
+    onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Dialog(onDismissRequest = { if (!isDeleting) onDismiss() }) {
@@ -128,5 +130,26 @@ fun DeleteConfirmationDialog(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun DeleteConfirmationDialogPreview() {
+    GreenhouseAdminTheme {
+        DeleteConfirmationDialog(
+            clientName = "Elena Rodriguez"
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun DeleteConfirmationDialogDeletingPreview() {
+    GreenhouseAdminTheme {
+        DeleteConfirmationDialog(
+            clientName = "Elena Rodriguez",
+            isDeleting = true
+        )
     }
 }
