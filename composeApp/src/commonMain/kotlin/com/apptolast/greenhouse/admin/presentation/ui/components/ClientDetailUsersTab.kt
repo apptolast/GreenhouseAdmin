@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.new_user
@@ -38,6 +39,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 /**
  * Users tab content for the client detail screen.
  * Displays a table of users with add/edit/delete functionality.
+ * On compact screens, the add button is hidden (FAB is shown by parent).
  */
 @Composable
 fun ClientDetailUsersTab(
@@ -50,8 +52,10 @@ fun ClientDetailUsersTab(
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val windowInfo = LocalAppWindowInfo.current
+
     Column(modifier = modifier.fillMaxWidth()) {
-        // Header with title and Add button
+        // Header with title and Add button (button hidden on compact - FAB shown by parent)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -72,20 +76,23 @@ fun ClientDetailUsersTab(
                 )
             }
 
-            Button(
-                onClick = onAddUser,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(Res.string.new_user))
+            // Show button only on expanded screens
+            if (!windowInfo.isCompact) {
+                Button(
+                    onClick = onAddUser,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(Res.string.new_user))
+                }
             }
         }
 

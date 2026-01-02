@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -67,16 +65,14 @@ fun UsersTable(
             UsersTableHeader()
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
-            // User rows
-            LazyColumn {
-                items(items = users, key = { it.id }) { user ->
-                    UserTableRow(
-                        user = user,
-                        onEdit = { onEditUser(user) },
-                        onDelete = { onDeleteUser(user) }
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
-                }
+            // User rows - using Column instead of LazyColumn to work inside scrollable parent
+            users.forEach { user ->
+                UserTableRow(
+                    user = user,
+                    onEdit = { onEditUser(user) },
+                    onDelete = { onDeleteUser(user) }
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
         }
     }

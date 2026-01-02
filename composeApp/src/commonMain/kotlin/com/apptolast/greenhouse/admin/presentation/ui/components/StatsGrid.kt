@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.StatCard
 import com.apptolast.greenhouse.admin.data.model.StatCardIcon
 import com.apptolast.greenhouse.admin.data.model.StatCardSubtitleColor
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -25,12 +26,15 @@ fun StatsGrid(
     statCards: List<StatCard>,
     modifier: Modifier = Modifier
 ) {
+    val contentPadding = AdaptiveDimens.contentPadding()
+    val spacing = AdaptiveDimens.verticalSpacing()
+
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 220.dp),
         modifier = modifier,
-        contentPadding = PaddingValues(24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        contentPadding = PaddingValues(contentPadding),
+        horizontalArrangement = Arrangement.spacedBy(spacing),
+        verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
         items(
             items = statCards,

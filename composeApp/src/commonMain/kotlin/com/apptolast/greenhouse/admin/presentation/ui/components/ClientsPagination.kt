@@ -26,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.PaginationInfo
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.pagination_next
@@ -36,6 +38,9 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Pagination controls for client list.
+ * Adapts based on screen size:
+ * - Compact: Simplified layout with just page info and arrows
+ * - Expanded: Full layout with rows per page selector
  */
 @Composable
 fun ClientsPagination(
@@ -44,43 +49,42 @@ fun ClientsPagination(
     onPageSizeChanged: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val windowInfo = LocalAppWindowInfo.current
+    val padding = AdaptiveDimens.contentPadding()
+
     Row(
-        modifier = modifier.padding(16.dp),
+        modifier = modifier.padding(padding),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Rows per page selector
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(Res.string.rows_per_page),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        // Rows per page selector - hidden on compact
+        if (!windowInfo.isCompact) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(Res.string.rows_per_page),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-            Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
-            PageSizeSelector(
-                currentSize = pagination.pageSize,
-                onSizeSelected = onPageSizeChanged
-            )
+                PageSizeSelector(
+                    currentSize = pagination.pageSize,
+                    onSizeSelected = onPageSizeChanged
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
         }
-
-        Spacer(modifier = Modifier.weight(1f))
 
         // Page info and navigation
         Row(
+            modifier = if (windowInfo.isCompact) Modifier.weight(1f) else Modifier,
+            horizontalArrangement = if (windowInfo.isCompact) Arrangement.Center else Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "${pagination.displayRange} of ${pagination.totalItems}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
             IconButton(
                 onClick = { onPageChanged(pagination.currentPage - 1) },
                 enabled = pagination.hasPreviousPage,
@@ -96,6 +100,12 @@ fun ClientsPagination(
                     }
                 )
             }
+
+            Text(
+                text = "${pagination.displayRange} of ${pagination.totalItems}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
             IconButton(
                 onClick = { onPageChanged(pagination.currentPage + 1) },

@@ -3,20 +3,26 @@ package com.apptolast.greenhouse.admin.presentation.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.ClientDetailGeneralTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.ClientDetailHeader
 import com.apptolast.greenhouse.admin.presentation.ui.components.ClientDetailTabBar
@@ -28,7 +34,6 @@ import com.apptolast.greenhouse.admin.presentation.ui.components.DashboardTopBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.DeleteConfirmationDialog
 import com.apptolast.greenhouse.admin.presentation.ui.components.ErrorContent
 import com.apptolast.greenhouse.admin.presentation.ui.components.LoadingContent
-import com.apptolast.greenhouse.admin.presentation.ui.components.SidebarNavigation
 import com.apptolast.greenhouse.admin.presentation.ui.components.UserFormDialog
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailEvent
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailTab
@@ -38,6 +43,7 @@ import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.app_name
 import greenhouseadmin.composeapp.generated.resources.breadcrumb_clients
 import greenhouseadmin.composeapp.generated.resources.error_unknown
+import greenhouseadmin.composeapp.generated.resources.new_user
 import greenhouseadmin.composeapp.generated.resources.tab_alerts
 import greenhouseadmin.composeapp.generated.resources.tab_devices
 import greenhouseadmin.composeapp.generated.resources.tab_greenhouses
@@ -50,11 +56,12 @@ import org.koin.core.parameter.parametersOf
 /**
  * Client Detail screen composable.
  * Follows MVI pattern - receives ViewModel from Koin with clientId parameter.
+ * Navigation is handled by AdaptiveScaffold at the app level.
  */
 @Composable
 fun ClientDetailScreen(
     clientId: String,
-    onNavigate: (String) -> Unit,
+    onNavigateBack: () -> Unit,
     viewModel: ClientDetailViewModel = koinViewModel { parametersOf(clientId) }
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -63,95 +70,74 @@ fun ClientDetailScreen(
     LaunchedEffect(uiState.shouldNavigateBack) {
         if (uiState.shouldNavigateBack) {
             viewModel.onEvent(ClientDetailEvent.OnNavigationHandled)
-            onNavigate("clients")
+            onNavigateBack()
         }
     }
 
     ClientDetailScreenContent(
         uiState = uiState,
         onEvent = viewModel::onEvent,
-        onNavigate = onNavigate
+        onNavigateBack = onNavigateBack
     )
 }
 
 /**
  * Stateless client detail screen content composable.
- * Maintains the same layout as other screens with sidebar and topbar.
  */
 @Composable
 private fun ClientDetailScreenContent(
     uiState: ClientDetailUiState,
     onEvent: (ClientDetailEvent) -> Unit,
-    onNavigate: (String) -> Unit
+    onNavigateBack: () -> Unit
 ) {
     val client = uiState.client
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Sidebar navigation
-        SidebarNavigation(
-            menuItems = uiState.menuItems,
-            selectedItemId = uiState.selectedMenuId,
-            onItemSelected = { itemId ->
-                onEvent(ClientDetailEvent.OnMenuItemSelected(itemId))
-                val route = uiState.menuItems.find { it.id == itemId }?.route
-                if (route != null && route != "clients") {
-                    onNavigate(route)
-                }
-            }
+        // Top bar with breadcrumb
+        val breadcrumb = if (client != null) {
+            "${stringResource(Res.string.breadcrumb_clients)} / ${client.name}"
+        } else {
+            stringResource(Res.string.breadcrumb_clients)
+        }
+
+        DashboardTopBar(
+            title = stringResource(Res.string.app_name),
+            subtitle = breadcrumb,
+            searchQuery = uiState.topBarSearchQuery,
+            alertCount = uiState.alertCount,
+            onSearchQueryChange = { onEvent(ClientDetailEvent.OnTopBarSearchQueryChanged(it)) },
+            onAlertClick = { onEvent(ClientDetailEvent.OnAlertIconClicked) }
         )
 
-        // Main content area
-        Column(
+        // Content area
+        Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxSize()
         ) {
-            // Top bar with breadcrumb
-            val breadcrumb = if (client != null) {
-                "${stringResource(Res.string.breadcrumb_clients)} / ${client.name}"
-            } else {
-                stringResource(Res.string.breadcrumb_clients)
-            }
+            when {
+                uiState.isLoading -> {
+                    LoadingContent()
+                }
 
-            DashboardTopBar(
-                title = stringResource(Res.string.app_name),
-                subtitle = breadcrumb,
-                searchQuery = uiState.topBarSearchQuery,
-                alertCount = uiState.alertCount,
-                onSearchQueryChange = { onEvent(ClientDetailEvent.OnTopBarSearchQueryChanged(it)) },
-                onAlertClick = { onEvent(ClientDetailEvent.OnAlertIconClicked) }
-            )
+                uiState.isError -> {
+                    ErrorContent(
+                        message = uiState.error ?: stringResource(Res.string.error_unknown),
+                        onRetry = { onEvent(ClientDetailEvent.LoadClient) }
+                    )
+                }
 
-            // Content area
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxSize()
-            ) {
-                when {
-                    uiState.isLoading -> {
-                        LoadingContent()
-                    }
-
-                    uiState.isError -> {
-                        ErrorContent(
-                            message = uiState.error ?: stringResource(Res.string.error_unknown),
-                            onRetry = { onEvent(ClientDetailEvent.LoadClient) }
-                        )
-                    }
-
-                    client != null -> {
-                        ClientDetailContent(
-                            uiState = uiState,
-                            client = client,
-                            onEvent = onEvent,
-                            onNavigate = onNavigate
-                        )
-                    }
+                client != null -> {
+                    ClientDetailContent(
+                        uiState = uiState,
+                        client = client,
+                        onEvent = onEvent,
+                        onNavigateBack = onNavigateBack
+                    )
                 }
             }
         }
@@ -223,68 +209,93 @@ private fun ClientDetailContent(
     uiState: ClientDetailUiState,
     client: com.apptolast.greenhouse.admin.data.model.Client,
     onEvent: (ClientDetailEvent) -> Unit,
-    onNavigate: (String) -> Unit
+    onNavigateBack: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        // Header with client info and actions
-        ClientDetailHeader(
-            client = client,
-            onBackClick = { onNavigate("back") },
-            onEditClick = { onEvent(ClientDetailEvent.OnEditClicked) },
-            onDeleteClick = { onEvent(ClientDetailEvent.OnDeleteClicked) }
-        )
+    val contentPadding = AdaptiveDimens.contentPadding()
+    val windowInfo = LocalAppWindowInfo.current
 
-        Spacer(modifier = Modifier.height(24.dp))
+    // Show FAB on compact screens when on Users tab
+    val showFab = windowInfo.isCompact && uiState.selectedTab == ClientDetailTab.USERS
 
-        // Tab bar
-        ClientDetailTabBar(
-            selectedTab = uiState.selectedTab,
-            onTabSelected = { onEvent(ClientDetailEvent.OnTabSelected(it)) }
-        )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            // Header with client info and actions
+            ClientDetailHeader(
+                client = client,
+                onBackClick = onNavigateBack,
+                onEditClick = { onEvent(ClientDetailEvent.OnEditClicked) },
+                onDeleteClick = { onEvent(ClientDetailEvent.OnDeleteClicked) }
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Tab content
-        when (uiState.selectedTab) {
-            ClientDetailTab.GENERAL -> {
-                ClientDetailGeneralTab(client = client)
+            // Tab bar
+            ClientDetailTabBar(
+                selectedTab = uiState.selectedTab,
+                onTabSelected = { onEvent(ClientDetailEvent.OnTabSelected(it)) }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Tab content
+            when (uiState.selectedTab) {
+                ClientDetailTab.GENERAL -> {
+                    ClientDetailGeneralTab(client = client)
+                }
+
+                ClientDetailTab.USERS -> {
+                    ClientDetailUsersTab(
+                        users = uiState.users,
+                        isLoading = uiState.isLoadingUsers,
+                        error = uiState.usersError,
+                        onAddUser = { onEvent(ClientDetailEvent.OnAddUserClicked) },
+                        onEditUser = { user -> onEvent(ClientDetailEvent.OnEditUserClicked(user)) },
+                        onDeleteUser = { user -> onEvent(ClientDetailEvent.OnDeleteUserClicked(user)) },
+                        onRetry = { onEvent(ClientDetailEvent.LoadUsers) }
+                    )
+                }
+
+                ClientDetailTab.GREENHOUSES -> {
+                    ComingSoonContent(tabName = stringResource(Res.string.tab_greenhouses))
+                }
+
+                ClientDetailTab.SECTORS -> {
+                    ComingSoonContent(tabName = stringResource(Res.string.tab_sectors))
+                }
+
+                ClientDetailTab.DEVICES -> {
+                    ComingSoonContent(tabName = stringResource(Res.string.tab_devices))
+                }
+
+                ClientDetailTab.ALERTS -> {
+                    ComingSoonContent(tabName = stringResource(Res.string.tab_alerts))
+                }
+
+                ClientDetailTab.SETTINGS -> {
+                    ComingSoonContent(tabName = stringResource(Res.string.tab_settings))
+                }
             }
+        }
 
-            ClientDetailTab.USERS -> {
-                ClientDetailUsersTab(
-                    users = uiState.users,
-                    isLoading = uiState.isLoadingUsers,
-                    error = uiState.usersError,
-                    onAddUser = { onEvent(ClientDetailEvent.OnAddUserClicked) },
-                    onEditUser = { user -> onEvent(ClientDetailEvent.OnEditUserClicked(user)) },
-                    onDeleteUser = { user -> onEvent(ClientDetailEvent.OnDeleteUserClicked(user)) },
-                    onRetry = { onEvent(ClientDetailEvent.LoadUsers) }
+        // FAB for adding users on compact screens
+        if (showFab) {
+            FloatingActionButton(
+                onClick = { onEvent(ClientDetailEvent.OnAddUserClicked) },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(Res.string.new_user)
                 )
-            }
-
-            ClientDetailTab.GREENHOUSES -> {
-                ComingSoonContent(tabName = stringResource(Res.string.tab_greenhouses))
-            }
-
-            ClientDetailTab.SECTORS -> {
-                ComingSoonContent(tabName = stringResource(Res.string.tab_sectors))
-            }
-
-            ClientDetailTab.DEVICES -> {
-                ComingSoonContent(tabName = stringResource(Res.string.tab_devices))
-            }
-
-            ClientDetailTab.ALERTS -> {
-                ComingSoonContent(tabName = stringResource(Res.string.tab_alerts))
-            }
-
-            ClientDetailTab.SETTINGS -> {
-                ComingSoonContent(tabName = stringResource(Res.string.tab_settings))
             }
         }
     }
