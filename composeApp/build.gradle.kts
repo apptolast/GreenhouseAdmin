@@ -65,6 +65,8 @@ kotlin {
             implementation(libs.androidx.navigation.compose)
             // Serialization (for type-safe navigation routes)
             implementation(libs.kotlinx.serialization.json)
+            // DateTime (multiplatform time)
+            implementation(libs.kotlinx.datetime)
             // Koin
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
