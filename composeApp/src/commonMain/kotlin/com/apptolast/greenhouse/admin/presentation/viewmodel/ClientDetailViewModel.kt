@@ -2,16 +2,32 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.apptolast.greenhouse.admin.data.model.Alert
+import com.apptolast.greenhouse.admin.data.model.AlertSeverity
+import com.apptolast.greenhouse.admin.data.model.AlertStatus
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
+import com.apptolast.greenhouse.admin.data.model.Device
+import com.apptolast.greenhouse.admin.data.model.DeviceStatus
+import com.apptolast.greenhouse.admin.data.model.DeviceType
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
+import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
+import com.apptolast.greenhouse.admin.data.model.Sector
+import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.domain.repository.AlertsRepository
 import com.apptolast.greenhouse.admin.domain.repository.ClientsRepository
 import com.apptolast.greenhouse.admin.domain.repository.DashboardRepository
+import com.apptolast.greenhouse.admin.domain.repository.DevicesRepository
+import com.apptolast.greenhouse.admin.domain.repository.GreenhousesRepository
+import com.apptolast.greenhouse.admin.domain.repository.SectorsRepository
+import com.apptolast.greenhouse.admin.domain.repository.SettingsRepository
 import com.apptolast.greenhouse.admin.domain.repository.UsersRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
 
 /**
  * ViewModel for the Client Detail screen following MVVM+MVI pattern.
@@ -20,7 +36,12 @@ class ClientDetailViewModel(
     private val clientId: String,
     private val clientsRepository: ClientsRepository,
     private val dashboardRepository: DashboardRepository,
-    private val usersRepository: UsersRepository
+    private val usersRepository: UsersRepository,
+    private val greenhousesRepository: GreenhousesRepository,
+    private val sectorsRepository: SectorsRepository,
+    private val devicesRepository: DevicesRepository,
+    private val alertsRepository: AlertsRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ClientDetailUiState())
@@ -89,6 +110,65 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnCancelDeleteUser -> cancelDeleteUser()
             is ClientDetailEvent.OnDismissUserFormDialog -> dismissUserFormDialog()
             is ClientDetailEvent.OnSubmitUserForm -> submitUserForm(event.name, event.email, event.phone)
+
+            // Greenhouses events
+            is ClientDetailEvent.LoadGreenhouses -> loadGreenhouses()
+            is ClientDetailEvent.OnAddGreenhouseClicked -> showGreenhouseFormDialog(GreenhouseFormMode.Create)
+            is ClientDetailEvent.OnEditGreenhouseClicked -> showGreenhouseFormDialog(GreenhouseFormMode.Edit(event.greenhouse))
+            is ClientDetailEvent.OnDeleteGreenhouseClicked -> showDeleteGreenhouseConfirmation(event.greenhouse)
+            is ClientDetailEvent.OnConfirmDeleteGreenhouse -> confirmDeleteGreenhouse()
+            is ClientDetailEvent.OnCancelDeleteGreenhouse -> cancelDeleteGreenhouse()
+            is ClientDetailEvent.OnDismissGreenhouseFormDialog -> dismissGreenhouseFormDialog()
+            is ClientDetailEvent.OnSubmitGreenhouseForm -> submitGreenhouseForm(
+                event.name,
+                event.description,
+                event.status
+            )
+
+            // Sectors events
+            is ClientDetailEvent.LoadSectors -> loadSectors()
+            is ClientDetailEvent.OnAddSectorClicked -> showSectorFormDialog(SectorFormMode.Create)
+            is ClientDetailEvent.OnEditSectorClicked -> showSectorFormDialog(SectorFormMode.Edit(event.sector))
+            is ClientDetailEvent.OnDeleteSectorClicked -> showDeleteSectorConfirmation(event.sector)
+            is ClientDetailEvent.OnConfirmDeleteSector -> confirmDeleteSector()
+            is ClientDetailEvent.OnCancelDeleteSector -> cancelDeleteSector()
+            is ClientDetailEvent.OnDismissSectorFormDialog -> dismissSectorFormDialog()
+            is ClientDetailEvent.OnSubmitSectorForm -> submitSectorForm(
+                event.name,
+                event.greenhouseId,
+                event.greenhouseName,
+                event.area
+            )
+
+            // Devices events
+            is ClientDetailEvent.LoadDevices -> loadDevices()
+            is ClientDetailEvent.OnAddDeviceClicked -> showDeviceFormDialog(DeviceFormMode.Create)
+            is ClientDetailEvent.OnEditDeviceClicked -> showDeviceFormDialog(DeviceFormMode.Edit(event.device))
+            is ClientDetailEvent.OnDeleteDeviceClicked -> showDeleteDeviceConfirmation(event.device)
+            is ClientDetailEvent.OnConfirmDeleteDevice -> confirmDeleteDevice()
+            is ClientDetailEvent.OnCancelDeleteDevice -> cancelDeleteDevice()
+            is ClientDetailEvent.OnDismissDeviceFormDialog -> dismissDeviceFormDialog()
+            is ClientDetailEvent.OnSubmitDeviceForm -> submitDeviceForm(event.name, event.type, event.status)
+
+            // Alerts events
+            is ClientDetailEvent.LoadAlerts -> loadAlerts()
+            is ClientDetailEvent.OnAddAlertClicked -> showAlertFormDialog(AlertFormMode.Create)
+            is ClientDetailEvent.OnEditAlertClicked -> showAlertFormDialog(AlertFormMode.Edit(event.alert))
+            is ClientDetailEvent.OnDeleteAlertClicked -> showDeleteAlertConfirmation(event.alert)
+            is ClientDetailEvent.OnConfirmDeleteAlert -> confirmDeleteAlert()
+            is ClientDetailEvent.OnCancelDeleteAlert -> cancelDeleteAlert()
+            is ClientDetailEvent.OnDismissAlertFormDialog -> dismissAlertFormDialog()
+            is ClientDetailEvent.OnSubmitAlertForm -> submitAlertForm(event.title, event.severity, event.status)
+
+            // Settings events
+            is ClientDetailEvent.LoadSettings -> loadSettings()
+            is ClientDetailEvent.OnAddSettingClicked -> showSettingFormDialog(SettingFormMode.Create)
+            is ClientDetailEvent.OnEditSettingClicked -> showSettingFormDialog(SettingFormMode.Edit(event.setting))
+            is ClientDetailEvent.OnDeleteSettingClicked -> showDeleteSettingConfirmation(event.setting)
+            is ClientDetailEvent.OnConfirmDeleteSetting -> confirmDeleteSetting()
+            is ClientDetailEvent.OnCancelDeleteSetting -> cancelDeleteSetting()
+            is ClientDetailEvent.OnDismissSettingFormDialog -> dismissSettingFormDialog()
+            is ClientDetailEvent.OnSubmitSettingForm -> submitSettingForm(event.key, event.value, event.description)
         }
     }
 
@@ -119,9 +199,44 @@ class ClientDetailViewModel(
 
     private fun selectTab(tab: ClientDetailTab) {
         _uiState.update { it.copy(selectedTab = tab) }
-        // Load users when USERS tab is selected and not already loaded
-        if (tab == ClientDetailTab.USERS && _uiState.value.users.isEmpty() && !_uiState.value.isLoadingUsers) {
-            loadUsers()
+        // Load data when tab is selected and not already loaded
+        when (tab) {
+            ClientDetailTab.USERS -> {
+                if (_uiState.value.users.isEmpty() && !_uiState.value.isLoadingUsers) {
+                    loadUsers()
+                }
+            }
+
+            ClientDetailTab.GREENHOUSES -> {
+                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
+                    loadGreenhouses()
+                }
+            }
+
+            ClientDetailTab.SECTORS -> {
+                if (_uiState.value.sectors.isEmpty() && !_uiState.value.isLoadingSectors) {
+                    loadSectors()
+                }
+                // Also load greenhouses for the dropdown if not already loaded
+                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
+                    loadGreenhouses()
+                }
+            }
+
+            ClientDetailTab.DEVICES -> {
+                if (_uiState.value.devices.isEmpty() && !_uiState.value.isLoadingDevices) {
+                    loadDevices()
+                }
+            }
+
+            ClientDetailTab.ALERTS -> {
+                if (_uiState.value.alerts.isEmpty() && !_uiState.value.isLoadingAlerts) {
+                    loadAlerts()
+                }
+            }
+
+            else -> { /* No lazy loading for other tabs yet */
+            }
         }
     }
 
@@ -393,6 +508,726 @@ class ClientDetailViewModel(
                         it.copy(
                             isDeletingUser = false,
                             deleteUserError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    // === Greenhouses Tab Methods ===
+
+    private fun loadGreenhouses() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingGreenhouses = true, greenhousesError = null) }
+
+            greenhousesRepository.getGreenhousesByClientId(clientId)
+                .onSuccess { greenhouses ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingGreenhouses = false,
+                            greenhouses = greenhouses
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingGreenhouses = false,
+                            greenhousesError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showGreenhouseFormDialog(mode: GreenhouseFormMode) {
+        _uiState.update {
+            it.copy(
+                showGreenhouseFormDialog = true,
+                greenhouseFormMode = mode,
+                submitGreenhouseError = null
+            )
+        }
+    }
+
+    private fun dismissGreenhouseFormDialog() {
+        _uiState.update {
+            it.copy(
+                showGreenhouseFormDialog = false,
+                isSubmittingGreenhouse = false,
+                submitGreenhouseError = null
+            )
+        }
+    }
+
+    private fun submitGreenhouseForm(name: String, description: String, status: GreenhouseStatus) {
+        val mode = _uiState.value.greenhouseFormMode
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingGreenhouse = true, submitGreenhouseError = null) }
+
+            val result = when (mode) {
+                is GreenhouseFormMode.Create -> {
+                    val newGreenhouse = Greenhouse(
+                        id = "",
+                        name = name.trim(),
+                        description = description.trim(),
+                        status = status,
+                        clientId = clientId
+                    )
+                    greenhousesRepository.createGreenhouse(newGreenhouse)
+                }
+
+                is GreenhouseFormMode.Edit -> {
+                    val updatedGreenhouse = mode.greenhouse.copy(
+                        name = name.trim(),
+                        description = description.trim(),
+                        status = status
+                    )
+                    greenhousesRepository.updateGreenhouse(updatedGreenhouse)
+                }
+            }
+
+            result
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            showGreenhouseFormDialog = false,
+                            isSubmittingGreenhouse = false
+                        )
+                    }
+                    loadGreenhouses() // Reload greenhouses from repository to ensure sync
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingGreenhouse = false,
+                            submitGreenhouseError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showDeleteGreenhouseConfirmation(greenhouse: Greenhouse) {
+        _uiState.update {
+            it.copy(
+                showDeleteGreenhouseConfirmation = true,
+                greenhouseToDelete = greenhouse,
+                deleteGreenhouseError = null
+            )
+        }
+    }
+
+    private fun cancelDeleteGreenhouse() {
+        _uiState.update {
+            it.copy(
+                showDeleteGreenhouseConfirmation = false,
+                greenhouseToDelete = null,
+                deleteGreenhouseError = null
+            )
+        }
+    }
+
+    private fun confirmDeleteGreenhouse() {
+        val greenhouse = _uiState.value.greenhouseToDelete ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingGreenhouse = true, deleteGreenhouseError = null) }
+
+            greenhousesRepository.deleteGreenhouse(greenhouse.id)
+                .onSuccess {
+                    _uiState.update { state ->
+                        state.copy(
+                            greenhouses = state.greenhouses.filter { it.id != greenhouse.id },
+                            showDeleteGreenhouseConfirmation = false,
+                            greenhouseToDelete = null,
+                            isDeletingGreenhouse = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isDeletingGreenhouse = false,
+                            deleteGreenhouseError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    // === Sectors Tab Methods ===
+
+    private fun loadSectors() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingSectors = true, sectorsError = null) }
+
+            sectorsRepository.getSectorsByClientId(clientId)
+                .onSuccess { sectors ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingSectors = false,
+                            sectors = sectors
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingSectors = false,
+                            sectorsError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showSectorFormDialog(mode: SectorFormMode) {
+        _uiState.update {
+            it.copy(
+                showSectorFormDialog = true,
+                sectorFormMode = mode,
+                submitSectorError = null
+            )
+        }
+    }
+
+    private fun dismissSectorFormDialog() {
+        _uiState.update {
+            it.copy(
+                showSectorFormDialog = false,
+                isSubmittingSector = false,
+                submitSectorError = null
+            )
+        }
+    }
+
+    private fun submitSectorForm(name: String, greenhouseId: String, greenhouseName: String, area: Double) {
+        val mode = _uiState.value.sectorFormMode
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingSector = true, submitSectorError = null) }
+
+            val result = when (mode) {
+                is SectorFormMode.Create -> {
+                    val newSector = Sector(
+                        id = "",
+                        name = name.trim(),
+                        greenhouseId = greenhouseId,
+                        greenhouseName = greenhouseName,
+                        area = area,
+                        clientId = clientId
+                    )
+                    sectorsRepository.createSector(newSector)
+                }
+
+                is SectorFormMode.Edit -> {
+                    val updatedSector = mode.sector.copy(
+                        name = name.trim(),
+                        greenhouseId = greenhouseId,
+                        greenhouseName = greenhouseName,
+                        area = area
+                    )
+                    sectorsRepository.updateSector(updatedSector)
+                }
+            }
+
+            result
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            showSectorFormDialog = false,
+                            isSubmittingSector = false
+                        )
+                    }
+                    loadSectors() // Reload sectors from repository to ensure sync
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingSector = false,
+                            submitSectorError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showDeleteSectorConfirmation(sector: Sector) {
+        _uiState.update {
+            it.copy(
+                showDeleteSectorConfirmation = true,
+                sectorToDelete = sector,
+                deleteSectorError = null
+            )
+        }
+    }
+
+    private fun cancelDeleteSector() {
+        _uiState.update {
+            it.copy(
+                showDeleteSectorConfirmation = false,
+                sectorToDelete = null,
+                deleteSectorError = null
+            )
+        }
+    }
+
+    private fun confirmDeleteSector() {
+        val sector = _uiState.value.sectorToDelete ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingSector = true, deleteSectorError = null) }
+
+            sectorsRepository.deleteSector(sector.id)
+                .onSuccess {
+                    _uiState.update { state ->
+                        state.copy(
+                            sectors = state.sectors.filter { it.id != sector.id },
+                            showDeleteSectorConfirmation = false,
+                            sectorToDelete = null,
+                            isDeletingSector = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isDeletingSector = false,
+                            deleteSectorError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    // === Devices Tab Methods ===
+
+    private fun loadDevices() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingDevices = true, devicesError = null) }
+
+            devicesRepository.getDevicesByClientId(clientId)
+                .onSuccess { devices ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingDevices = false,
+                            devices = devices
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingDevices = false,
+                            devicesError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showDeviceFormDialog(mode: DeviceFormMode) {
+        _uiState.update {
+            it.copy(
+                showDeviceFormDialog = true,
+                deviceFormMode = mode,
+                submitDeviceError = null
+            )
+        }
+    }
+
+    private fun dismissDeviceFormDialog() {
+        _uiState.update {
+            it.copy(
+                showDeviceFormDialog = false,
+                isSubmittingDevice = false,
+                submitDeviceError = null
+            )
+        }
+    }
+
+    private fun submitDeviceForm(name: String, type: DeviceType, status: DeviceStatus) {
+        val mode = _uiState.value.deviceFormMode
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingDevice = true, submitDeviceError = null) }
+
+            val result = when (mode) {
+                is DeviceFormMode.Create -> {
+                    val newDevice = Device(
+                        id = "",
+                        name = name.trim(),
+                        type = type,
+                        status = status,
+                        clientId = clientId
+                    )
+                    devicesRepository.createDevice(newDevice)
+                }
+
+                is DeviceFormMode.Edit -> {
+                    val updatedDevice = mode.device.copy(
+                        name = name.trim(),
+                        type = type,
+                        status = status
+                    )
+                    devicesRepository.updateDevice(updatedDevice)
+                }
+            }
+
+            result
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            showDeviceFormDialog = false,
+                            isSubmittingDevice = false
+                        )
+                    }
+                    loadDevices() // Reload devices from repository to ensure sync
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingDevice = false,
+                            submitDeviceError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showDeleteDeviceConfirmation(device: Device) {
+        _uiState.update {
+            it.copy(
+                showDeleteDeviceConfirmation = true,
+                deviceToDelete = device,
+                deleteDeviceError = null
+            )
+        }
+    }
+
+    private fun cancelDeleteDevice() {
+        _uiState.update {
+            it.copy(
+                showDeleteDeviceConfirmation = false,
+                deviceToDelete = null,
+                deleteDeviceError = null
+            )
+        }
+    }
+
+    private fun confirmDeleteDevice() {
+        val device = _uiState.value.deviceToDelete ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingDevice = true, deleteDeviceError = null) }
+
+            devicesRepository.deleteDevice(device.id)
+                .onSuccess {
+                    _uiState.update { state ->
+                        state.copy(
+                            devices = state.devices.filter { it.id != device.id },
+                            showDeleteDeviceConfirmation = false,
+                            deviceToDelete = null,
+                            isDeletingDevice = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isDeletingDevice = false,
+                            deleteDeviceError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    // === Alerts Tab Methods ===
+
+    private fun loadAlerts() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingAlerts = true, alertsError = null) }
+
+            alertsRepository.getAlertsByClientId(clientId)
+                .onSuccess { alerts ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingAlerts = false,
+                            alerts = alerts
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingAlerts = false,
+                            alertsError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showAlertFormDialog(mode: AlertFormMode) {
+        _uiState.update {
+            it.copy(
+                showAlertFormDialog = true,
+                alertFormMode = mode,
+                submitAlertError = null
+            )
+        }
+    }
+
+    private fun dismissAlertFormDialog() {
+        _uiState.update {
+            it.copy(
+                showAlertFormDialog = false,
+                isSubmittingAlert = false,
+                submitAlertError = null
+            )
+        }
+    }
+
+    private fun submitAlertForm(title: String, severity: AlertSeverity, status: AlertStatus) {
+        val mode = _uiState.value.alertFormMode
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingAlert = true, submitAlertError = null) }
+
+            val result = when (mode) {
+                is AlertFormMode.Create -> {
+                    val newAlert = Alert(
+                        id = "",
+                        title = title.trim(),
+                        severity = severity,
+                        status = status,
+                        createdAt = Clock.System.now().toEpochMilliseconds(),
+                        clientId = clientId
+                    )
+                    alertsRepository.createAlert(newAlert)
+                }
+
+                is AlertFormMode.Edit -> {
+                    val updatedAlert = mode.alert.copy(
+                        title = title.trim(),
+                        severity = severity,
+                        status = status
+                    )
+                    alertsRepository.updateAlert(updatedAlert)
+                }
+            }
+
+            result
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            showAlertFormDialog = false,
+                            isSubmittingAlert = false
+                        )
+                    }
+                    loadAlerts() // Reload alerts from repository to ensure sync
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingAlert = false,
+                            submitAlertError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showDeleteAlertConfirmation(alert: Alert) {
+        _uiState.update {
+            it.copy(
+                showDeleteAlertConfirmation = true,
+                alertToDelete = alert,
+                deleteAlertError = null
+            )
+        }
+    }
+
+    private fun cancelDeleteAlert() {
+        _uiState.update {
+            it.copy(
+                showDeleteAlertConfirmation = false,
+                alertToDelete = null,
+                deleteAlertError = null
+            )
+        }
+    }
+
+    private fun confirmDeleteAlert() {
+        val alert = _uiState.value.alertToDelete ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingAlert = true, deleteAlertError = null) }
+
+            alertsRepository.deleteAlert(alert.id)
+                .onSuccess {
+                    _uiState.update { state ->
+                        state.copy(
+                            alerts = state.alerts.filter { it.id != alert.id },
+                            showDeleteAlertConfirmation = false,
+                            alertToDelete = null,
+                            isDeletingAlert = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isDeletingAlert = false,
+                            deleteAlertError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    // =============================================
+    // Settings Tab Handlers
+    // =============================================
+
+    private fun loadSettings() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingSettings = true, settingsError = null) }
+
+            settingsRepository.getSettingsByClientId(clientId)
+                .onSuccess { settings ->
+                    _uiState.update {
+                        it.copy(
+                            settings = settings,
+                            isLoadingSettings = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingSettings = false,
+                            settingsError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showSettingFormDialog(mode: SettingFormMode) {
+        _uiState.update {
+            it.copy(
+                showSettingFormDialog = true,
+                settingFormMode = mode,
+                isSubmittingSetting = false,
+                submitSettingError = null
+            )
+        }
+    }
+
+    private fun dismissSettingFormDialog() {
+        _uiState.update {
+            it.copy(
+                showSettingFormDialog = false,
+                isSubmittingSetting = false,
+                submitSettingError = null
+            )
+        }
+    }
+
+    private fun submitSettingForm(key: String, value: String, description: String) {
+        val mode = _uiState.value.settingFormMode
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingSetting = true, submitSettingError = null) }
+
+            val result = when (mode) {
+                is SettingFormMode.Create -> {
+                    val newSetting = Setting(
+                        id = "",
+                        key = key.trim(),
+                        value = value.trim(),
+                        description = description.trim(),
+                        clientId = clientId
+                    )
+                    settingsRepository.createSetting(newSetting)
+                }
+
+                is SettingFormMode.Edit -> {
+                    val updatedSetting = mode.setting.copy(
+                        value = value.trim(),
+                        description = description.trim()
+                    )
+                    settingsRepository.updateSetting(updatedSetting)
+                }
+            }
+
+            result
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            showSettingFormDialog = false,
+                            isSubmittingSetting = false
+                        )
+                    }
+                    loadSettings() // Reload settings from repository to ensure sync
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingSetting = false,
+                            submitSettingError = error.message
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun showDeleteSettingConfirmation(setting: Setting) {
+        _uiState.update {
+            it.copy(
+                showDeleteSettingConfirmation = true,
+                settingToDelete = setting,
+                deleteSettingError = null
+            )
+        }
+    }
+
+    private fun cancelDeleteSetting() {
+        _uiState.update {
+            it.copy(
+                showDeleteSettingConfirmation = false,
+                settingToDelete = null,
+                deleteSettingError = null
+            )
+        }
+    }
+
+    private fun confirmDeleteSetting() {
+        val setting = _uiState.value.settingToDelete ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingSetting = true, deleteSettingError = null) }
+
+            settingsRepository.deleteSetting(setting.id)
+                .onSuccess {
+                    _uiState.update { state ->
+                        state.copy(
+                            settings = state.settings.filter { it.id != setting.id },
+                            showDeleteSettingConfirmation = false,
+                            settingToDelete = null,
+                            isDeletingSetting = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isDeletingSetting = false,
+                            deleteSettingError = error.message
                         )
                     }
                 }

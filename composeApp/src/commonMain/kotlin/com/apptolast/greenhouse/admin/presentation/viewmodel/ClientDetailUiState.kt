@@ -1,7 +1,12 @@
 package com.apptolast.greenhouse.admin.presentation.viewmodel
 
+import com.apptolast.greenhouse.admin.data.model.Alert
 import com.apptolast.greenhouse.admin.data.model.Client
+import com.apptolast.greenhouse.admin.data.model.Device
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.MenuItem
+import com.apptolast.greenhouse.admin.data.model.Sector
+import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.User
 
 /**
@@ -53,7 +58,92 @@ data class ClientDetailUiState(
     val showDeleteUserConfirmation: Boolean = false,
     val userToDelete: User? = null,
     val isDeletingUser: Boolean = false,
-    val deleteUserError: String? = null
+    val deleteUserError: String? = null,
+
+    // Greenhouses tab state
+    val greenhouses: List<Greenhouse> = emptyList(),
+    val isLoadingGreenhouses: Boolean = false,
+    val greenhousesError: String? = null,
+
+    // Greenhouse form dialog states
+    val showGreenhouseFormDialog: Boolean = false,
+    val greenhouseFormMode: GreenhouseFormMode = GreenhouseFormMode.Create,
+    val isSubmittingGreenhouse: Boolean = false,
+    val submitGreenhouseError: String? = null,
+
+    // Greenhouse delete dialog states
+    val showDeleteGreenhouseConfirmation: Boolean = false,
+    val greenhouseToDelete: Greenhouse? = null,
+    val isDeletingGreenhouse: Boolean = false,
+    val deleteGreenhouseError: String? = null,
+
+    // Sectors tab state
+    val sectors: List<Sector> = emptyList(),
+    val isLoadingSectors: Boolean = false,
+    val sectorsError: String? = null,
+
+    // Sector form dialog states
+    val showSectorFormDialog: Boolean = false,
+    val sectorFormMode: SectorFormMode = SectorFormMode.Create,
+    val isSubmittingSector: Boolean = false,
+    val submitSectorError: String? = null,
+
+    // Sector delete dialog states
+    val showDeleteSectorConfirmation: Boolean = false,
+    val sectorToDelete: Sector? = null,
+    val isDeletingSector: Boolean = false,
+    val deleteSectorError: String? = null,
+
+    // Devices tab state
+    val devices: List<Device> = emptyList(),
+    val isLoadingDevices: Boolean = false,
+    val devicesError: String? = null,
+
+    // Device form dialog states
+    val showDeviceFormDialog: Boolean = false,
+    val deviceFormMode: DeviceFormMode = DeviceFormMode.Create,
+    val isSubmittingDevice: Boolean = false,
+    val submitDeviceError: String? = null,
+
+    // Device delete dialog states
+    val showDeleteDeviceConfirmation: Boolean = false,
+    val deviceToDelete: Device? = null,
+    val isDeletingDevice: Boolean = false,
+    val deleteDeviceError: String? = null,
+
+    // Alerts tab state
+    val alerts: List<Alert> = emptyList(),
+    val isLoadingAlerts: Boolean = false,
+    val alertsError: String? = null,
+
+    // Alert form dialog states
+    val showAlertFormDialog: Boolean = false,
+    val alertFormMode: AlertFormMode = AlertFormMode.Create,
+    val isSubmittingAlert: Boolean = false,
+    val submitAlertError: String? = null,
+
+    // Alert delete dialog states
+    val showDeleteAlertConfirmation: Boolean = false,
+    val alertToDelete: Alert? = null,
+    val isDeletingAlert: Boolean = false,
+    val deleteAlertError: String? = null,
+
+    // Settings tab state
+    val settings: List<Setting> = emptyList(),
+    val isLoadingSettings: Boolean = false,
+    val settingsError: String? = null,
+
+    // Setting form dialog states
+    val showSettingFormDialog: Boolean = false,
+    val settingFormMode: SettingFormMode = SettingFormMode.Create,
+    val isSubmittingSetting: Boolean = false,
+    val submitSettingError: String? = null,
+
+    // Setting delete dialog states
+    val showDeleteSettingConfirmation: Boolean = false,
+    val settingToDelete: Setting? = null,
+    val isDeletingSetting: Boolean = false,
+    val deleteSettingError: String? = null
 ) {
     /**
      * Returns true if in error state with no content.
@@ -87,4 +177,44 @@ enum class ClientDetailTab {
 sealed interface UserFormMode {
     data object Create : UserFormMode
     data class Edit(val user: User) : UserFormMode
+}
+
+/**
+ * Mode for the greenhouse form dialog.
+ */
+sealed interface GreenhouseFormMode {
+    data object Create : GreenhouseFormMode
+    data class Edit(val greenhouse: Greenhouse) : GreenhouseFormMode
+}
+
+/**
+ * Mode for the sector form dialog.
+ */
+sealed interface SectorFormMode {
+    data object Create : SectorFormMode
+    data class Edit(val sector: Sector) : SectorFormMode
+}
+
+/**
+ * Mode for the device form dialog.
+ */
+sealed interface DeviceFormMode {
+    data object Create : DeviceFormMode
+    data class Edit(val device: Device) : DeviceFormMode
+}
+
+/**
+ * Mode for the alert form dialog.
+ */
+sealed interface AlertFormMode {
+    data object Create : AlertFormMode
+    data class Edit(val alert: Alert) : AlertFormMode
+}
+
+/**
+ * Mode for the setting form dialog.
+ */
+sealed interface SettingFormMode {
+    data object Create : SettingFormMode
+    data class Edit(val setting: Setting) : SettingFormMode
 }

@@ -140,4 +140,174 @@
     <string name="error_create_user_failed">Failed to create user. Please try again.</string>
     <string name="error_update_user_failed">Failed to update user. Please try again.</string>
     <string name="error_delete_user_failed">Failed to delete user. Please try again.</string>
+
+    <!-- Greenhouses Tab -->
+    <string name="greenhouses_title">Client Greenhouses</string>
+    <string name="greenhouses_subtitle">Manage greenhouses for this client.</string>
+    <string name="new_greenhouse">New Greenhouse</string>
+    <string name="greenhouses_empty">No greenhouses found for this client.</string>
+
+    <!-- Greenhouse Table Headers -->
+    <string name="header_description">DESCRIPTION</string>
+
+    <!-- Greenhouse Dialogs -->
+    <string name="dialog_new_greenhouse_title">Add New Greenhouse</string>
+    <string name="dialog_new_greenhouse_subtitle">Add a greenhouse to this client</string>
+    <string name="button_create_greenhouse">Add Greenhouse</string>
+    <string name="dialog_edit_greenhouse_title">Edit Greenhouse</string>
+    <string name="dialog_edit_greenhouse_subtitle">Update greenhouse information</string>
+    <string name="field_description">Description</string>
+    <string name="field_status">Status</string>
+
+    <!-- Greenhouse Errors -->
+    <string name="error_create_greenhouse_failed">Failed to create greenhouse. Please try again.</string>
+    <string name="error_update_greenhouse_failed">Failed to update greenhouse. Please try again.</string>
+    <string name="error_delete_greenhouse_failed">Failed to delete greenhouse. Please try again.</string>
+
+    <!-- Delete Greenhouse Confirmation -->
+    <string name="dialog_delete_greenhouse_title">Delete Greenhouse?</string>
+    <string name="dialog_delete_greenhouse_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
+
+    <!-- Sectors Tab -->
+    <string name="sectors_title">Client Sectors</string>
+    <string name="sectors_subtitle">Manage sectors for this client.</string>
+    <string name="new_sector">New Sector</string>
+    <string name="sectors_empty">No sectors found for this client.</string>
+
+    <!-- Sector Table Headers -->
+    <string name="header_greenhouse">GREENHOUSE</string>
+    <string name="header_area">AREA</string>
+
+    <!-- Sector Dialogs -->
+    <string name="dialog_new_sector_title">Add New Sector</string>
+    <string name="dialog_new_sector_subtitle">Add a sector to this client</string>
+    <string name="button_create_sector">Add Sector</string>
+    <string name="dialog_edit_sector_title">Edit Sector</string>
+    <string name="dialog_edit_sector_subtitle">Update sector information</string>
+    <string name="field_greenhouse">Greenhouse</string>
+    <string name="field_area">Area (m²)</string>
+
+    <!-- Sector Validation Errors -->
+    <string name="error_greenhouse_required">Please select a greenhouse</string>
+    <string name="error_area_required">Area is required</string>
+    <string name="error_area_invalid">Please enter a valid number</string>
+    <string name="error_area_positive">Area must be greater than 0</string>
+
+    <!-- Sector Errors -->
+    <string name="error_create_sector_failed">Failed to create sector. Please try again.</string>
+    <string name="error_update_sector_failed">Failed to update sector. Please try again.</string>
+    <string name="error_delete_sector_failed">Failed to delete sector. Please try again.</string>
+
+    <!-- Delete Sector Confirmation -->
+    <string name="dialog_delete_sector_title">Delete Sector?</string>
+    <string name="dialog_delete_sector_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
+
+    <!-- Devices Tab -->
+    <string name="devices_title">Client Devices</string>
+    <string name="devices_subtitle">Manage connected devices for this client.</string>
+    <string name="new_device">New Device</string>
+    <string name="devices_empty">No devices found for this client.</string>
+
+    <!-- Device Table Headers -->
+    <string name="header_type">TYPE</string>
+
+    <!-- Device Type and Status -->
+    <string name="device_type_sensor">Sensor</string>
+    <string name="device_type_actuator">Actuator</string>
+    <string name="device_status_online">Online</string>
+    <string name="device_status_offline">Offline</string>
+    <string name="field_type">Type</string>
+
+    <!-- Device Dialogs -->
+    <string name="dialog_new_device_title">Add New Device</string>
+    <string name="dialog_new_device_subtitle">Add a device to this client</string>
+    <string name="button_create_device">Add Device</string>
+    <string name="dialog_edit_device_title">Edit Device</string>
+    <string name="dialog_edit_device_subtitle">Update device information</string>
+
+    <!-- Device Errors -->
+    <string name="error_create_device_failed">Failed to create device. Please try again.</string>
+    <string name="error_update_device_failed">Failed to update device. Please try again.</string>
+    <string name="error_delete_device_failed">Failed to delete device. Please try again.</string>
+
+    <!-- Delete Device Confirmation -->
+    <string name="dialog_delete_device_title">Delete Device?</string>
+    <string name="dialog_delete_device_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
+
+    <!-- Alerts Tab -->
+    <string name="alerts_title">Client Alerts</string>
+    <string name="alerts_subtitle">Manage system alerts for this client.</string>
+    <string name="new_alert">New Alert</string>
+    <string name="alerts_empty">No alerts found for this client.</string>
+
+    <!-- Alert Table Headers -->
+    <string name="header_title">TITLE</string>
+    <string name="header_severity">SEVERITY</string>
+    <string name="header_date">DATE</string>
+
+    <!-- Alert Severity -->
+    <string name="severity_low">Low</string>
+    <string name="severity_medium">Medium</string>
+    <string name="severity_high">High</string>
+    <string name="severity_critical">Critical</string>
+
+    <!-- Alert Status -->
+    <string name="alert_status_unread">Unread</string>
+    <string name="alert_status_read">Read</string>
+    <string name="alert_status_dismissed">Dismissed</string>
+
+    <!-- Alert Dialogs -->
+    <string name="dialog_new_alert_title">Add New Alert</string>
+    <string name="dialog_new_alert_subtitle">Add an alert to this client</string>
+    <string name="button_create_alert">Add Alert</string>
+    <string name="dialog_edit_alert_title">Edit Alert</string>
+    <string name="dialog_edit_alert_subtitle">Update alert information</string>
+    <string name="field_title">Title</string>
+    <string name="field_severity">Severity</string>
+
+    <!-- Alert Validation Errors -->
+    <string name="error_title_required">Title is required</string>
+
+    <!-- Alert Errors -->
+    <string name="error_create_alert_failed">Failed to create alert. Please try again.</string>
+    <string name="error_update_alert_failed">Failed to update alert. Please try again.</string>
+    <string name="error_delete_alert_failed">Failed to delete alert. Please try again.</string>
+
+    <!-- Delete Alert Confirmation -->
+    <string name="dialog_delete_alert_title">Delete Alert?</string>
+    <string name="dialog_delete_alert_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
+
+    <!-- Settings Tab -->
+    <string name="settings_title">Client Settings</string>
+    <string name="settings_subtitle">Manage configuration settings for this client.</string>
+    <string name="new_setting">New Setting</string>
+    <string name="settings_empty">No settings found for this client.</string>
+
+    <!-- Setting Table Headers -->
+    <string name="header_key">KEY</string>
+    <string name="header_value">VALUE</string>
+
+    <!-- Setting Dialogs -->
+    <string name="dialog_new_setting_title">Add New Setting</string>
+    <string name="dialog_new_setting_subtitle">Add a configuration setting to this client</string>
+    <string name="button_create_setting">Add Setting</string>
+    <string name="dialog_edit_setting_title">Edit Setting</string>
+    <string name="dialog_edit_setting_subtitle">Update setting information</string>
+    <string name="field_key">Key</string>
+    <string name="field_value">Value</string>
+
+    <!-- Setting Validation Errors -->
+    <string name="error_key_required">Key is required</string>
+    <string name="error_key_min_length">Key must be at least 2 characters</string>
+    <string name="error_key_invalid">Key must start with a letter and contain only letters, numbers, and underscores</string>
+    <string name="error_value_required">Value is required</string>
+
+    <!-- Setting Errors -->
+    <string name="error_create_setting_failed">Failed to create setting. Please try again.</string>
+    <string name="error_update_setting_failed">Failed to update setting. Please try again.</string>
+    <string name="error_delete_setting_failed">Failed to delete setting. Please try again.</string>
+
+    <!-- Delete Setting Confirmation -->
+    <string name="dialog_delete_setting_title">Delete Setting?</string>
+    <string name="dialog_delete_setting_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
 </resources>

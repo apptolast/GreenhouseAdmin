@@ -140,4 +140,174 @@
     <string name="error_create_user_failed">Error al crear el usuario. Por favor, inténtalo de nuevo.</string>
     <string name="error_update_user_failed">Error al actualizar el usuario. Por favor, inténtalo de nuevo.</string>
     <string name="error_delete_user_failed">Error al eliminar el usuario. Por favor, inténtalo de nuevo.</string>
+
+    <!-- Greenhouses Tab -->
+    <string name="greenhouses_title">Invernaderos del Cliente</string>
+    <string name="greenhouses_subtitle">Gestiona los invernaderos de este cliente.</string>
+    <string name="new_greenhouse">Nuevo Invernadero</string>
+    <string name="greenhouses_empty">No se encontraron invernaderos para este cliente.</string>
+
+    <!-- Greenhouse Table Headers -->
+    <string name="header_description">DESCRIPCIÓN</string>
+
+    <!-- Greenhouse Dialogs -->
+    <string name="dialog_new_greenhouse_title">Añadir Nuevo Invernadero</string>
+    <string name="dialog_new_greenhouse_subtitle">Añade un invernadero a este cliente</string>
+    <string name="button_create_greenhouse">Añadir Invernadero</string>
+    <string name="dialog_edit_greenhouse_title">Editar Invernadero</string>
+    <string name="dialog_edit_greenhouse_subtitle">Actualizar información del invernadero</string>
+    <string name="field_description">Descripción</string>
+    <string name="field_status">Estado</string>
+
+    <!-- Greenhouse Errors -->
+    <string name="error_create_greenhouse_failed">Error al crear el invernadero. Por favor, inténtalo de nuevo.</string>
+    <string name="error_update_greenhouse_failed">Error al actualizar el invernadero. Por favor, inténtalo de nuevo.</string>
+    <string name="error_delete_greenhouse_failed">Error al eliminar el invernadero. Por favor, inténtalo de nuevo.</string>
+
+    <!-- Delete Greenhouse Confirmation -->
+    <string name="dialog_delete_greenhouse_title">¿Eliminar Invernadero?</string>
+    <string name="dialog_delete_greenhouse_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>
+
+    <!-- Sectors Tab -->
+    <string name="sectors_title">Sectores del Cliente</string>
+    <string name="sectors_subtitle">Gestiona los sectores de este cliente.</string>
+    <string name="new_sector">Nuevo Sector</string>
+    <string name="sectors_empty">No se encontraron sectores para este cliente.</string>
+
+    <!-- Sector Table Headers -->
+    <string name="header_greenhouse">INVERNADERO</string>
+    <string name="header_area">ÁREA</string>
+
+    <!-- Sector Dialogs -->
+    <string name="dialog_new_sector_title">Añadir Nuevo Sector</string>
+    <string name="dialog_new_sector_subtitle">Añade un sector a este cliente</string>
+    <string name="button_create_sector">Añadir Sector</string>
+    <string name="dialog_edit_sector_title">Editar Sector</string>
+    <string name="dialog_edit_sector_subtitle">Actualizar información del sector</string>
+    <string name="field_greenhouse">Invernadero</string>
+    <string name="field_area">Área (m²)</string>
+
+    <!-- Sector Validation Errors -->
+    <string name="error_greenhouse_required">Por favor, selecciona un invernadero</string>
+    <string name="error_area_required">El área es obligatoria</string>
+    <string name="error_area_invalid">Por favor, introduce un número válido</string>
+    <string name="error_area_positive">El área debe ser mayor que 0</string>
+
+    <!-- Sector Errors -->
+    <string name="error_create_sector_failed">Error al crear el sector. Por favor, inténtalo de nuevo.</string>
+    <string name="error_update_sector_failed">Error al actualizar el sector. Por favor, inténtalo de nuevo.</string>
+    <string name="error_delete_sector_failed">Error al eliminar el sector. Por favor, inténtalo de nuevo.</string>
+
+    <!-- Delete Sector Confirmation -->
+    <string name="dialog_delete_sector_title">¿Eliminar Sector?</string>
+    <string name="dialog_delete_sector_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>
+
+    <!-- Devices Tab -->
+    <string name="devices_title">Dispositivos del Cliente</string>
+    <string name="devices_subtitle">Gestiona los dispositivos conectados de este cliente.</string>
+    <string name="new_device">Nuevo Dispositivo</string>
+    <string name="devices_empty">No se encontraron dispositivos para este cliente.</string>
+
+    <!-- Device Table Headers -->
+    <string name="header_type">TIPO</string>
+
+    <!-- Device Type and Status -->
+    <string name="device_type_sensor">Sensor</string>
+    <string name="device_type_actuator">Actuador</string>
+    <string name="device_status_online">En línea</string>
+    <string name="device_status_offline">Desconectado</string>
+    <string name="field_type">Tipo</string>
+
+    <!-- Device Dialogs -->
+    <string name="dialog_new_device_title">Añadir Nuevo Dispositivo</string>
+    <string name="dialog_new_device_subtitle">Añade un dispositivo a este cliente</string>
+    <string name="button_create_device">Añadir Dispositivo</string>
+    <string name="dialog_edit_device_title">Editar Dispositivo</string>
+    <string name="dialog_edit_device_subtitle">Actualizar información del dispositivo</string>
+
+    <!-- Device Errors -->
+    <string name="error_create_device_failed">Error al crear el dispositivo. Por favor, inténtalo de nuevo.</string>
+    <string name="error_update_device_failed">Error al actualizar el dispositivo. Por favor, inténtalo de nuevo.</string>
+    <string name="error_delete_device_failed">Error al eliminar el dispositivo. Por favor, inténtalo de nuevo.</string>
+
+    <!-- Delete Device Confirmation -->
+    <string name="dialog_delete_device_title">¿Eliminar Dispositivo?</string>
+    <string name="dialog_delete_device_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>
+
+    <!-- Alerts Tab -->
+    <string name="alerts_title">Alertas del Cliente</string>
+    <string name="alerts_subtitle">Gestiona las alertas del sistema para este cliente.</string>
+    <string name="new_alert">Nueva Alerta</string>
+    <string name="alerts_empty">No se encontraron alertas para este cliente.</string>
+
+    <!-- Alert Table Headers -->
+    <string name="header_title">TÍTULO</string>
+    <string name="header_severity">SEVERIDAD</string>
+    <string name="header_date">FECHA</string>
+
+    <!-- Alert Severity -->
+    <string name="severity_low">Baja</string>
+    <string name="severity_medium">Media</string>
+    <string name="severity_high">Alta</string>
+    <string name="severity_critical">Crítica</string>
+
+    <!-- Alert Status -->
+    <string name="alert_status_unread">No leída</string>
+    <string name="alert_status_read">Leída</string>
+    <string name="alert_status_dismissed">Descartada</string>
+
+    <!-- Alert Dialogs -->
+    <string name="dialog_new_alert_title">Añadir Nueva Alerta</string>
+    <string name="dialog_new_alert_subtitle">Añade una alerta a este cliente</string>
+    <string name="button_create_alert">Añadir Alerta</string>
+    <string name="dialog_edit_alert_title">Editar Alerta</string>
+    <string name="dialog_edit_alert_subtitle">Actualizar información de la alerta</string>
+    <string name="field_title">Título</string>
+    <string name="field_severity">Severidad</string>
+
+    <!-- Alert Validation Errors -->
+    <string name="error_title_required">El título es obligatorio</string>
+
+    <!-- Alert Errors -->
+    <string name="error_create_alert_failed">Error al crear la alerta. Por favor, inténtalo de nuevo.</string>
+    <string name="error_update_alert_failed">Error al actualizar la alerta. Por favor, inténtalo de nuevo.</string>
+    <string name="error_delete_alert_failed">Error al eliminar la alerta. Por favor, inténtalo de nuevo.</string>
+
+    <!-- Delete Alert Confirmation -->
+    <string name="dialog_delete_alert_title">¿Eliminar Alerta?</string>
+    <string name="dialog_delete_alert_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>
+
+    <!-- Settings Tab -->
+    <string name="settings_title">Ajustes del Cliente</string>
+    <string name="settings_subtitle">Gestiona los ajustes de configuración de este cliente.</string>
+    <string name="new_setting">Nuevo Ajuste</string>
+    <string name="settings_empty">No se encontraron ajustes para este cliente.</string>
+
+    <!-- Setting Table Headers -->
+    <string name="header_key">CLAVE</string>
+    <string name="header_value">VALOR</string>
+
+    <!-- Setting Dialogs -->
+    <string name="dialog_new_setting_title">Añadir Nuevo Ajuste</string>
+    <string name="dialog_new_setting_subtitle">Añade un ajuste de configuración a este cliente</string>
+    <string name="button_create_setting">Añadir Ajuste</string>
+    <string name="dialog_edit_setting_title">Editar Ajuste</string>
+    <string name="dialog_edit_setting_subtitle">Actualizar información del ajuste</string>
+    <string name="field_key">Clave</string>
+    <string name="field_value">Valor</string>
+
+    <!-- Setting Validation Errors -->
+    <string name="error_key_required">La clave es obligatoria</string>
+    <string name="error_key_min_length">La clave debe tener al menos 2 caracteres</string>
+    <string name="error_key_invalid">La clave debe empezar con una letra y contener solo letras, números y guiones bajos</string>
+    <string name="error_value_required">El valor es obligatorio</string>
+
+    <!-- Setting Errors -->
+    <string name="error_create_setting_failed">Error al crear el ajuste. Por favor, inténtalo de nuevo.</string>
+    <string name="error_update_setting_failed">Error al actualizar el ajuste. Por favor, inténtalo de nuevo.</string>
+    <string name="error_delete_setting_failed">Error al eliminar el ajuste. Por favor, inténtalo de nuevo.</string>
+
+    <!-- Delete Setting Confirmation -->
+    <string name="dialog_delete_setting_title">¿Eliminar Ajuste?</string>
+    <string name="dialog_delete_setting_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>
 </resources>
