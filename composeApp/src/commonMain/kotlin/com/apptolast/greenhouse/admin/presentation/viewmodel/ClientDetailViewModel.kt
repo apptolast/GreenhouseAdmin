@@ -6,6 +6,7 @@ import com.apptolast.greenhouse.admin.data.model.Alert
 import com.apptolast.greenhouse.admin.data.model.AlertSeverity
 import com.apptolast.greenhouse.admin.data.model.AlertStatus
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
+import com.apptolast.greenhouse.admin.data.model.toIsActive
 import com.apptolast.greenhouse.admin.data.model.Device
 import com.apptolast.greenhouse.admin.data.model.DeviceStatus
 import com.apptolast.greenhouse.admin.data.model.DeviceType
@@ -92,7 +93,7 @@ class ClientDetailViewModel(
                 phone = event.phone,
                 province = event.province,
                 country = event.country,
-                location = event.location,
+                address = event.address,
                 status = event.status
             )
 
@@ -265,7 +266,7 @@ class ClientDetailViewModel(
         phone: String,
         province: String,
         country: String,
-        location: String,
+        address: String,
         status: ClientStatus
     ) {
         val existingClient = _uiState.value.client ?: return
@@ -279,7 +280,8 @@ class ClientDetailViewModel(
                 phone = phone.trim(),
                 province = province,
                 country = country,
-                location = location.trim(),
+                address = address.trim(),
+                isActive = status.toIsActive(),
                 status = status
             )
 

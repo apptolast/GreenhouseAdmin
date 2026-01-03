@@ -2,6 +2,7 @@ package com.apptolast.greenhouse.admin.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -13,6 +14,7 @@ import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveScaffold
 import com.apptolast.greenhouse.admin.presentation.ui.screens.ClientDetailScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.ClientsScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.DashboardScreen
+import com.apptolast.greenhouse.admin.presentation.ui.screens.LoginScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.SettingsScreen
 
 /**
@@ -48,6 +50,9 @@ fun AppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // Check if we're on the login screen (or null which means we're starting)
+    val isLoginScreen = currentRoute == null || currentRoute.contains("LoginRoute")
+
     // Determine selected menu item based on current route
     val selectedItemId = when {
         currentRoute?.contains("DashboardRoute") == true -> "dashboard"
@@ -57,57 +62,78 @@ fun AppNavigation() {
         else -> "dashboard"
     }
 
-    AdaptiveScaffold(
-        menuItems = menuItems,
-        selectedItemId = selectedItemId,
-        onItemSelected = { itemId ->
-            when (itemId) {
-                "dashboard" -> navController.navigate(DashboardRoute) {
-                    popUpTo(DashboardRoute) { inclusive = true }
-                }
+    if (isLoginScreen) {
+        // Login screen without scaffold
+        AppNavHost(navController = navController)
+    } else {
+        // Main app with scaffold
+        AdaptiveScaffold(
+            menuItems = menuItems,
+            selectedItemId = selectedItemId,
+            onItemSelected = { itemId ->
+                when (itemId) {
+                    "dashboard" -> navController.navigate(DashboardRoute) {
+                        popUpTo(DashboardRoute) { inclusive = true }
+                    }
 
-                "clients" -> navController.navigate(ClientsRoute) {
-                    popUpTo(DashboardRoute) { inclusive = false }
-                }
+                    "clients" -> navController.navigate(ClientsRoute) {
+                        popUpTo(DashboardRoute) { inclusive = false }
+                    }
 
-                "settings" -> navController.navigate(SettingsRoute) {
-                    popUpTo(DashboardRoute) { inclusive = false }
+                    "settings" -> navController.navigate(SettingsRoute) {
+                        popUpTo(DashboardRoute) { inclusive = false }
+                    }
                 }
             }
-        }
-    ) {
-        NavHost(
-            navController = navController,
-            startDestination = DashboardRoute
         ) {
-            composable<DashboardRoute> {
-                DashboardScreen()
-            }
+            AppNavHost(navController = navController)
+        }
+    }
+}
 
-            composable<ClientsRoute> {
-                ClientsScreen(
-                    onNavigate = { route ->
-                        when {
-                            route.startsWith("client_detail/") -> {
-                                val clientId = route.removePrefix("client_detail/")
-                                navController.navigate(ClientDetailRoute(clientId))
-                            }
+@Composable
+private fun AppNavHost(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = LoginRoute
+    ) {
+        composable<LoginRoute> {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(DashboardRoute) {
+                        popUpTo(LoginRoute) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable<DashboardRoute> {
+            DashboardScreen()
+        }
+
+        composable<ClientsRoute> {
+            ClientsScreen(
+                onNavigate = { route ->
+                    when {
+                        route.startsWith("client_detail/") -> {
+                            val clientId = route.removePrefix("client_detail/")
+                            navController.navigate(ClientDetailRoute(clientId))
                         }
                     }
-                )
-            }
+                }
+            )
+        }
 
-            composable<ClientDetailRoute> { backStackEntry ->
-                val route = backStackEntry.toRoute<ClientDetailRoute>()
-                ClientDetailScreen(
-                    clientId = route.clientId,
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
+        composable<ClientDetailRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<ClientDetailRoute>()
+            ClientDetailScreen(
+                clientId = route.clientId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
 
-            composable<SettingsRoute> {
-                SettingsScreen()
-            }
+        composable<SettingsRoute> {
+            SettingsScreen()
         }
     }
 }

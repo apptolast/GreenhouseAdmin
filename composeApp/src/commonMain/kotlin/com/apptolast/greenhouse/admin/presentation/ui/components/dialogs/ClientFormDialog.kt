@@ -51,9 +51,9 @@ import greenhouseadmin.composeapp.generated.resources.error_email_invalid
 import greenhouseadmin.composeapp.generated.resources.error_name_min_length
 import greenhouseadmin.composeapp.generated.resources.error_phone_required
 import greenhouseadmin.composeapp.generated.resources.error_province_required
+import greenhouseadmin.composeapp.generated.resources.label_address
 import greenhouseadmin.composeapp.generated.resources.label_country
 import greenhouseadmin.composeapp.generated.resources.label_email
-import greenhouseadmin.composeapp.generated.resources.label_location
 import greenhouseadmin.composeapp.generated.resources.label_name
 import greenhouseadmin.composeapp.generated.resources.label_phone
 import greenhouseadmin.composeapp.generated.resources.label_province
@@ -78,8 +78,6 @@ sealed interface ClientFormMode {
 @Composable
 fun ClientFormDialog(
     mode: ClientFormMode,
-    provinces: List<String>,
-    countries: List<String>,
     isSubmitting: Boolean = false,
     error: String? = null,
     onSubmit: (
@@ -89,7 +87,7 @@ fun ClientFormDialog(
         phone: String,
         province: String,
         country: String,
-        location: String,
+        address: String,
         status: ClientStatus
     ) -> Unit = { _, _, _, _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
@@ -104,7 +102,7 @@ fun ClientFormDialog(
                 phone = mode.client.phone,
                 province = mode.client.province,
                 country = mode.client.country,
-                location = mode.client.location,
+                address = mode.client.address,
                 status = mode.client.status
             )
         }
@@ -227,9 +225,8 @@ fun ClientFormDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    FormDropdown(
+                    FormTextField(
                         value = formData.province,
-                        options = provinces,
                         onValueChange = {
                             formData = formData.copy(province = it)
                             if (hasAttemptedSubmit) {
@@ -241,9 +238,8 @@ fun ClientFormDialog(
                         enabled = !isSubmitting,
                         modifier = Modifier.weight(1f)
                     )
-                    FormDropdown(
+                    FormTextField(
                         value = formData.country,
-                        options = countries,
                         onValueChange = {
                             formData = formData.copy(country = it)
                             if (hasAttemptedSubmit) {
@@ -260,9 +256,9 @@ fun ClientFormDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 FormTextField(
-                    value = formData.location,
-                    onValueChange = { formData = formData.copy(location = it) },
-                    label = stringResource(Res.string.label_location),
+                    value = formData.address,
+                    onValueChange = { formData = formData.copy(address = it) },
+                    label = stringResource(Res.string.label_address),
                     error = null,
                     enabled = !isSubmitting
                 )
@@ -315,7 +311,7 @@ fun ClientFormDialog(
                                     formData.phone,
                                     formData.province,
                                     formData.country,
-                                    formData.location,
+                                    formData.address,
                                     formData.status
                                 )
                             }
@@ -518,18 +514,13 @@ private fun StatusDropdown(
 }
 
 private object ClientFormDialogPreviewData {
-    val provinces = listOf("Almeria", "Murcia", "Valencia", "Granada")
-    val countries = listOf("Spain", "Portugal", "France")
     val sampleClient = Client(
         id = "1",
         name = "Elena Rodriguez",
         email = "elena@freshveg.com",
         phone = "+34 612 345 678",
         province = "Almeria",
-        country = "Spain",
-        location = "Calle Mayor 123",
-        createdAt = 1735689600000L,
-        updatedAt = 1735689600000L,
+        country = "España",
         status = ClientStatus.ACTIVE
     )
 }
@@ -539,9 +530,7 @@ private object ClientFormDialogPreviewData {
 private fun ClientFormDialogCreatePreview() {
     GreenhouseAdminTheme {
         ClientFormDialog(
-            mode = ClientFormMode.Create,
-            provinces = ClientFormDialogPreviewData.provinces,
-            countries = ClientFormDialogPreviewData.countries
+            mode = ClientFormMode.Create
         )
     }
 }
@@ -551,9 +540,7 @@ private fun ClientFormDialogCreatePreview() {
 private fun ClientFormDialogEditPreview() {
     GreenhouseAdminTheme {
         ClientFormDialog(
-            mode = ClientFormMode.Edit(ClientFormDialogPreviewData.sampleClient),
-            provinces = ClientFormDialogPreviewData.provinces,
-            countries = ClientFormDialogPreviewData.countries
+            mode = ClientFormMode.Edit(ClientFormDialogPreviewData.sampleClient)
         )
     }
 }

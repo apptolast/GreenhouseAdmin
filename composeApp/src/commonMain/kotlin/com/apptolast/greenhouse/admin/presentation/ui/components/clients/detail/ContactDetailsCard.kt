@@ -112,13 +112,11 @@ fun ContactDetailsCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = client.location,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = client.fullLocation,
+                text = if (client.address.isNotBlank()) {
+                    "${client.address}\n${client.fullLocation}"
+                } else {
+                    client.fullLocation
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -134,9 +132,6 @@ private object ContactDetailsCardPreviewData {
         phone = "+34 612 345 678",
         province = "Almeria",
         country = "Spain",
-        location = "Calle Mayor 123",
-        createdAt = 1735689600000L,
-        updatedAt = 1735689600000L,
         status = ClientStatus.ACTIVE
     )
 }

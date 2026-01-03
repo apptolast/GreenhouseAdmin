@@ -78,7 +78,7 @@ sealed interface ClientsEvent {
         val phone: String,
         val province: String,
         val country: String,
-        val location: String,
+        val address: String,
         val status: ClientStatus
     ) : ClientsEvent
 
@@ -97,7 +97,7 @@ sealed interface ClientsEvent {
         val phone: String,
         val province: String,
         val country: String,
-        val location: String,
+        val address: String,
         val status: ClientStatus
     ) : ClientsEvent
 

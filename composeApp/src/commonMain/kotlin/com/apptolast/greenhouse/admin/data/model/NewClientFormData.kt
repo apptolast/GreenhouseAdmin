@@ -10,7 +10,7 @@ data class NewClientFormData(
     val phone: String = "",
     val province: String = "",
     val country: String = "",
-    val location: String = "",
+    val address: String = "",
     val status: ClientStatus = ClientStatus.PENDING
 ) {
     /**

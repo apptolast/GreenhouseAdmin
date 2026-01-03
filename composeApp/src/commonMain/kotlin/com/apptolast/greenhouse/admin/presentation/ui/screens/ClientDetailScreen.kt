@@ -167,11 +167,9 @@ private fun ClientDetailScreenContent(
     if (uiState.showEditClientDialog && client != null) {
         ClientFormDialog(
             mode = ClientFormMode.Edit(client),
-            provinces = listOf(client.province), // Use current value as option
-            countries = listOf(client.country), // Use current value as option
             isSubmitting = uiState.isUpdatingClient,
             error = uiState.updateClientError,
-            onSubmit = { _, name, email, phone, province, country, location, status ->
+            onSubmit = { _, name, email, phone, province, country, address, status ->
                 onEvent(
                     ClientDetailEvent.OnSubmitEdit(
                         name = name,
@@ -179,7 +177,7 @@ private fun ClientDetailScreenContent(
                         phone = phone,
                         province = province,
                         country = country,
-                        location = location,
+                        address = address,
                         status = status
                     )
                 )
@@ -542,9 +540,6 @@ private object ClientDetailScreenPreviewData {
         phone = "+34 612 345 678",
         province = "Almeria",
         country = "Spain",
-        location = "Calle Mayor 123",
-        createdAt = 1735689600000L,
-        updatedAt = 1735689600000L,
         status = ClientStatus.ACTIVE
     )
 

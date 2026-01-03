@@ -1,6 +1,11 @@
 package com.apptolast.greenhouse.admin.di
 
+import com.apptolast.greenhouse.admin.data.local.TokenStorage
+import com.apptolast.greenhouse.admin.data.remote.api.AuthApiService
+import com.apptolast.greenhouse.admin.data.remote.api.TenantsApiService
+import com.apptolast.greenhouse.admin.data.remote.createHttpClient
 import com.apptolast.greenhouse.admin.data.repository.AlertsRepositoryImpl
+import com.apptolast.greenhouse.admin.data.repository.AuthRepositoryImpl
 import com.apptolast.greenhouse.admin.data.repository.ClientsRepositoryImpl
 import com.apptolast.greenhouse.admin.data.repository.DashboardRepositoryImpl
 import com.apptolast.greenhouse.admin.data.repository.DevicesRepositoryImpl
@@ -9,6 +14,7 @@ import com.apptolast.greenhouse.admin.data.repository.SectorsRepositoryImpl
 import com.apptolast.greenhouse.admin.data.repository.SettingsRepositoryImpl
 import com.apptolast.greenhouse.admin.data.repository.UsersRepositoryImpl
 import com.apptolast.greenhouse.admin.domain.repository.AlertsRepository
+import com.apptolast.greenhouse.admin.domain.repository.AuthRepository
 import com.apptolast.greenhouse.admin.domain.repository.ClientsRepository
 import com.apptolast.greenhouse.admin.domain.repository.DashboardRepository
 import com.apptolast.greenhouse.admin.domain.repository.DevicesRepository
@@ -25,13 +31,18 @@ import org.koin.dsl.module
  * Contains HTTP clients, API services, and repository implementations.
  */
 val dataModule = module {
-    // HTTP Client (uncomment when API is ready)
-    // single { createHttpClient() }
+    // Token Storage (platform-specific)
+    singleOf(::TokenStorage)
 
-    // API Services (uncomment when API is ready)
-    // singleOf(::DashboardApiServiceImpl) bind DashboardApiService::class
+    // HTTP Client (uses TokenStorage for auth)
+    single { createHttpClient(get()) }
+
+    // API Services
+    singleOf(::AuthApiService)
+    singleOf(::TenantsApiService)
 
     // Repositories
+    singleOf(::AuthRepositoryImpl) bind AuthRepository::class
     singleOf(::DashboardRepositoryImpl) bind DashboardRepository::class
     singleOf(::ClientsRepositoryImpl) bind ClientsRepository::class
     singleOf(::UsersRepositoryImpl) bind UsersRepository::class

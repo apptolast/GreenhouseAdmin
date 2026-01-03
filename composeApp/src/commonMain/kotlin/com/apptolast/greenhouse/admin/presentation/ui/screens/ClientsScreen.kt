@@ -104,11 +104,9 @@ private fun ClientsScreenContent(
     if (uiState.showNewClientDialog) {
         ClientFormDialog(
             mode = ClientFormMode.Create,
-            provinces = uiState.provinces,
-            countries = uiState.countries,
             isSubmitting = uiState.isCreatingClient,
             error = uiState.createClientError,
-            onSubmit = { _, name, email, phone, province, country, location, status ->
+            onSubmit = { _, name, email, phone, province, country, address, status ->
                 onEvent(
                     ClientsEvent.OnSubmitNewClient(
                         name = name,
@@ -116,7 +114,7 @@ private fun ClientsScreenContent(
                         phone = phone,
                         province = province,
                         country = country,
-                        location = location,
+                        address = address,
                         status = status
                     )
                 )
@@ -129,11 +127,9 @@ private fun ClientsScreenContent(
     if (uiState.showEditClientDialog && uiState.clientToEdit != null) {
         ClientFormDialog(
             mode = ClientFormMode.Edit(uiState.clientToEdit),
-            provinces = uiState.provinces,
-            countries = uiState.countries,
             isSubmitting = uiState.isUpdatingClient,
             error = uiState.updateClientError,
-            onSubmit = { id, name, email, phone, province, country, location, status ->
+            onSubmit = { id, name, email, phone, province, country, address, status ->
                 onEvent(
                     ClientsEvent.OnSubmitEditClient(
                         id = id ?: return@ClientFormDialog,
@@ -142,7 +138,7 @@ private fun ClientsScreenContent(
                         phone = phone,
                         province = province,
                         country = country,
-                        location = location,
+                        address = address,
                         status = status
                     )
                 )
@@ -289,9 +285,6 @@ private object ClientsScreenPreviewData {
             phone = "+34 612 345 678",
             province = "Almeria",
             country = "Spain",
-            location = "Calle Mayor 123",
-            createdAt = 1735689600000L,
-            updatedAt = 1735689600000L,
             status = ClientStatus.ACTIVE
         ),
         Client(
@@ -301,9 +294,6 @@ private object ClientsScreenPreviewData {
             phone = "+34 623 456 789",
             province = "Murcia",
             country = "Spain",
-            location = "Av. Principal 45",
-            createdAt = 1733097600000L,
-            updatedAt = 1735689600000L,
             status = ClientStatus.ACTIVE
         ),
         Client(
@@ -313,9 +303,6 @@ private object ClientsScreenPreviewData {
             phone = "+34 634 567 890",
             province = "Granada",
             country = "Spain",
-            location = "Ctra. Nacional 340",
-            createdAt = 1730419200000L,
-            updatedAt = 1735689600000L,
             status = ClientStatus.PENDING
         )
     )

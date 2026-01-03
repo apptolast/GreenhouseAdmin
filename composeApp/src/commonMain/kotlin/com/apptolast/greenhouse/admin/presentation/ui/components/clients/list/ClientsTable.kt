@@ -237,7 +237,7 @@ private fun ClientTableRow(
 
         // LOCATION column
         Text(
-            text = client.location,
+            text = "",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f),
@@ -382,9 +382,6 @@ private object ClientsTablePreviewData {
             phone = "+34 612 345 678",
             province = "Almeria",
             country = "Spain",
-            location = "Calle Mayor 123",
-            createdAt = 1735689600000L,
-            updatedAt = 1735689600000L,
             status = ClientStatus.ACTIVE
         ),
         Client(
@@ -394,9 +391,6 @@ private object ClientsTablePreviewData {
             phone = "+34 623 456 789",
             province = "Murcia",
             country = "Spain",
-            location = "Av. Libertad 45",
-            createdAt = 1735689600000L,
-            updatedAt = 1735689600000L,
             status = ClientStatus.PENDING
         ),
         Client(
@@ -406,9 +400,6 @@ private object ClientsTablePreviewData {
             phone = "+34 634 567 890",
             province = "Valencia",
             country = "Spain",
-            location = "Plaza Central 8",
-            createdAt = 1735689600000L,
-            updatedAt = 1735689600000L,
             status = ClientStatus.INACTIVE
         )
     )
