@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Build outputs (will be regenerated)
+build/
+composeApp/build/
+*/build/
+.gradle/
+.kotlin/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local configuration
+local.properties
+*.local
+
+# Documentation
+*.md
+!README.md
+
+# iOS (not needed for WASM build)
+iosApp/
+
+# Kotlin JS store (will be regenerated)
+kotlin-js-store/
+
+# Test reports
+**/test-results/
+**/reports/
+
+# Logs
+*.log
+
+# Claude
+.claude/
