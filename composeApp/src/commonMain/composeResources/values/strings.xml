@@ -74,7 +74,10 @@
     <string name="label_phone">Phone Number</string>
     <string name="label_province">Province</string>
     <string name="label_country">Country</string>
-    <string name="label_location">Location/Address</string>
+    <string name="label_location">Location</string>
+    <string name="label_latitude">Latitude</string>
+    <string name="label_longitude">Longitude</string>
+    <string name="label_coordinates">COORDINATES</string>
     <string name="label_status">Initial Status</string>
     <string name="button_create">Create Client</string>
     <string name="button_cancel">Cancel</string>

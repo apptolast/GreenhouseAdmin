@@ -25,7 +25,8 @@ import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.card_contact_details
-import greenhouseadmin.composeapp.generated.resources.label_address
+import greenhouseadmin.composeapp.generated.resources.label_coordinates
+import greenhouseadmin.composeapp.generated.resources.label_location
 import greenhouseadmin.composeapp.generated.resources.label_phone_number
 import greenhouseadmin.composeapp.generated.resources.label_primary_email
 import org.jetbrains.compose.resources.stringResource
@@ -104,22 +105,40 @@ fun ContactDetailsCard(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Address
-            Text(
-                text = stringResource(Res.string.label_address),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = if (client.address.isNotBlank()) {
-                    "${client.address}\n${client.fullLocation}"
-                } else {
-                    client.fullLocation
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            // Location and Coordinates row
+            Row(modifier = Modifier.fillMaxWidth()) {
+                // Location (Province, Country)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(Res.string.label_location),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = client.fullLocation,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                // Coordinates (if available)
+                if (client.location?.isValid == true) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(Res.string.label_coordinates),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = client.location.displayString,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
         }
     }
 }

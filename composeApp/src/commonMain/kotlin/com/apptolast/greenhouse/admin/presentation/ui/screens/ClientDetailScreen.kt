@@ -169,7 +169,7 @@ private fun ClientDetailScreenContent(
             mode = ClientFormMode.Edit(client),
             isSubmitting = uiState.isUpdatingClient,
             error = uiState.updateClientError,
-            onSubmit = { _, name, email, phone, province, country, address, status ->
+            onSubmit = { _, name, email, phone, province, country, location, status ->
                 onEvent(
                     ClientDetailEvent.OnSubmitEdit(
                         name = name,
@@ -177,7 +177,7 @@ private fun ClientDetailScreenContent(
                         phone = phone,
                         province = province,
                         country = country,
-                        address = address,
+                        location = location,
                         status = status
                     )
                 )

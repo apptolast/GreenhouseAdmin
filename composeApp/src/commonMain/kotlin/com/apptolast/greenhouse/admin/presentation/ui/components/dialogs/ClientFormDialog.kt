@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
+import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.NewClientFormData
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
@@ -51,9 +52,10 @@ import greenhouseadmin.composeapp.generated.resources.error_email_invalid
 import greenhouseadmin.composeapp.generated.resources.error_name_min_length
 import greenhouseadmin.composeapp.generated.resources.error_phone_required
 import greenhouseadmin.composeapp.generated.resources.error_province_required
-import greenhouseadmin.composeapp.generated.resources.label_address
 import greenhouseadmin.composeapp.generated.resources.label_country
 import greenhouseadmin.composeapp.generated.resources.label_email
+import greenhouseadmin.composeapp.generated.resources.label_latitude
+import greenhouseadmin.composeapp.generated.resources.label_longitude
 import greenhouseadmin.composeapp.generated.resources.label_name
 import greenhouseadmin.composeapp.generated.resources.label_phone
 import greenhouseadmin.composeapp.generated.resources.label_province
@@ -87,7 +89,7 @@ fun ClientFormDialog(
         phone: String,
         province: String,
         country: String,
-        address: String,
+        location: Location?,
         status: ClientStatus
     ) -> Unit = { _, _, _, _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
@@ -102,7 +104,8 @@ fun ClientFormDialog(
                 phone = mode.client.phone,
                 province = mode.client.province,
                 country = mode.client.country,
-                address = mode.client.address,
+                latitude = mode.client.location?.lat?.toString() ?: "",
+                longitude = mode.client.location?.lon?.toString() ?: "",
                 status = mode.client.status
             )
         }
@@ -255,13 +258,28 @@ fun ClientFormDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                FormTextField(
-                    value = formData.address,
-                    onValueChange = { formData = formData.copy(address = it) },
-                    label = stringResource(Res.string.label_address),
-                    error = null,
-                    enabled = !isSubmitting
-                )
+                // Location (Latitude and Longitude)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    FormTextField(
+                        value = formData.latitude,
+                        onValueChange = { formData = formData.copy(latitude = it) },
+                        label = stringResource(Res.string.label_latitude),
+                        error = null,
+                        enabled = !isSubmitting,
+                        modifier = Modifier.weight(1f)
+                    )
+                    FormTextField(
+                        value = formData.longitude,
+                        onValueChange = { formData = formData.copy(longitude = it) },
+                        label = stringResource(Res.string.label_longitude),
+                        error = null,
+                        enabled = !isSubmitting,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -311,7 +329,7 @@ fun ClientFormDialog(
                                     formData.phone,
                                     formData.province,
                                     formData.country,
-                                    formData.address,
+                                    formData.toLocation(),
                                     formData.status
                                 )
                             }

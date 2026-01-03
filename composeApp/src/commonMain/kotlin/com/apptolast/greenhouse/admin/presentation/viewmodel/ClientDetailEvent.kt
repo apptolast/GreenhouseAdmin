@@ -9,6 +9,7 @@ import com.apptolast.greenhouse.admin.data.model.DeviceStatus
 import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
+import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.User
@@ -67,7 +68,7 @@ sealed interface ClientDetailEvent {
         val phone: String,
         val province: String,
         val country: String,
-        val address: String,
+        val location: Location?,
         val status: ClientStatus
     ) : ClientDetailEvent
 

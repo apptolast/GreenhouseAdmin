@@ -14,7 +14,7 @@ data class TenantResponse(
     val phone: String? = null,
     val province: String? = null,
     val country: String? = null,
-    val address: String? = null,
+    val location: Location? = null,
     val isActive: Boolean? = true,
     val status: String = "Activo"
 )
@@ -30,7 +30,7 @@ data class CreateTenantRequest(
     val phone: String? = null,
     val province: String? = null,
     val country: String? = "España",
-    val address: String? = null,
+    val location: Location? = null,
     val status: String? = "Activo"
 )
 
@@ -46,7 +46,7 @@ data class UpdateTenantRequest(
     val phone: String? = null,
     val province: String? = null,
     val country: String? = null,
-    val address: String? = null,
+    val location: Location? = null,
     val status: String? = null
 )
 
@@ -60,7 +60,7 @@ fun TenantResponse.toClient(): Client = Client(
     phone = phone ?: "",
     province = province ?: "",
     country = country ?: "",
-    address = address ?: "",
+    location = location,
     isActive = isActive,
     status = when (status) {
         "Activo" -> ClientStatus.ACTIVE
@@ -79,7 +79,7 @@ fun Client.toCreateRequest(): CreateTenantRequest = CreateTenantRequest(
     phone = phone.ifBlank { null },
     province = province.ifBlank { null },
     country = country.ifBlank { "España" },
-    address = address.ifBlank { null },
+    location = location,
     status = status.toApiStatus()
 )
 
@@ -92,7 +92,7 @@ fun Client.toUpdateRequest(): UpdateTenantRequest = UpdateTenantRequest(
     phone = phone.ifBlank { null },
     province = province.ifBlank { null },
     country = country.ifBlank { null },
-    address = address.ifBlank { null },
+    location = location,
     status = status.toApiStatus()
 )
 

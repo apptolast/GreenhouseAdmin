@@ -106,7 +106,7 @@ private fun ClientsScreenContent(
             mode = ClientFormMode.Create,
             isSubmitting = uiState.isCreatingClient,
             error = uiState.createClientError,
-            onSubmit = { _, name, email, phone, province, country, address, status ->
+            onSubmit = { _, name, email, phone, province, country, location, status ->
                 onEvent(
                     ClientsEvent.OnSubmitNewClient(
                         name = name,
@@ -114,7 +114,7 @@ private fun ClientsScreenContent(
                         phone = phone,
                         province = province,
                         country = country,
-                        address = address,
+                        location = location,
                         status = status
                     )
                 )
@@ -129,7 +129,7 @@ private fun ClientsScreenContent(
             mode = ClientFormMode.Edit(uiState.clientToEdit),
             isSubmitting = uiState.isUpdatingClient,
             error = uiState.updateClientError,
-            onSubmit = { id, name, email, phone, province, country, address, status ->
+            onSubmit = { id, name, email, phone, province, country, location, status ->
                 onEvent(
                     ClientsEvent.OnSubmitEditClient(
                         id = id ?: return@ClientFormDialog,
@@ -138,7 +138,7 @@ private fun ClientsScreenContent(
                         phone = phone,
                         province = province,
                         country = country,
-                        address = address,
+                        location = location,
                         status = status
                     )
                 )

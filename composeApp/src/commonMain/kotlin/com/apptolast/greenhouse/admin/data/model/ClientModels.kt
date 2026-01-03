@@ -3,6 +3,28 @@ package com.apptolast.greenhouse.admin.data.model
 import kotlinx.serialization.Serializable
 
 /**
+ * Represents geographic coordinates.
+ * Matches the JSONB location field in the database: {lat: number, lon: number}
+ */
+@Serializable
+data class Location(
+    val lat: Double? = null,
+    val lon: Double? = null
+) {
+    /**
+     * Returns true if both coordinates are set.
+     */
+    val isValid: Boolean
+        get() = lat != null && lon != null
+
+    /**
+     * Returns a formatted string of coordinates or empty string if not valid.
+     */
+    val displayString: String
+        get() = if (isValid) "$lat, $lon" else ""
+}
+
+/**
  * Represents a client in the system.
  * Matches the TenantResponse structure from InvernaderosAPI.
  */
@@ -14,7 +36,7 @@ data class Client(
     val phone: String = "",
     val province: String = "",
     val country: String = "",
-    val address: String = "",
+    val location: Location? = null,
     val isActive: Boolean? = true,
     val status: ClientStatus = ClientStatus.ACTIVE
 ) {

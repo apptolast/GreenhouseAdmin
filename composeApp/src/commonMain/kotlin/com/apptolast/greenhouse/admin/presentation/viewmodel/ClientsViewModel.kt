@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.ClientStatusFilter
+import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.PaginationInfo
 import com.apptolast.greenhouse.admin.data.model.toIsActive
 import com.apptolast.greenhouse.admin.domain.repository.ClientsRepository
@@ -73,7 +74,7 @@ class ClientsViewModel(
                 phone = event.phone,
                 province = event.province,
                 country = event.country,
-                address = event.address,
+                location = event.location,
                 status = event.status
             )
 
@@ -85,7 +86,7 @@ class ClientsViewModel(
                 phone = event.phone,
                 province = event.province,
                 country = event.country,
-                address = event.address,
+                location = event.location,
                 status = event.status
             )
             is ClientsEvent.OnPageChanged -> changePage(event.page)
@@ -271,7 +272,7 @@ class ClientsViewModel(
         phone: String,
         province: String,
         country: String,
-        address: String,
+        location: Location?,
         status: ClientStatus
     ) {
         viewModelScope.launch {
@@ -284,7 +285,7 @@ class ClientsViewModel(
                 phone = phone.trim(),
                 province = province,
                 country = country,
-                address = address.trim(),
+                location = location,
                 isActive = status.toIsActive(),
                 status = status
             )
@@ -342,7 +343,7 @@ class ClientsViewModel(
         phone: String,
         province: String,
         country: String,
-        address: String,
+        location: Location?,
         status: ClientStatus
     ) {
         val existingClient = _uiState.value.clientToEdit ?: return
@@ -356,7 +357,7 @@ class ClientsViewModel(
                 phone = phone.trim(),
                 province = province,
                 country = country,
-                address = address.trim(),
+                location = location,
                 isActive = status.toIsActive(),
                 status = status
             )
