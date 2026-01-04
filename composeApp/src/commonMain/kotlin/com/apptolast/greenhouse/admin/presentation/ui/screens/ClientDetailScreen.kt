@@ -27,7 +27,6 @@ import com.apptolast.greenhouse.admin.data.model.Device
 import com.apptolast.greenhouse.admin.data.model.DeviceStatus
 import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
 import com.apptolast.greenhouse.admin.data.model.User
 import com.apptolast.greenhouse.admin.data.model.UserRole
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
@@ -228,8 +227,8 @@ private fun ClientDetailScreenContent(
             mode = uiState.greenhouseFormMode,
             isSubmitting = uiState.isSubmittingGreenhouse,
             error = uiState.submitGreenhouseError,
-            onSubmit = { name, description, status ->
-                onEvent(ClientDetailEvent.OnSubmitGreenhouseForm(name, description, status))
+            onSubmit = { name, location, areaM2, timezone, isActive ->
+                onEvent(ClientDetailEvent.OnSubmitGreenhouseForm(name, location, areaM2, timezone, isActive))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissGreenhouseFormDialog) }
         )
@@ -253,8 +252,8 @@ private fun ClientDetailScreenContent(
             greenhouses = uiState.greenhouses,
             isSubmitting = uiState.isSubmittingSector,
             error = uiState.submitSectorError,
-            onSubmit = { name, greenhouseId, greenhouseName, area ->
-                onEvent(ClientDetailEvent.OnSubmitSectorForm(name, greenhouseId, greenhouseName, area))
+            onSubmit = { greenhouseId, variety ->
+                onEvent(ClientDetailEvent.OnSubmitSectorForm(greenhouseId, variety))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissSectorFormDialog) }
         )
@@ -263,7 +262,7 @@ private fun ClientDetailScreenContent(
     // Sector Delete Confirmation Dialog
     if (uiState.showDeleteSectorConfirmation && uiState.sectorToDelete != null) {
         DeleteConfirmationDialog(
-            clientName = uiState.sectorToDelete.name,
+            clientName = uiState.sectorToDelete.displayName,
             isDeleting = uiState.isDeletingSector,
             error = uiState.deleteSectorError,
             onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteSector) },
@@ -428,6 +427,7 @@ private fun ClientDetailContent(
                 ClientDetailTab.SECTORS -> {
                     ClientDetailSectorsTab(
                         sectors = uiState.sectors,
+                        greenhouses = uiState.greenhouses,
                         isLoading = uiState.isLoadingSectors,
                         error = uiState.sectorsError,
                         onAddSector = { onEvent(ClientDetailEvent.OnAddSectorClicked) },
@@ -567,16 +567,24 @@ private object ClientDetailScreenPreviewData {
         Greenhouse(
             id = "1",
             name = "Invernadero Principal",
-            description = "Produccion de tomates y pimientos",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "12345"
+            tenantId = "12345",
+            location = null,
+            areaM2 = 1500.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
             id = "2",
             name = "Invernadero Norte",
-            description = "Cultivo de lechugas hidroponicas",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "12345"
+            tenantId = "12345",
+            location = null,
+            areaM2 = 800.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         )
     )
 

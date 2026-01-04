@@ -27,4 +27,12 @@ class AuthApiService(private val httpClient: HttpClient) {
             setBody(LoginRequest(username = username, password = password))
         }.body()
     }
+
+    /**
+     * Logout user from the server.
+     * Invalidates the current session on the server side.
+     */
+    suspend fun logout() {
+        httpClient.post("${BuildKonfig.AUTH_BASE_URL}/logout")
+    }
 }

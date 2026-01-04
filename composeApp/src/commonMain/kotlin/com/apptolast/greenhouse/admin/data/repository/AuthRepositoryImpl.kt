@@ -28,7 +28,20 @@ class AuthRepositoryImpl(
         }
     }
 
-    override fun logout() {
+    override suspend fun logout(): Result<Unit> {
+        return runCatching {
+            // Call server logout endpoint (best effort)
+            try {
+                authApiService.logout()
+            } catch (_: Exception) {
+                // Ignore server errors, we'll clear local tokens anyway
+            }
+            // Always clear local tokens
+            tokenStorage.clearTokens()
+        }
+    }
+
+    override fun clearLocalSession() {
         tokenStorage.clearTokens()
     }
 

@@ -33,12 +33,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
+import com.apptolast.greenhouse.admin.data.model.Location
+import com.apptolast.greenhouse.admin.data.model.status
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
-import greenhouseadmin.composeapp.generated.resources.header_description
+import greenhouseadmin.composeapp.generated.resources.header_area
+import greenhouseadmin.composeapp.generated.resources.header_location
 import greenhouseadmin.composeapp.generated.resources.header_name
 import greenhouseadmin.composeapp.generated.resources.header_status
 import greenhouseadmin.composeapp.generated.resources.status_active
@@ -96,10 +99,16 @@ private fun GreenhousesTableHeader(modifier: Modifier = Modifier) {
             modifier = Modifier.weight(1.5f)
         )
         Text(
-            text = stringResource(Res.string.header_description),
+            text = stringResource(Res.string.header_location),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(2f)
+            modifier = Modifier.weight(1.5f)
+        )
+        Text(
+            text = stringResource(Res.string.header_area),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
         )
         Text(
             text = stringResource(Res.string.header_status),
@@ -136,7 +145,7 @@ private fun GreenhouseTableRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             GreenhouseAvatar(
-                initials = greenhouse.initials,
+                initial = greenhouse.initial,
                 modifier = Modifier.size(36.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -150,13 +159,23 @@ private fun GreenhouseTableRow(
             )
         }
 
-        // DESCRIPTION
+        // LOCATION
         Text(
-            text = greenhouse.description,
+            text = greenhouse.locationDisplay,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(2f),
-            maxLines = 2,
+            modifier = Modifier.weight(1.5f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        // AREA
+        Text(
+            text = greenhouse.areaDisplay,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
 
@@ -198,11 +217,11 @@ private fun GreenhouseTableRow(
 }
 
 /**
- * Avatar component for greenhouses with colored background based on initials.
+ * Avatar component for greenhouses with colored background.
  */
 @Composable
 fun GreenhouseAvatar(
-    initials: String,
+    initial: String,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -212,7 +231,7 @@ fun GreenhouseAvatar(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = initials,
+            text = initial,
             style = MaterialTheme.typography.labelMedium,
             color = Color.White,
             fontWeight = FontWeight.Bold
@@ -262,23 +281,35 @@ private object GreenhousesTablePreviewData {
         Greenhouse(
             id = "1",
             name = "Invernadero Principal",
-            description = "Produccion de tomates y pimientos",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "client1"
+            tenantId = "client1",
+            location = Location(lat = 36.8381, lon = -2.4597),
+            areaM2 = 1500.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
             id = "2",
             name = "Invernadero Norte",
-            description = "Cultivo de lechugas hidroponicas",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "client1"
+            tenantId = "client1",
+            location = Location(lat = 36.8400, lon = -2.4600),
+            areaM2 = 800.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
             id = "3",
             name = "Invernadero Experimental",
-            description = "Pruebas de nuevas variedades",
-            status = GreenhouseStatus.INACTIVE,
-            clientId = "client1"
+            tenantId = "client1",
+            location = null,
+            areaM2 = null,
+            timezone = "Europe/Madrid",
+            isActive = false,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         )
     )
 }
@@ -295,6 +326,6 @@ private fun GreenhousesTablePreview() {
 @Composable
 private fun GreenhouseAvatarPreview() {
     GreenhouseAdminTheme {
-        GreenhouseAvatar(initials = "IP")
+        GreenhouseAvatar(initial = "I")
     }
 }

@@ -1,95 +1,62 @@
 package com.apptolast.greenhouse.admin.data.repository
 
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
+import com.apptolast.greenhouse.admin.data.model.GreenhouseCreateRequest
+import com.apptolast.greenhouse.admin.data.model.GreenhouseUpdateRequest
+import com.apptolast.greenhouse.admin.data.model.Location
+import com.apptolast.greenhouse.admin.data.model.toGreenhouse
+import com.apptolast.greenhouse.admin.data.remote.api.GreenhousesApiService
 import com.apptolast.greenhouse.admin.domain.repository.GreenhousesRepository
-import kotlinx.coroutines.delay
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 /**
- * Mock implementation of GreenhousesRepository.
- * Provides hardcoded data for development. Replace with real API calls later.
+ * Implementation of GreenhousesRepository that communicates with the backend API.
  */
-class GreenhousesRepositoryImpl : GreenhousesRepository {
+class GreenhousesRepositoryImpl(
+    private val greenhousesApi: GreenhousesApiService
+) : GreenhousesRepository {
 
-    private val mockGreenhouses = mutableListOf(
-        // Greenhouses for client "1" (Elena Rodriguez)
-        Greenhouse(
-            id = "gh1",
-            name = "Invernadero Principal",
-            description = "Producción de tomates y pimientos",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "1"
-        ),
-        Greenhouse(
-            id = "gh2",
-            name = "Invernadero Norte",
-            description = "Cultivo de lechugas hidropónicas",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "1"
-        ),
-        Greenhouse(
-            id = "gh3",
-            name = "Invernadero Experimental",
-            description = "Pruebas de nuevas variedades",
-            status = GreenhouseStatus.INACTIVE,
-            clientId = "1"
-        ),
-        // Greenhouses for client "2" (Jean Pierre)
-        Greenhouse(
-            id = "gh4",
-            name = "Serre Principale",
-            description = "Production biologique",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "2"
-        ),
-        // Greenhouses for client "4" (Maria Muller)
-        Greenhouse(
-            id = "gh5",
-            name = "Gewächshaus A",
-            description = "Gemüseanbau",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "4"
-        ),
-        Greenhouse(
-            id = "gh6",
-            name = "Gewächshaus B",
-            description = "Kräuterproduktion",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "4"
+    override suspend fun getGreenhousesByTenantId(tenantId: String): Result<List<Greenhouse>> = runCatching {
+        greenhousesApi.getGreenhousesByTenantId(tenantId).map { it.toGreenhouse() }
+    }
+
+    override suspend fun createGreenhouse(
+        tenantId: String,
+        name: String,
+        location: Location?,
+        areaM2: Double?,
+        timezone: String?,
+        isActive: Boolean
+    ): Result<Greenhouse> = runCatching {
+        val request = GreenhouseCreateRequest(
+            name = name,
+            location = location,
+            areaM2 = areaM2,
+            timezone = timezone,
+            isActive = isActive
         )
-    )
-
-    override suspend fun getGreenhousesByClientId(clientId: String): Result<List<Greenhouse>> = runCatching {
-        delay(400)
-        mockGreenhouses.filter { it.clientId == clientId }
+        greenhousesApi.createGreenhouse(tenantId, request).toGreenhouse()
     }
 
-    @OptIn(ExperimentalUuidApi::class)
-    override suspend fun createGreenhouse(greenhouse: Greenhouse): Result<Greenhouse> = runCatching {
-        delay(600)
-        val newGreenhouse = greenhouse.copy(id = Uuid.random().toString())
-        mockGreenhouses.add(newGreenhouse)
-        newGreenhouse
+    override suspend fun updateGreenhouse(
+        tenantId: String,
+        greenhouseId: String,
+        name: String?,
+        location: Location?,
+        areaM2: Double?,
+        timezone: String?,
+        isActive: Boolean?
+    ): Result<Greenhouse> = runCatching {
+        val request = GreenhouseUpdateRequest(
+            name = name,
+            location = location,
+            areaM2 = areaM2,
+            timezone = timezone,
+            isActive = isActive
+        )
+        greenhousesApi.updateGreenhouse(tenantId, greenhouseId, request).toGreenhouse()
     }
 
-    override suspend fun updateGreenhouse(greenhouse: Greenhouse): Result<Greenhouse> = runCatching {
-        delay(500)
-        val index = mockGreenhouses.indexOfFirst { it.id == greenhouse.id }
-        if (index == -1) {
-            throw NoSuchElementException("Greenhouse with id ${greenhouse.id} not found")
-        }
-        mockGreenhouses[index] = greenhouse
-        greenhouse
-    }
-
-    override suspend fun deleteGreenhouse(id: String): Result<Unit> = runCatching {
-        delay(400)
-        val index = mockGreenhouses.indexOfFirst { it.id == id }
-        if (index == -1) {
-            throw NoSuchElementException("Greenhouse with id $id not found")
-        }
-        mockGreenhouses.removeAt(index)
+    override suspend fun deleteGreenhouse(tenantId: String, greenhouseId: String): Result<Unit> = runCatching {
+        greenhousesApi.deleteGreenhouse(tenantId, greenhouseId)
     }
 }

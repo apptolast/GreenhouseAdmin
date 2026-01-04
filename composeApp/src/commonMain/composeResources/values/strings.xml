@@ -187,6 +187,7 @@
     <!-- Sector Table Headers -->
     <string name="header_greenhouse">GREENHOUSE</string>
     <string name="header_area">AREA</string>
+    <string name="header_variety">VARIETY</string>
 
     <!-- Sector Dialogs -->
     <string name="dialog_new_sector_title">Add New Sector</string>
@@ -196,9 +197,11 @@
     <string name="dialog_edit_sector_subtitle">Update sector information</string>
     <string name="field_greenhouse">Greenhouse</string>
     <string name="field_area">Area (m²)</string>
+    <string name="label_variety">Variety</string>
 
     <!-- Sector Validation Errors -->
     <string name="error_greenhouse_required">Please select a greenhouse</string>
+    <string name="error_variety_min_length">Variety must be at least 2 characters</string>
     <string name="error_area_required">Area is required</string>
     <string name="error_area_invalid">Please enter a valid number</string>
     <string name="error_area_positive">Area must be greater than 0</string>
@@ -320,4 +323,16 @@
     <!-- Delete Setting Confirmation -->
     <string name="dialog_delete_setting_title">Delete Setting?</string>
     <string name="dialog_delete_setting_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_screen_title">Settings</string>
+    <string name="settings_account_section">Account</string>
+    <string name="settings_logged_in_as">Logged in as</string>
+    <string name="settings_role">Role</string>
+
+    <!-- Logout -->
+    <string name="logout_button">Log Out</string>
+    <string name="logout_confirmation_title">Log Out?</string>
+    <string name="logout_confirmation_message">Are you sure you want to log out? You will need to sign in again to access your account.</string>
+    <string name="logout_confirm_button">Log Out</string>
 </resources>

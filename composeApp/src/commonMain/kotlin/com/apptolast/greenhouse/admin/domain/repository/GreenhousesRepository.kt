@@ -1,6 +1,7 @@
 package com.apptolast.greenhouse.admin.domain.repository
 
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
+import com.apptolast.greenhouse.admin.data.model.Location
 
 /**
  * Repository interface for greenhouse data operations.
@@ -8,30 +9,58 @@ import com.apptolast.greenhouse.admin.data.model.Greenhouse
  */
 interface GreenhousesRepository {
     /**
-     * Fetches all greenhouses for a specific client.
-     * @param clientId The client ID to filter greenhouses by
+     * Fetches all greenhouses for a specific tenant.
+     * @param tenantId The tenant ID to filter greenhouses by
      * @return Result containing list of Greenhouse or error
      */
-    suspend fun getGreenhousesByClientId(clientId: String): Result<List<Greenhouse>>
+    suspend fun getGreenhousesByTenantId(tenantId: String): Result<List<Greenhouse>>
 
     /**
-     * Creates a new greenhouse for a client.
-     * @param greenhouse The greenhouse data to create
+     * Creates a new greenhouse for a tenant.
+     * @param tenantId The tenant ID the greenhouse belongs to
+     * @param name The greenhouse name
+     * @param location Optional geographic location
+     * @param areaM2 Optional area in square meters
+     * @param timezone Optional timezone (defaults to Europe/Madrid)
+     * @param isActive Whether the greenhouse is active
      * @return Result containing the created Greenhouse or error
      */
-    suspend fun createGreenhouse(greenhouse: Greenhouse): Result<Greenhouse>
+    suspend fun createGreenhouse(
+        tenantId: String,
+        name: String,
+        location: Location? = null,
+        areaM2: Double? = null,
+        timezone: String? = "Europe/Madrid",
+        isActive: Boolean = true
+    ): Result<Greenhouse>
 
     /**
      * Updates an existing greenhouse.
-     * @param greenhouse The greenhouse data to update (must include valid id)
+     * All update fields are optional for partial updates.
+     * @param tenantId The tenant ID the greenhouse belongs to
+     * @param greenhouseId The greenhouse ID to update
+     * @param name New name (optional)
+     * @param location New location (optional)
+     * @param areaM2 New area (optional)
+     * @param timezone New timezone (optional)
+     * @param isActive New active status (optional)
      * @return Result containing the updated Greenhouse or error
      */
-    suspend fun updateGreenhouse(greenhouse: Greenhouse): Result<Greenhouse>
+    suspend fun updateGreenhouse(
+        tenantId: String,
+        greenhouseId: String,
+        name: String? = null,
+        location: Location? = null,
+        areaM2: Double? = null,
+        timezone: String? = null,
+        isActive: Boolean? = null
+    ): Result<Greenhouse>
 
     /**
      * Deletes a greenhouse by ID.
-     * @param id The greenhouse ID to delete
+     * @param tenantId The tenant ID the greenhouse belongs to
+     * @param greenhouseId The greenhouse ID to delete
      * @return Result containing success or error
      */
-    suspend fun deleteGreenhouse(id: String): Result<Unit>
+    suspend fun deleteGreenhouse(tenantId: String, greenhouseId: String): Result<Unit>
 }

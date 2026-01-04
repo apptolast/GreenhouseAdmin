@@ -8,7 +8,6 @@ import com.apptolast.greenhouse.admin.data.model.Device
 import com.apptolast.greenhouse.admin.data.model.DeviceStatus
 import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
 import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
@@ -183,8 +182,10 @@ sealed interface ClientDetailEvent {
      */
     data class OnSubmitGreenhouseForm(
         val name: String,
-        val description: String,
-        val status: GreenhouseStatus
+        val location: Location?,
+        val areaM2: Double?,
+        val timezone: String?,
+        val isActive: Boolean
     ) : ClientDetailEvent
 
     // === Sectors Tab Events ===
@@ -228,10 +229,8 @@ sealed interface ClientDetailEvent {
      * User submitted the sector form (create or edit).
      */
     data class OnSubmitSectorForm(
-        val name: String,
         val greenhouseId: String,
-        val greenhouseName: String,
-        val area: Double
+        val variety: String
     ) : ClientDetailEvent
 
     // === Devices Tab Events ===

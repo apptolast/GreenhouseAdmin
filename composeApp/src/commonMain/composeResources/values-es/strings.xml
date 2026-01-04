@@ -187,6 +187,7 @@
     <!-- Sector Table Headers -->
     <string name="header_greenhouse">INVERNADERO</string>
     <string name="header_area">ÁREA</string>
+    <string name="header_variety">VARIEDAD</string>
 
     <!-- Sector Dialogs -->
     <string name="dialog_new_sector_title">Añadir Nuevo Sector</string>
@@ -196,9 +197,11 @@
     <string name="dialog_edit_sector_subtitle">Actualizar información del sector</string>
     <string name="field_greenhouse">Invernadero</string>
     <string name="field_area">Área (m²)</string>
+    <string name="label_variety">Variedad</string>
 
     <!-- Sector Validation Errors -->
     <string name="error_greenhouse_required">Por favor, selecciona un invernadero</string>
+    <string name="error_variety_min_length">La variedad debe tener al menos 2 caracteres</string>
     <string name="error_area_required">El área es obligatoria</string>
     <string name="error_area_invalid">Por favor, introduce un número válido</string>
     <string name="error_area_positive">El área debe ser mayor que 0</string>
@@ -320,4 +323,16 @@
     <!-- Delete Setting Confirmation -->
     <string name="dialog_delete_setting_title">¿Eliminar Ajuste?</string>
     <string name="dialog_delete_setting_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_screen_title">Ajustes</string>
+    <string name="settings_account_section">Cuenta</string>
+    <string name="settings_logged_in_as">Conectado como</string>
+    <string name="settings_role">Rol</string>
+
+    <!-- Logout -->
+    <string name="logout_button">Cerrar Sesión</string>
+    <string name="logout_confirmation_title">¿Cerrar Sesión?</string>
+    <string name="logout_confirmation_message">¿Estás seguro de que quieres cerrar sesión? Tendrás que iniciar sesión de nuevo para acceder a tu cuenta.</string>
+    <string name="logout_confirm_button">Cerrar Sesión</string>
 </resources>

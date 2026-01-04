@@ -26,7 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
+import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
@@ -163,16 +163,24 @@ private object ClientDetailGreenhousesTabPreviewData {
         Greenhouse(
             id = "1",
             name = "Invernadero Principal",
-            description = "Produccion de tomates y pimientos",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "client1"
+            tenantId = "client1",
+            location = Location(lat = 36.8381, lon = -2.4597),
+            areaM2 = 1500.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
             id = "2",
             name = "Invernadero Norte",
-            description = "Cultivo de lechugas hidroponicas",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "client1"
+            tenantId = "client1",
+            location = Location(lat = 36.8400, lon = -2.4600),
+            areaM2 = 800.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         )
     )
 }

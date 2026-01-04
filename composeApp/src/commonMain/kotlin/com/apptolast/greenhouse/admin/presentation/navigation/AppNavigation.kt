@@ -133,7 +133,13 @@ private fun AppNavHost(navController: NavHostController) {
         }
 
         composable<SettingsRoute> {
-            SettingsScreen()
+            SettingsScreen(
+                onLogoutSuccess = {
+                    navController.navigate(LoginRoute) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

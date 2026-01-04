@@ -18,9 +18,16 @@ interface AuthRepository {
 
     /**
      * Log out the current user.
-     * Clears stored tokens.
+     * Calls the server logout endpoint and clears stored tokens.
+     * @return Result indicating success or failure
      */
-    fun logout()
+    suspend fun logout(): Result<Unit>
+
+    /**
+     * Clear local tokens without calling the server.
+     * Used for immediate local logout.
+     */
+    fun clearLocalSession()
 
     /**
      * Check if user is currently authenticated.

@@ -10,7 +10,6 @@ import com.apptolast.greenhouse.admin.data.model.Device
 import com.apptolast.greenhouse.admin.data.model.DeviceStatus
 import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
 import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
@@ -130,8 +129,10 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnDismissGreenhouseFormDialog -> dismissGreenhouseFormDialog()
             is ClientDetailEvent.OnSubmitGreenhouseForm -> submitGreenhouseForm(
                 event.name,
-                event.description,
-                event.status
+                event.location,
+                event.areaM2,
+                event.timezone,
+                event.isActive
             )
 
             // Sectors events
@@ -143,10 +144,8 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnCancelDeleteSector -> cancelDeleteSector()
             is ClientDetailEvent.OnDismissSectorFormDialog -> dismissSectorFormDialog()
             is ClientDetailEvent.OnSubmitSectorForm -> submitSectorForm(
-                event.name,
                 event.greenhouseId,
-                event.greenhouseName,
-                event.area
+                event.variety
             )
 
             // Devices events
@@ -533,7 +532,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingGreenhouses = true, greenhousesError = null) }
 
-            greenhousesRepository.getGreenhousesByClientId(clientId)
+            greenhousesRepository.getGreenhousesByTenantId(clientId)
                 .onSuccess { greenhouses ->
                     _uiState.update {
                         it.copy(
@@ -573,7 +572,13 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitGreenhouseForm(name: String, description: String, status: GreenhouseStatus) {
+    private fun submitGreenhouseForm(
+        name: String,
+        location: Location?,
+        areaM2: Double?,
+        timezone: String?,
+        isActive: Boolean
+    ) {
         val mode = _uiState.value.greenhouseFormMode
 
         viewModelScope.launch {
@@ -581,23 +586,26 @@ class ClientDetailViewModel(
 
             val result = when (mode) {
                 is GreenhouseFormMode.Create -> {
-                    val newGreenhouse = Greenhouse(
-                        id = "",
+                    greenhousesRepository.createGreenhouse(
+                        tenantId = clientId,
                         name = name.trim(),
-                        description = description.trim(),
-                        status = status,
-                        clientId = clientId
+                        location = location,
+                        areaM2 = areaM2,
+                        timezone = timezone,
+                        isActive = isActive
                     )
-                    greenhousesRepository.createGreenhouse(newGreenhouse)
                 }
 
                 is GreenhouseFormMode.Edit -> {
-                    val updatedGreenhouse = mode.greenhouse.copy(
+                    greenhousesRepository.updateGreenhouse(
+                        tenantId = clientId,
+                        greenhouseId = mode.greenhouse.id,
                         name = name.trim(),
-                        description = description.trim(),
-                        status = status
+                        location = location,
+                        areaM2 = areaM2,
+                        timezone = timezone,
+                        isActive = isActive
                     )
-                    greenhousesRepository.updateGreenhouse(updatedGreenhouse)
                 }
             }
 
@@ -648,7 +656,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingGreenhouse = true, deleteGreenhouseError = null) }
 
-            greenhousesRepository.deleteGreenhouse(greenhouse.id)
+            greenhousesRepository.deleteGreenhouse(clientId, greenhouse.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(
@@ -676,7 +684,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingSectors = true, sectorsError = null) }
 
-            sectorsRepository.getSectorsByClientId(clientId)
+            sectorsRepository.getSectorsByTenantId(clientId)
                 .onSuccess { sectors ->
                     _uiState.update {
                         it.copy(
@@ -716,7 +724,7 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitSectorForm(name: String, greenhouseId: String, greenhouseName: String, area: Double) {
+    private fun submitSectorForm(greenhouseId: String, variety: String) {
         val mode = _uiState.value.sectorFormMode
 
         viewModelScope.launch {
@@ -724,25 +732,19 @@ class ClientDetailViewModel(
 
             val result = when (mode) {
                 is SectorFormMode.Create -> {
-                    val newSector = Sector(
-                        id = "",
-                        name = name.trim(),
+                    sectorsRepository.createSector(
+                        tenantId = clientId,
                         greenhouseId = greenhouseId,
-                        greenhouseName = greenhouseName,
-                        area = area,
-                        clientId = clientId
+                        variety = variety.trim().takeIf { it.isNotBlank() }
                     )
-                    sectorsRepository.createSector(newSector)
                 }
 
                 is SectorFormMode.Edit -> {
-                    val updatedSector = mode.sector.copy(
-                        name = name.trim(),
-                        greenhouseId = greenhouseId,
-                        greenhouseName = greenhouseName,
-                        area = area
+                    sectorsRepository.updateSector(
+                        tenantId = clientId,
+                        sectorId = mode.sector.id,
+                        variety = variety.trim().takeIf { it.isNotBlank() }
                     )
-                    sectorsRepository.updateSector(updatedSector)
                 }
             }
 
@@ -793,7 +795,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingSector = true, deleteSectorError = null) }
 
-            sectorsRepository.deleteSector(sector.id)
+            sectorsRepository.deleteSector(clientId, sector.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(

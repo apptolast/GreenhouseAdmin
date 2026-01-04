@@ -4,6 +4,7 @@ import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailViewMod
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientsViewModel
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardViewModel
 import com.apptolast.greenhouse.admin.presentation.viewmodel.LoginViewModel
+import com.apptolast.greenhouse.admin.presentation.viewmodel.SettingsViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -26,4 +27,7 @@ val presentationModule = module {
     viewModel { (clientId: String) ->
         ClientDetailViewModel(clientId, get(), get(), get(), get(), get(), get(), get(), get())
     }
+
+    // Settings
+    viewModelOf(::SettingsViewModel)
 }

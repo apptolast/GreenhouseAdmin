@@ -3,30 +3,61 @@ package com.apptolast.greenhouse.admin.data.model
 import kotlinx.serialization.Serializable
 
 /**
- * Represents a sector within a greenhouse.
- * A sector is a subdivision of a greenhouse with a defined area.
+ * Response DTO from the API representing a Sector.
+ * Matches the SectorResponse structure from InvernaderosAPI.
+ */
+@Serializable
+data class SectorResponse(
+    val id: String,
+    val greenhouseId: String,
+    val variety: String? = null
+)
+
+/**
+ * Request DTO for creating a new Sector.
+ */
+@Serializable
+data class SectorCreateRequest(
+    val greenhouseId: String,
+    val variety: String? = null
+)
+
+/**
+ * Request DTO for updating an existing Sector.
+ */
+@Serializable
+data class SectorUpdateRequest(
+    val variety: String? = null
+)
+
+/**
+ * Domain model representing a Sector within a greenhouse.
+ * Used internally in the app for business logic.
  */
 @Serializable
 data class Sector(
     val id: String,
-    val name: String,
     val greenhouseId: String,
-    val greenhouseName: String = "", // For display purposes
-    val area: Double, // In square meters (m²)
-    val clientId: String
+    val variety: String? = null
 ) {
     /**
-     * Returns the initials of the sector name for display in avatars.
+     * Returns the first letter of the variety as initial for avatars.
      */
-    val initials: String
-        get() = name.split(" ")
-            .take(2)
-            .mapNotNull { it.firstOrNull()?.uppercaseChar() }
-            .joinToString("")
+    val initial: String
+        get() = variety?.firstOrNull()?.uppercaseChar()?.toString() ?: "S"
 
     /**
-     * Returns the area formatted with unit.
+     * Returns the display name (variety or a default).
      */
-    val formattedArea: String
-        get() = "$area m²"
+    val displayName: String
+        get() = variety ?: "Sector"
 }
+
+/**
+ * Extension to convert SectorResponse to domain model.
+ */
+fun SectorResponse.toSector() = Sector(
+    id = id,
+    greenhouseId = greenhouseId,
+    variety = variety
+)
