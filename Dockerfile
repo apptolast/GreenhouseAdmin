@@ -6,14 +6,25 @@
 # Stage 1: Build the WASM application
 FROM gradle:8.10-jdk21 AS builder
 
+# CRÍTICO: Instalar libatomic1 para Node.js v25+ (requerido por Kotlin/WASM)
+# Ver: https://github.com/nodejs/node/issues/issues - Node.js v25 requiere libatomic
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libatomic1 \
+    && rm -rf /var/lib/apt/lists/*
+USER gradle
+
 WORKDIR /app
 
+# Configurar memoria para JVM/Gradle
+ENV GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=512m"
+
 # Copy Gradle configuration files first (for better caching)
-COPY gradle/ gradle/
-COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.properties ./
+COPY --chown=gradle:gradle gradle/ gradle/
+COPY --chown=gradle:gradle gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.properties ./
 
 # Copy the compose app module
-COPY composeApp/ composeApp/
+COPY --chown=gradle:gradle composeApp/ composeApp/
 
 # Make gradlew executable
 RUN chmod +x gradlew
