@@ -34,10 +34,12 @@
 
     <!-- Client Table Headers -->
     <string name="header_name">NOMBRE</string>
+    <string name="header_username">USUARIO</string>
     <string name="header_email">EMAIL</string>
     <string name="header_phone">TELÉFONO</string>
     <string name="header_province">PROVINCIA</string>
     <string name="header_location">UBICACIÓN</string>
+    <string name="header_role">ROL</string>
     <string name="header_status">ESTADO</string>
     <string name="header_actions">ACCIONES</string>
 
@@ -70,8 +72,11 @@
     <string name="dialog_new_client_title">Crear Nuevo Cliente</string>
     <string name="dialog_new_client_subtitle">Añade un nuevo cliente a tu red</string>
     <string name="label_name">Nombre Completo</string>
+    <string name="label_username">Nombre de Usuario</string>
     <string name="label_email">Correo Electrónico</string>
     <string name="label_phone">Teléfono</string>
+    <string name="label_password">Contraseña</string>
+    <string name="label_role">Rol</string>
     <string name="label_province">Provincia</string>
     <string name="label_country">País</string>
     <string name="label_location">Ubicación</string>
@@ -84,8 +89,10 @@
 
     <!-- Validation Errors -->
     <string name="error_name_min_length">El nombre debe tener al menos 2 caracteres</string>
+    <string name="error_username_min_length">El nombre de usuario debe tener al menos 3 caracteres</string>
     <string name="error_email_invalid">Por favor, introduce un email válido</string>
     <string name="error_phone_required">El teléfono es obligatorio</string>
+    <string name="error_password_required">La contraseña es obligatoria</string>
     <string name="error_province_required">Por favor, selecciona una provincia</string>
     <string name="error_country_required">Por favor, selecciona un país</string>
     <string name="error_create_client_failed">Error al crear el cliente. Por favor, inténtalo de nuevo.</string>

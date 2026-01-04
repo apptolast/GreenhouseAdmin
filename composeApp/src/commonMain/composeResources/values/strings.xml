@@ -34,10 +34,12 @@
 
     <!-- Client Table Headers -->
     <string name="header_name">NAME</string>
+    <string name="header_username">USERNAME</string>
     <string name="header_email">EMAIL</string>
     <string name="header_phone">PHONE</string>
     <string name="header_province">PROVINCE</string>
     <string name="header_location">LOCATION</string>
+    <string name="header_role">ROLE</string>
     <string name="header_status">STATUS</string>
     <string name="header_actions">ACTIONS</string>
 
@@ -70,8 +72,11 @@
     <string name="dialog_new_client_title">Create New Client</string>
     <string name="dialog_new_client_subtitle">Add a new client to your network</string>
     <string name="label_name">Full Name</string>
+    <string name="label_username">Username</string>
     <string name="label_email">Email Address</string>
     <string name="label_phone">Phone Number</string>
+    <string name="label_password">Password</string>
+    <string name="label_role">Role</string>
     <string name="label_province">Province</string>
     <string name="label_country">Country</string>
     <string name="label_location">Location</string>
@@ -84,8 +89,10 @@
 
     <!-- Validation Errors -->
     <string name="error_name_min_length">Name must be at least 2 characters</string>
+    <string name="error_username_min_length">Username must be at least 3 characters</string>
     <string name="error_email_invalid">Please enter a valid email address</string>
     <string name="error_phone_required">Phone number is required</string>
+    <string name="error_password_required">Password is required</string>
     <string name="error_province_required">Please select a province</string>
     <string name="error_country_required">Please select a country</string>
     <string name="error_create_client_failed">Failed to create client. Please try again.</string>

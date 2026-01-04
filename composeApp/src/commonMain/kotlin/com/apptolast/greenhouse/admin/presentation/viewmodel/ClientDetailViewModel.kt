@@ -15,6 +15,7 @@ import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.data.model.UserRole
 import com.apptolast.greenhouse.admin.data.model.toIsActive
 import com.apptolast.greenhouse.admin.domain.repository.AlertsRepository
 import com.apptolast.greenhouse.admin.domain.repository.ClientsRepository
@@ -111,7 +112,13 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnConfirmDeleteUser -> confirmDeleteUser()
             is ClientDetailEvent.OnCancelDeleteUser -> cancelDeleteUser()
             is ClientDetailEvent.OnDismissUserFormDialog -> dismissUserFormDialog()
-            is ClientDetailEvent.OnSubmitUserForm -> submitUserForm(event.name, event.email, event.phone)
+            is ClientDetailEvent.OnSubmitUserForm -> submitUserForm(
+                event.username,
+                event.email,
+                event.password,
+                event.role,
+                event.isActive
+            )
 
             // Greenhouses events
             is ClientDetailEvent.LoadGreenhouses -> loadGreenhouses()
@@ -380,7 +387,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingUsers = true, usersError = null) }
 
-            usersRepository.getUsersByClientId(clientId)
+            usersRepository.getUsersByTenantId(clientId)
                 .onSuccess { users ->
                     _uiState.update {
                         it.copy(
@@ -420,7 +427,7 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitUserForm(name: String, email: String, phone: String) {
+    private fun submitUserForm(username: String, email: String, password: String?, role: UserRole, isActive: Boolean) {
         val mode = _uiState.value.userFormMode
 
         viewModelScope.launch {
@@ -428,23 +435,26 @@ class ClientDetailViewModel(
 
             val result = when (mode) {
                 is UserFormMode.Create -> {
-                    val newUser = User(
-                        id = "",
-                        name = name.trim(),
+                    usersRepository.createUser(
+                        tenantId = clientId,
+                        username = username.trim(),
                         email = email.trim(),
-                        phone = phone.trim(),
-                        clientId = clientId
+                        password = password ?: "",
+                        role = role,
+                        isActive = isActive
                     )
-                    usersRepository.createUser(newUser)
                 }
 
                 is UserFormMode.Edit -> {
-                    val updatedUser = mode.user.copy(
-                        name = name.trim(),
+                    usersRepository.updateUser(
+                        tenantId = clientId,
+                        userId = mode.user.id,
+                        username = username.trim(),
                         email = email.trim(),
-                        phone = phone.trim()
+                        password = password?.takeIf { it.isNotBlank() },
+                        role = role,
+                        isActive = isActive
                     )
-                    usersRepository.updateUser(updatedUser)
                 }
             }
 
@@ -495,7 +505,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingUser = true, deleteUserError = null) }
 
-            usersRepository.deleteUser(user.id)
+            usersRepository.deleteUser(clientId, user.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(

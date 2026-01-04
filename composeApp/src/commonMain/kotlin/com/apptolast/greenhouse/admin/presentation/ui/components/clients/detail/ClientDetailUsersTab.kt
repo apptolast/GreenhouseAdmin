@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.data.model.UserRole
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
@@ -161,17 +162,19 @@ private object ClientDetailUsersTabPreviewData {
     val sampleUsers = listOf(
         User(
             id = "1",
-            name = "Ana Martinez",
+            username = "anamartinez",
             email = "ana@freshveg.com",
-            phone = "+34 612 111 222",
-            clientId = "client1"
+            role = UserRole.ADMIN,
+            tenantId = "client1",
+            isActive = true
         ),
         User(
             id = "2",
-            name = "Carlos Ruiz",
+            username = "carlosruiz",
             email = "carlos@freshveg.com",
-            phone = "+34 623 222 333",
-            clientId = "client1"
+            role = UserRole.OPERATOR,
+            tenantId = "client1",
+            isActive = true
         )
     )
 }

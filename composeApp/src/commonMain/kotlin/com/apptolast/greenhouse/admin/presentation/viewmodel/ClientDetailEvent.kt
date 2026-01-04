@@ -13,6 +13,7 @@ import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.data.model.UserRole
 
 /**
  * Sealed interface representing all possible user intents/events on the Client Detail screen.
@@ -133,9 +134,11 @@ sealed interface ClientDetailEvent {
      * User submitted the user form (create or edit).
      */
     data class OnSubmitUserForm(
-        val name: String,
+        val username: String,
         val email: String,
-        val phone: String
+        val password: String?,
+        val role: UserRole,
+        val isActive: Boolean
     ) : ClientDetailEvent
 
     // === Greenhouses Tab Events ===

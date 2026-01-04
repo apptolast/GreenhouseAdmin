@@ -29,6 +29,7 @@ import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.data.model.UserRole
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
@@ -203,8 +204,8 @@ private fun ClientDetailScreenContent(
             mode = uiState.userFormMode,
             isSubmitting = uiState.isSubmittingUser,
             error = uiState.submitUserError,
-            onSubmit = { name, email, phone ->
-                onEvent(ClientDetailEvent.OnSubmitUserForm(name, email, phone))
+            onSubmit = { username, email, password, role, isActive ->
+                onEvent(ClientDetailEvent.OnSubmitUserForm(username, email, password, role, isActive))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissUserFormDialog) }
         )
@@ -213,7 +214,7 @@ private fun ClientDetailScreenContent(
     // User Delete Confirmation Dialog
     if (uiState.showDeleteUserConfirmation && uiState.userToDelete != null) {
         DeleteConfirmationDialog(
-            clientName = uiState.userToDelete.name,
+            clientName = uiState.userToDelete.username,
             isDeleting = uiState.isDeletingUser,
             error = uiState.deleteUserError,
             onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteUser) },
@@ -546,17 +547,19 @@ private object ClientDetailScreenPreviewData {
     val sampleUsers = listOf(
         User(
             id = "1",
-            name = "Ana Martinez",
+            username = "anamartinez",
             email = "ana@freshveg.com",
-            phone = "+34 612 111 222",
-            clientId = "12345"
+            role = UserRole.ADMIN,
+            tenantId = "12345",
+            isActive = true
         ),
         User(
             id = "2",
-            name = "Carlos Ruiz",
+            username = "carlosruiz",
             email = "carlos@freshveg.com",
-            phone = "+34 623 222 333",
-            clientId = "12345"
+            role = UserRole.OPERATOR,
+            tenantId = "12345",
+            isActive = true
         )
     )
 
