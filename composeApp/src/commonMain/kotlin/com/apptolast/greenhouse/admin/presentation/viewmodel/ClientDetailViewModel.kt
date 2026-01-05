@@ -156,12 +156,12 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnDismissDeviceFormDialog -> dismissDeviceFormDialog()
             is ClientDetailEvent.OnSubmitDeviceForm -> submitDeviceForm(
                 event.greenhouseId,
-                event.name,
                 event.categoryId,
                 event.typeId,
                 event.unitId,
                 event.isActive
             )
+            is ClientDetailEvent.OnDeviceCategoryChanged -> loadDeviceTypesByCategory(event.categoryId)
 
             // Alerts events
             is ClientDetailEvent.LoadAlerts -> loadAlerts()
@@ -857,8 +857,15 @@ class ClientDetailViewModel(
             it.copy(
                 showDeviceFormDialog = true,
                 deviceFormMode = mode,
-                submitDeviceError = null
+                submitDeviceError = null,
+                deviceTypes = emptyList() // Clear types until category is selected
             )
+        }
+        // Load catalog data when opening the dialog
+        loadDeviceCatalog()
+        // If editing, load types for the device's category
+        if (mode is DeviceFormMode.Edit && mode.device.categoryId != null) {
+            loadDeviceTypesByCategory(mode.device.categoryId)
         }
     }
 
@@ -872,10 +879,8 @@ class ClientDetailViewModel(
         }
     }
 
-    @Suppress("UNUSED_PARAMETER")
     private fun submitDeviceForm(
         greenhouseId: String,
-        name: String,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
@@ -976,6 +981,41 @@ class ClientDetailViewModel(
                         )
                     }
                 }
+        }
+    }
+
+    /**
+     * Loads device catalog data (categories and units).
+     * Types are loaded separately when category is selected.
+     */
+    private fun loadDeviceCatalog() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingDeviceCatalog = true) }
+
+            val categoriesResult = devicesRepository.getDeviceCategories()
+            val unitsResult = devicesRepository.getUnits()
+
+            _uiState.update { state ->
+                state.copy(
+                    deviceCategories = categoriesResult.getOrDefault(emptyList()),
+                    deviceUnits = unitsResult.getOrDefault(emptyList()),
+                    isLoadingDeviceCatalog = false
+                )
+            }
+        }
+    }
+
+    /**
+     * Loads device types filtered by the selected category.
+     */
+    private fun loadDeviceTypesByCategory(categoryId: Short) {
+        viewModelScope.launch {
+            val typesResult = devicesRepository.getDeviceTypes(categoryId)
+            _uiState.update { state ->
+                state.copy(
+                    deviceTypes = typesResult.getOrDefault(emptyList())
+                )
+            }
         }
     }
 

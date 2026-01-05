@@ -30,6 +30,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +40,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.apptolast.greenhouse.admin.data.model.Device
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
 import com.apptolast.greenhouse.admin.data.model.DeviceFormData
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
@@ -47,32 +51,37 @@ import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.button_cancel
 import greenhouseadmin.composeapp.generated.resources.button_create_device
 import greenhouseadmin.composeapp.generated.resources.button_save
-import greenhouseadmin.composeapp.generated.resources.device_category_actuator
-import greenhouseadmin.composeapp.generated.resources.device_category_sensor
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_device_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_device_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_device_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_device_title
 import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
-import greenhouseadmin.composeapp.generated.resources.error_name_required
+import greenhouseadmin.composeapp.generated.resources.error_type_required
 import greenhouseadmin.composeapp.generated.resources.label_category
-import greenhouseadmin.composeapp.generated.resources.label_device_name
+import greenhouseadmin.composeapp.generated.resources.label_device_type
 import greenhouseadmin.composeapp.generated.resources.label_greenhouse
 import greenhouseadmin.composeapp.generated.resources.label_is_active
+import greenhouseadmin.composeapp.generated.resources.label_unit
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Dialog for creating or editing a device.
+ * Uses catalog data for categories, types, and units.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceFormDialog(
     mode: DeviceFormMode,
     greenhouses: List<Greenhouse> = emptyList(),
+    categories: List<DeviceCatalogCategory> = emptyList(),
+    types: List<DeviceCatalogType> = emptyList(),
+    units: List<DeviceCatalogUnit> = emptyList(),
+    isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (greenhouseId: String, name: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
+    onCategoryChanged: (Short) -> Unit = {},
+    onSubmit: (greenhouseId: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -81,7 +90,6 @@ fun DeviceFormDialog(
             is DeviceFormMode.Create -> DeviceFormData()
             is DeviceFormMode.Edit -> DeviceFormData(
                 greenhouseId = mode.device.greenhouseId,
-                name = mode.device.categoryName ?: "",
                 categoryId = mode.device.categoryId,
                 typeId = mode.device.typeId,
                 unitId = mode.device.unitId,
@@ -95,14 +103,16 @@ fun DeviceFormDialog(
     var hasAttemptedSubmit by remember { mutableStateOf(false) }
     var greenhouseExpanded by remember { mutableStateOf(false) }
     var categoryExpanded by remember { mutableStateOf(false) }
+    var typeExpanded by remember { mutableStateOf(false) }
+    var unitExpanded by remember { mutableStateOf(false) }
 
     val greenhouseErrorMsg = stringResource(Res.string.error_greenhouse_required)
-    val nameErrorMsg = stringResource(Res.string.error_name_required)
+    val typeErrorMsg = stringResource(Res.string.error_type_required)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
             "error_greenhouse_required" -> greenhouseErrorMsg
-            "error_name_required" -> nameErrorMsg
+            "error_type_required" -> typeErrorMsg
             else -> null
         }
     }
@@ -124,11 +134,19 @@ fun DeviceFormDialog(
         stringResource(Res.string.button_create_device)
     }
 
-    val categorySensorText = stringResource(Res.string.device_category_sensor)
-    val categoryActuatorText = stringResource(Res.string.device_category_actuator)
-
-    // Find selected greenhouse name
+    // Find selected items
     val selectedGreenhouse = greenhouses.find { it.id == formData.greenhouseId }
+    val selectedCategory = categories.find { it.id == formData.categoryId }
+    val selectedType = types.find { it.id == formData.typeId }
+    val selectedUnit = units.find { it.id == formData.unitId }
+
+    // Auto-select unit when type changes (if type has a default unit)
+    LaunchedEffect(formData.typeId) {
+        val type = types.find { it.id == formData.typeId }
+        if (type?.defaultUnitId != null && formData.unitId == null) {
+            formData = formData.copy(unitId = type.defaultUnitId)
+        }
+    }
 
     Dialog(onDismissRequest = { if (!isSubmitting) onDismiss() }) {
         Card(
@@ -158,6 +176,26 @@ fun DeviceFormDialog(
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
+
+                // Loading indicator for catalog
+                if (isLoadingCatalog) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Loading catalog...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
                 // Greenhouse dropdown (required, not editable in edit mode)
                 Column {
@@ -228,53 +266,7 @@ fun DeviceFormDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Device Name text field
-                Column {
-                    Text(
-                        text = stringResource(Res.string.label_device_name),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    OutlinedTextField(
-                        value = formData.name,
-                        onValueChange = {
-                            formData = formData.copy(name = it)
-                            if (hasAttemptedSubmit) validationErrors = formData.validate()
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !isSubmitting,
-                        isError = hasAttemptedSubmit && validationErrors.name != null,
-                        singleLine = true,
-                        placeholder = {
-                            Text(
-                                text = "Temperature Sensor A1...",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                            )
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                            errorBorderColor = MaterialTheme.colorScheme.error
-                        )
-                    )
-
-                    if (hasAttemptedSubmit && validationErrors.name != null) {
-                        Text(
-                            text = getErrorMessage(validationErrors.name) ?: "",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Category Type dropdown
+                // Category dropdown
                 Column {
                     Text(
                         text = stringResource(Res.string.label_category),
@@ -289,18 +281,171 @@ fun DeviceFormDialog(
                         onExpandedChange = { if (!isSubmitting) categoryExpanded = it }
                     ) {
                         OutlinedTextField(
-                            value = when (formData.categoryId) {
-                                Device.CATEGORY_SENSOR -> categorySensorText
-                                Device.CATEGORY_ACTUATOR -> categoryActuatorText
-                                else -> categorySensorText
-                            },
+                            value = selectedCategory?.name ?: "",
                             onValueChange = {},
                             readOnly = true,
                             enabled = !isSubmitting,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                            placeholder = {
+                                Text(
+                                    text = "Select category...",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                            },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                            isError = hasAttemptedSubmit && validationErrors.categoryId != null,
+                            shape = RoundedCornerShape(8.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                errorBorderColor = MaterialTheme.colorScheme.error
+                            )
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = categoryExpanded,
+                            onDismissRequest = { categoryExpanded = false }
+                        ) {
+                            categories.forEach { category ->
+                                DropdownMenuItem(
+                                    text = { Text(category.name) },
+                                    onClick = {
+                                        formData = formData.copy(
+                                            categoryId = category.id,
+                                            typeId = null, // Reset type when category changes
+                                            unitId = null  // Reset unit when category changes
+                                        )
+                                        categoryExpanded = false
+                                        onCategoryChanged(category.id) // Trigger loading of types
+                                        if (hasAttemptedSubmit) validationErrors = formData.validate()
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Type dropdown (filtered by category)
+                Column {
+                    Text(
+                        text = stringResource(Res.string.label_device_type),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    ExposedDropdownMenuBox(
+                        expanded = typeExpanded,
+                        onExpandedChange = { if (!isSubmitting && formData.categoryId != null) typeExpanded = it }
+                    ) {
+                        OutlinedTextField(
+                            value = selectedType?.let { "${it.name}${it.description?.let { d -> " - $d" } ?: ""}" }
+                                ?: "",
+                            onValueChange = {},
+                            readOnly = true,
+                            enabled = !isSubmitting && formData.categoryId != null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                            placeholder = {
+                                Text(
+                                    text = if (formData.categoryId == null) "Select category first..." else "Select type...",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                            },
+                            trailingIcon = {
+                                if (formData.categoryId != null) {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded)
+                                }
+                            },
+                            isError = hasAttemptedSubmit && validationErrors.typeId != null,
+                            shape = RoundedCornerShape(8.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                errorBorderColor = MaterialTheme.colorScheme.error,
+                                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = typeExpanded,
+                            onDismissRequest = { typeExpanded = false }
+                        ) {
+                            types.forEach { type ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Column {
+                                            Text(type.name)
+                                            type.description?.let { desc ->
+                                                Text(
+                                                    text = desc,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                    },
+                                    onClick = {
+                                        formData = formData.copy(
+                                            typeId = type.id,
+                                            unitId = type.defaultUnitId // Auto-select default unit
+                                        )
+                                        typeExpanded = false
+                                        if (hasAttemptedSubmit) validationErrors = formData.validate()
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    if (hasAttemptedSubmit && validationErrors.typeId != null) {
+                        Text(
+                            text = getErrorMessage(validationErrors.typeId) ?: "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Unit dropdown (optional, auto-selected from type default)
+                Column {
+                    Text(
+                        text = stringResource(Res.string.label_unit),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    ExposedDropdownMenuBox(
+                        expanded = unitExpanded,
+                        onExpandedChange = { if (!isSubmitting) unitExpanded = it }
+                    ) {
+                        OutlinedTextField(
+                            value = selectedUnit?.let { "${it.symbol} - ${it.name}" } ?: "",
+                            onValueChange = {},
+                            readOnly = true,
+                            enabled = !isSubmitting,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                            placeholder = {
+                                Text(
+                                    text = "Select unit (optional)...",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                            },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
                             shape = RoundedCornerShape(8.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -309,23 +454,18 @@ fun DeviceFormDialog(
                         )
 
                         ExposedDropdownMenu(
-                            expanded = categoryExpanded,
-                            onDismissRequest = { categoryExpanded = false }
+                            expanded = unitExpanded,
+                            onDismissRequest = { unitExpanded = false }
                         ) {
-                            DropdownMenuItem(
-                                text = { Text(categorySensorText) },
-                                onClick = {
-                                    formData = formData.copy(categoryId = Device.CATEGORY_SENSOR)
-                                    categoryExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(categoryActuatorText) },
-                                onClick = {
-                                    formData = formData.copy(categoryId = Device.CATEGORY_ACTUATOR)
-                                    categoryExpanded = false
-                                }
-                            )
+                            units.forEach { unit ->
+                                DropdownMenuItem(
+                                    text = { Text("${unit.symbol} - ${unit.name}") },
+                                    onClick = {
+                                        formData = formData.copy(unitId = unit.id)
+                                        unitExpanded = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -389,7 +529,6 @@ fun DeviceFormDialog(
                             if (!validationErrors.hasErrors) {
                                 onSubmit(
                                     formData.greenhouseId,
-                                    formData.name,
                                     formData.categoryId,
                                     formData.typeId,
                                     formData.unitId,
@@ -445,14 +584,30 @@ private object DeviceFormDialogPreviewData {
         )
     )
 
+    val sampleCategories = listOf(
+        DeviceCatalogCategory(1, "SENSOR"),
+        DeviceCatalogCategory(2, "ACTUATOR")
+    )
+
+    val sampleTypes = listOf(
+        DeviceCatalogType(1, "TEMPERATURE", "Temperature sensor", 1, 1, "°C", null),
+        DeviceCatalogType(2, "HUMIDITY", "Humidity sensor", 1, 3, "%", null)
+    )
+
+    val sampleUnits = listOf(
+        DeviceCatalogUnit(1, "°C", "Celsius"),
+        DeviceCatalogUnit(2, "°F", "Fahrenheit"),
+        DeviceCatalogUnit(3, "%", "Percentage")
+    )
+
     val sampleDevice = Device(
         id = "1",
         tenantId = "tenant1",
         greenhouseId = "gh1",
         categoryId = Device.CATEGORY_SENSOR,
-        categoryName = "Temperature Sensor A1",
+        categoryName = "SENSOR",
         typeId = 1,
-        typeName = "Temperature",
+        typeName = "TEMPERATURE",
         unitId = 1,
         unitSymbol = "°C",
         isActive = true
@@ -465,7 +620,10 @@ private fun DeviceFormDialogCreatePreview() {
     GreenhouseAdminTheme {
         DeviceFormDialog(
             mode = DeviceFormMode.Create,
-            greenhouses = DeviceFormDialogPreviewData.sampleGreenhouses
+            greenhouses = DeviceFormDialogPreviewData.sampleGreenhouses,
+            categories = DeviceFormDialogPreviewData.sampleCategories,
+            types = DeviceFormDialogPreviewData.sampleTypes,
+            units = DeviceFormDialogPreviewData.sampleUnits
         )
     }
 }
@@ -476,7 +634,10 @@ private fun DeviceFormDialogEditPreview() {
     GreenhouseAdminTheme {
         DeviceFormDialog(
             mode = DeviceFormMode.Edit(DeviceFormDialogPreviewData.sampleDevice),
-            greenhouses = DeviceFormDialogPreviewData.sampleGreenhouses
+            greenhouses = DeviceFormDialogPreviewData.sampleGreenhouses,
+            categories = DeviceFormDialogPreviewData.sampleCategories,
+            types = DeviceFormDialogPreviewData.sampleTypes,
+            units = DeviceFormDialogPreviewData.sampleUnits
         )
     }
 }

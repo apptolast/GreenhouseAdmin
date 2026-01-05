@@ -3,6 +3,9 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 import com.apptolast.greenhouse.admin.data.model.Alert
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.Device
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.MenuItem
 import com.apptolast.greenhouse.admin.data.model.Sector
@@ -110,6 +113,12 @@ data class ClientDetailUiState(
     val deviceToDelete: Device? = null,
     val isDeletingDevice: Boolean = false,
     val deleteDeviceError: String? = null,
+
+    // Device catalog state (for form dropdowns)
+    val deviceCategories: List<DeviceCatalogCategory> = emptyList(),
+    val deviceTypes: List<DeviceCatalogType> = emptyList(),
+    val deviceUnits: List<DeviceCatalogUnit> = emptyList(),
+    val isLoadingDeviceCatalog: Boolean = false,
 
     // Alerts tab state
     val alerts: List<Alert> = emptyList(),

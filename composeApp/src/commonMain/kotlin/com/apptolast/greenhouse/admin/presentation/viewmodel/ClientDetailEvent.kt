@@ -273,12 +273,16 @@ sealed interface ClientDetailEvent {
      */
     data class OnSubmitDeviceForm(
         val greenhouseId: String,
-        val name: String,
         val categoryId: Short?,
         val typeId: Short?,
         val unitId: Short?,
         val isActive: Boolean
     ) : ClientDetailEvent
+
+    /**
+     * User changed the device category in the form (triggers type filtering).
+     */
+    data class OnDeviceCategoryChanged(val categoryId: Short) : ClientDetailEvent
 
     // === Alerts Tab Events ===
 

@@ -230,11 +230,12 @@
     <!-- Device Category -->
     <string name="device_category_sensor">Sensor</string>
     <string name="device_category_actuator">Actuator</string>
-    <string name="label_category">Category Type</string>
+    <string name="label_category">Category</string>
     <string name="label_greenhouse">Greenhouse</string>
-    <string name="label_device_name">Device Name</string>
+    <string name="label_device_type">Device Type</string>
+    <string name="label_unit">Unit</string>
     <string name="label_is_active">Active</string>
-    <string name="error_name_required">Name is required</string>
+    <string name="error_type_required">Device type is required</string>
 
     <!-- Legacy - kept for compatibility -->
     <string name="device_type_sensor">Sensor</string>

@@ -6,7 +6,6 @@ package com.apptolast.greenhouse.admin.data.model
  */
 data class DeviceFormData(
     val greenhouseId: String = "",
-    val name: String = "",
     val categoryId: Short? = Device.CATEGORY_SENSOR,
     val typeId: Short? = null,
     val unitId: Short? = null,
@@ -17,10 +16,11 @@ data class DeviceFormData(
      */
     data class ValidationErrors(
         val greenhouseId: String? = null,
-        val name: String? = null
+        val categoryId: String? = null,
+        val typeId: String? = null
     ) {
         val hasErrors: Boolean
-            get() = greenhouseId != null || name != null
+            get() = greenhouseId != null || categoryId != null || typeId != null
     }
 
     /**
@@ -29,7 +29,8 @@ data class DeviceFormData(
     fun validate(): ValidationErrors {
         return ValidationErrors(
             greenhouseId = if (greenhouseId.isBlank()) "error_greenhouse_required" else null,
-            name = if (name.isBlank()) "error_name_required" else null
+            categoryId = if (categoryId == null) "error_category_required" else null,
+            typeId = if (typeId == null) "error_type_required" else null
         )
     }
 
@@ -37,5 +38,5 @@ data class DeviceFormData(
      * Returns true if all required fields are valid.
      */
     val isValid: Boolean
-        get() = greenhouseId.isNotBlank() && name.isNotBlank()
+        get() = greenhouseId.isNotBlank() && categoryId != null && typeId != null
 }

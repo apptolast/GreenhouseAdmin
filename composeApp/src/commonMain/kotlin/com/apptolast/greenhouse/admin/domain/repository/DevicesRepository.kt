@@ -1,6 +1,9 @@
 package com.apptolast.greenhouse.admin.domain.repository
 
 import com.apptolast.greenhouse.admin.data.model.Device
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
 
 /**
  * Repository interface for device data operations.
@@ -59,4 +62,25 @@ interface DevicesRepository {
      * @return Result containing success or error
      */
     suspend fun deleteDevice(tenantId: String, deviceId: String): Result<Unit>
+
+    // ==================== CATALOG METHODS ====================
+
+    /**
+     * Fetches all device categories from the catalog.
+     * @return Result containing list of DeviceCatalogCategory or error
+     */
+    suspend fun getDeviceCategories(): Result<List<DeviceCatalogCategory>>
+
+    /**
+     * Fetches device types from the catalog, optionally filtered by category.
+     * @param categoryId Optional category ID to filter types (1=SENSOR, 2=ACTUATOR)
+     * @return Result containing list of DeviceCatalogType or error
+     */
+    suspend fun getDeviceTypes(categoryId: Short? = null): Result<List<DeviceCatalogType>>
+
+    /**
+     * Fetches all units from the catalog.
+     * @return Result containing list of DeviceCatalogUnit or error
+     */
+    suspend fun getUnits(): Result<List<DeviceCatalogUnit>>
 }

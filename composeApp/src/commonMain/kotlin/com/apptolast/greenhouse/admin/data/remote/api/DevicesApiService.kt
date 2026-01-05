@@ -1,7 +1,10 @@
 package com.apptolast.greenhouse.admin.data.remote.api
 
+import com.apptolast.greenhouse.admin.data.model.DeviceCategoryResponse
 import com.apptolast.greenhouse.admin.data.model.DeviceCreateRequest
 import com.apptolast.greenhouse.admin.data.model.DeviceResponse
+import com.apptolast.greenhouse.admin.data.model.DeviceTypeResponse
+import com.apptolast.greenhouse.admin.data.model.DeviceUnitResponse
 import com.apptolast.greenhouse.admin.data.model.DeviceUpdateRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -55,5 +58,33 @@ class DevicesApiService(private val httpClient: HttpClient) {
      */
     suspend fun deleteDevice(tenantId: String, deviceId: String) {
         httpClient.delete("tenants/$tenantId/devices/$deviceId")
+    }
+
+    // ==================== CATALOG ENDPOINTS ====================
+
+    /**
+     * Get all device categories from the catalog.
+     */
+    suspend fun getDeviceCategories(): List<DeviceCategoryResponse> {
+        return httpClient.get("catalog/device-categories").body()
+    }
+
+    /**
+     * Get device types from the catalog, optionally filtered by category.
+     */
+    suspend fun getDeviceTypes(categoryId: Short? = null): List<DeviceTypeResponse> {
+        val url = if (categoryId != null) {
+            "catalog/device-types?categoryId=$categoryId"
+        } else {
+            "catalog/device-types"
+        }
+        return httpClient.get(url).body()
+    }
+
+    /**
+     * Get all units from the catalog.
+     */
+    suspend fun getUnits(): List<DeviceUnitResponse> {
+        return httpClient.get("catalog/units").body()
     }
 }

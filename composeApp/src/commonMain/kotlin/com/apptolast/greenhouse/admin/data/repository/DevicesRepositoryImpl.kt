@@ -1,9 +1,13 @@
 package com.apptolast.greenhouse.admin.data.repository
 
 import com.apptolast.greenhouse.admin.data.model.Device
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
 import com.apptolast.greenhouse.admin.data.model.DeviceCreateRequest
 import com.apptolast.greenhouse.admin.data.model.DeviceUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.toDevice
+import com.apptolast.greenhouse.admin.data.model.toDomain
 import com.apptolast.greenhouse.admin.data.remote.api.DevicesApiService
 import com.apptolast.greenhouse.admin.domain.repository.DevicesRepository
 
@@ -55,5 +59,19 @@ class DevicesRepositoryImpl(
 
     override suspend fun deleteDevice(tenantId: String, deviceId: String): Result<Unit> = runCatching {
         devicesApi.deleteDevice(tenantId, deviceId)
+    }
+
+    // ==================== CATALOG METHODS ====================
+
+    override suspend fun getDeviceCategories(): Result<List<DeviceCatalogCategory>> = runCatching {
+        devicesApi.getDeviceCategories().map { it.toDomain() }
+    }
+
+    override suspend fun getDeviceTypes(categoryId: Short?): Result<List<DeviceCatalogType>> = runCatching {
+        devicesApi.getDeviceTypes(categoryId).map { it.toDomain() }
+    }
+
+    override suspend fun getUnits(): Result<List<DeviceCatalogUnit>> = runCatching {
+        devicesApi.getUnits().map { it.toDomain() }
     }
 }

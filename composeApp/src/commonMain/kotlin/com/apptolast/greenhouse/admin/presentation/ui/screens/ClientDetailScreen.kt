@@ -273,10 +273,17 @@ private fun ClientDetailScreenContent(
         DeviceFormDialog(
             mode = uiState.deviceFormMode,
             greenhouses = uiState.greenhouses,
+            categories = uiState.deviceCategories,
+            types = uiState.deviceTypes,
+            units = uiState.deviceUnits,
+            isLoadingCatalog = uiState.isLoadingDeviceCatalog,
             isSubmitting = uiState.isSubmittingDevice,
             error = uiState.submitDeviceError,
-            onSubmit = { greenhouseId, name, categoryId, typeId, unitId, isActive ->
-                onEvent(ClientDetailEvent.OnSubmitDeviceForm(greenhouseId, name, categoryId, typeId, unitId, isActive))
+            onCategoryChanged = { categoryId ->
+                onEvent(ClientDetailEvent.OnDeviceCategoryChanged(categoryId))
+            },
+            onSubmit = { greenhouseId, categoryId, typeId, unitId, isActive ->
+                onEvent(ClientDetailEvent.OnSubmitDeviceForm(greenhouseId, categoryId, typeId, unitId, isActive))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissDeviceFormDialog) }
         )
