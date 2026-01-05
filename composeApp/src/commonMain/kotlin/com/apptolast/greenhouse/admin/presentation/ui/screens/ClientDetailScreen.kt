@@ -274,14 +274,11 @@ private fun ClientDetailScreenContent(
             mode = uiState.deviceFormMode,
             greenhouses = uiState.greenhouses,
             categories = uiState.deviceCategories,
-            types = uiState.deviceTypes,
+            allTypes = uiState.deviceTypes,
             units = uiState.deviceUnits,
-            isLoadingCatalog = uiState.isLoadingDeviceCatalog,
+            isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingDevice,
             error = uiState.submitDeviceError,
-            onCategoryChanged = { categoryId ->
-                onEvent(ClientDetailEvent.OnDeviceCategoryChanged(categoryId))
-            },
             onSubmit = { greenhouseId, name, categoryId, typeId, unitId, isActive ->
                 onEvent(ClientDetailEvent.OnSubmitDeviceForm(greenhouseId, name, categoryId, typeId, unitId, isActive))
             },
@@ -307,7 +304,7 @@ private fun ClientDetailScreenContent(
             greenhouses = uiState.greenhouses,
             alertTypes = uiState.alertTypes,
             severities = uiState.alertSeverities,
-            isLoadingCatalog = uiState.isLoadingAlertCatalog,
+            isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingAlert,
             error = uiState.submitAlertError,
             onSubmit = { greenhouseId, alertTypeId, severityId, message ->
@@ -335,7 +332,7 @@ private fun ClientDetailScreenContent(
             greenhouses = uiState.greenhouses,
             parameters = uiState.deviceTypes,
             periods = uiState.periods,
-            isLoadingCatalog = uiState.isLoadingSettingCatalog || uiState.isLoadingDeviceCatalog,
+            isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingSetting,
             error = uiState.submitSettingError,
             onSubmit = { greenhouseId, parameterId, periodId, minValue, maxValue, isActive ->

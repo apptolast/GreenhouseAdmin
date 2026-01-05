@@ -70,6 +70,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 /**
  * Dialog for creating or editing a device.
  * Uses catalog data for categories, types, and units.
+ * Types are filtered locally based on the selected category.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,12 +78,11 @@ fun DeviceFormDialog(
     mode: DeviceFormMode,
     greenhouses: List<Greenhouse> = emptyList(),
     categories: List<DeviceCatalogCategory> = emptyList(),
-    types: List<DeviceCatalogType> = emptyList(),
+    allTypes: List<DeviceCatalogType> = emptyList(),
     units: List<DeviceCatalogUnit> = emptyList(),
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onCategoryChanged: (Short) -> Unit = {},
     onSubmit: (greenhouseId: String, name: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -139,15 +139,24 @@ fun DeviceFormDialog(
         stringResource(Res.string.button_create_device)
     }
 
+    // Filter types by selected category (local filtering)
+    val filteredTypes = remember(formData.categoryId, allTypes) {
+        if (formData.categoryId != null) {
+            allTypes.filter { it.categoryId == formData.categoryId }
+        } else {
+            emptyList()
+        }
+    }
+
     // Find selected items
     val selectedGreenhouse = greenhouses.find { it.id == formData.greenhouseId }
     val selectedCategory = categories.find { it.id == formData.categoryId }
-    val selectedType = types.find { it.id == formData.typeId }
+    val selectedType = filteredTypes.find { it.id == formData.typeId }
     val selectedUnit = units.find { it.id == formData.unitId }
 
     // Auto-select unit when type changes (if type has a default unit)
     LaunchedEffect(formData.typeId) {
-        val type = types.find { it.id == formData.typeId }
+        val type = filteredTypes.find { it.id == formData.typeId }
         if (type?.defaultUnitId != null && formData.unitId == null) {
             formData = formData.copy(unitId = type.defaultUnitId)
         }
@@ -378,7 +387,7 @@ fun DeviceFormDialog(
                                             unitId = null  // Reset unit when category changes
                                         )
                                         categoryExpanded = false
-                                        onCategoryChanged(category.id) // Trigger loading of types
+                                        // Types are filtered locally based on categoryId
                                         if (hasAttemptedSubmit) validationErrors = formData.validate()
                                     }
                                 )
@@ -438,7 +447,7 @@ fun DeviceFormDialog(
                             expanded = typeExpanded,
                             onDismissRequest = { typeExpanded = false }
                         ) {
-                            types.forEach { type ->
+                            filteredTypes.forEach { type ->
                                 DropdownMenuItem(
                                     text = {
                                         Column {
@@ -684,7 +693,7 @@ private fun DeviceFormDialogCreatePreview() {
             mode = DeviceFormMode.Create,
             greenhouses = DeviceFormDialogPreviewData.sampleGreenhouses,
             categories = DeviceFormDialogPreviewData.sampleCategories,
-            types = DeviceFormDialogPreviewData.sampleTypes,
+            allTypes = DeviceFormDialogPreviewData.sampleTypes,
             units = DeviceFormDialogPreviewData.sampleUnits
         )
     }
@@ -698,7 +707,7 @@ private fun DeviceFormDialogEditPreview() {
             mode = DeviceFormMode.Edit(DeviceFormDialogPreviewData.sampleDevice),
             greenhouses = DeviceFormDialogPreviewData.sampleGreenhouses,
             categories = DeviceFormDialogPreviewData.sampleCategories,
-            types = DeviceFormDialogPreviewData.sampleTypes,
+            allTypes = DeviceFormDialogPreviewData.sampleTypes,
             units = DeviceFormDialogPreviewData.sampleUnits
         )
     }

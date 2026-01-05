@@ -30,6 +30,10 @@ data class ClientDetailUiState(
     val alertCount: Int = 0,
     val topBarSearchQuery: String = "",
 
+    // Catalogs state (preloaded on init for all form dropdowns)
+    val isCatalogsLoading: Boolean = true,
+    val catalogsError: String? = null,
+
     // Client data
     val client: Client? = null,
 
@@ -117,11 +121,10 @@ data class ClientDetailUiState(
     val isDeletingDevice: Boolean = false,
     val deleteDeviceError: String? = null,
 
-    // Device catalog state (for form dropdowns)
+    // Device catalog state (preloaded at init)
     val deviceCategories: List<DeviceCatalogCategory> = emptyList(),
     val deviceTypes: List<DeviceCatalogType> = emptyList(),
     val deviceUnits: List<DeviceCatalogUnit> = emptyList(),
-    val isLoadingDeviceCatalog: Boolean = false,
 
     // Alerts tab state
     val alerts: List<Alert> = emptyList(),
@@ -140,10 +143,9 @@ data class ClientDetailUiState(
     val isDeletingAlert: Boolean = false,
     val deleteAlertError: String? = null,
 
-    // Alert catalog state (for form dropdowns)
+    // Alert catalog state (preloaded at init)
     val alertTypes: List<AlertType> = emptyList(),
     val alertSeverities: List<AlertSeverityCatalog> = emptyList(),
-    val isLoadingAlertCatalog: Boolean = false,
 
     // Settings tab state
     val settings: List<Setting> = emptyList(),
@@ -162,9 +164,8 @@ data class ClientDetailUiState(
     val isDeletingSetting: Boolean = false,
     val deleteSettingError: String? = null,
 
-    // Setting catalog state (for form dropdowns)
-    val periods: List<Period> = emptyList(),
-    val isLoadingSettingCatalog: Boolean = false
+    // Setting catalog state (preloaded at init)
+    val periods: List<Period> = emptyList()
 ) {
     /**
      * Returns true if in error state with no content.

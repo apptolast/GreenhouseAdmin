@@ -226,21 +226,25 @@ private fun AccountSectionCard(
                     )
 
                     if (roles.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(18.dp))
 
-                        // Role label
-                        Text(
-                            text = stringResource(Res.string.settings_role),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            // Role label
+                            Text(
+                                text = stringResource(Res.string.settings_role),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
 
-                        // Roles
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            roles.forEach { role ->
-                                RoleChip(role = role)
+                            // Roles
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                roles.forEach { role ->
+                                    RoleChip(role = role)
+                                }
                             }
                         }
                     }
@@ -319,8 +323,8 @@ private fun LogoutButton(
 
 @Composable
 private fun LogoutConfirmationDialog(
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onConfirm: () -> Unit = {},
+    onDismiss: () -> Unit = {}
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -397,9 +401,8 @@ private fun SettingsScreenLoadingPreview() {
 @Composable
 private fun LogoutConfirmationDialogPreview() {
     GreenhouseAdminTheme {
-        LogoutConfirmationDialog(
-            onConfirm = {},
-            onDismiss = {}
-        )
+        ProvideAppWindowInfo {
+            LogoutConfirmationDialog()
+        }
     }
 }

@@ -24,6 +24,8 @@ import com.apptolast.greenhouse.admin.domain.repository.GreenhousesRepository
 import com.apptolast.greenhouse.admin.domain.repository.SectorsRepository
 import com.apptolast.greenhouse.admin.domain.repository.SettingsRepository
 import com.apptolast.greenhouse.admin.domain.repository.UsersRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,6 +57,8 @@ class ClientDetailViewModel(
     init {
         loadLayoutData()
         loadClient()
+        // Preload all catalogs for form dropdowns
+        loadAllCatalogs()
     }
 
     private fun loadLayoutData() {
@@ -163,7 +167,9 @@ class ClientDetailViewModel(
                 event.unitId,
                 event.isActive
             )
-            is ClientDetailEvent.OnDeviceCategoryChanged -> loadDeviceTypesByCategory(event.categoryId)
+            // OnDeviceCategoryChanged is no longer needed - types are filtered locally in the dialog
+            is ClientDetailEvent.OnDeviceCategoryChanged -> { /* No-op: types filtered locally */
+            }
 
             // Alerts events
             is ClientDetailEvent.LoadAlerts -> loadAlerts()
@@ -227,9 +233,76 @@ class ClientDetailViewModel(
         }
     }
 
+    /**
+     * Preloads all catalog data needed for dropdown menus across all tabs.
+     * Called once during ViewModel initialization.
+     * All catalog endpoints are loaded in parallel for better performance.
+     */
+    private fun loadAllCatalogs() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCatalogsLoading = true, catalogsError = null) }
+
+            try {
+                coroutineScope {
+                    // Device catalogs
+                    val categoriesDeferred = async { devicesRepository.getDeviceCategories() }
+                    val typesDeferred = async { devicesRepository.getDeviceTypes(null) } // All types
+                    val unitsDeferred = async { devicesRepository.getUnits() }
+
+                    // Alert catalogs
+                    val alertTypesDeferred = async { alertsRepository.getAlertTypes() }
+                    val severitiesDeferred = async { alertsRepository.getAlertSeverities() }
+
+                    // Settings catalogs
+                    val periodsDeferred = async { settingsRepository.getPeriods() }
+
+                    // Greenhouses (tenant-specific but used across all tabs)
+                    val greenhousesDeferred = async { greenhousesRepository.getGreenhousesByTenantId(clientId) }
+
+                    // Await all results
+                    val categories = categoriesDeferred.await()
+                    val types = typesDeferred.await()
+                    val units = unitsDeferred.await()
+                    val alertTypes = alertTypesDeferred.await()
+                    val severities = severitiesDeferred.await()
+                    val periods = periodsDeferred.await()
+                    val greenhouses = greenhousesDeferred.await()
+
+                    // Update state with all catalog data
+                    _uiState.update { state ->
+                        state.copy(
+                            // Device catalogs
+                            deviceCategories = categories.getOrDefault(emptyList()),
+                            deviceTypes = types.getOrDefault(emptyList()),
+                            deviceUnits = units.getOrDefault(emptyList()),
+                            // Alert catalogs
+                            alertTypes = alertTypes.getOrDefault(emptyList()),
+                            alertSeverities = severities.getOrDefault(emptyList()),
+                            // Settings catalogs
+                            periods = periods.getOrDefault(emptyList()),
+                            // Greenhouses
+                            greenhouses = greenhouses.getOrDefault(emptyList()),
+                            // Loading state
+                            isCatalogsLoading = false,
+                            catalogsError = null
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isCatalogsLoading = false,
+                        catalogsError = e.message ?: "Error loading catalogs"
+                    )
+                }
+            }
+        }
+    }
+
     private fun selectTab(tab: ClientDetailTab) {
         _uiState.update { it.copy(selectedTab = tab) }
-        // Load data when tab is selected and not already loaded
+        // Load tab-specific data when tab is selected and not already loaded
+        // Note: Greenhouses and catalogs are preloaded at ViewModel init
         when (tab) {
             ClientDetailTab.USERS -> {
                 if (_uiState.value.users.isEmpty() && !_uiState.value.isLoadingUsers) {
@@ -238,6 +311,7 @@ class ClientDetailViewModel(
             }
 
             ClientDetailTab.GREENHOUSES -> {
+                // Greenhouses already loaded at init, but allow manual refresh
                 if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
                     loadGreenhouses()
                 }
@@ -247,19 +321,11 @@ class ClientDetailViewModel(
                 if (_uiState.value.sectors.isEmpty() && !_uiState.value.isLoadingSectors) {
                     loadSectors()
                 }
-                // Also load greenhouses for the dropdown if not already loaded
-                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
-                    loadGreenhouses()
-                }
             }
 
             ClientDetailTab.DEVICES -> {
                 if (_uiState.value.devices.isEmpty() && !_uiState.value.isLoadingDevices) {
                     loadDevices()
-                }
-                // Also load greenhouses for the dropdown if not already loaded
-                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
-                    loadGreenhouses()
                 }
             }
 
@@ -267,23 +333,15 @@ class ClientDetailViewModel(
                 if (_uiState.value.alerts.isEmpty() && !_uiState.value.isLoadingAlerts) {
                     loadAlerts()
                 }
-                // Also load greenhouses for the dropdown if not already loaded
-                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
-                    loadGreenhouses()
-                }
             }
 
             ClientDetailTab.SETTINGS -> {
                 if (_uiState.value.settings.isEmpty() && !_uiState.value.isLoadingSettings) {
                     loadSettings()
                 }
-                // Also load greenhouses for the dropdown if not already loaded
-                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
-                    loadGreenhouses()
-                }
             }
 
-            else -> { /* No lazy loading for other tabs yet */
+            else -> { /* No lazy loading for other tabs */
             }
         }
     }
@@ -888,16 +946,10 @@ class ClientDetailViewModel(
             it.copy(
                 showDeviceFormDialog = true,
                 deviceFormMode = mode,
-                submitDeviceError = null,
-                deviceTypes = emptyList() // Clear types until category is selected
+                submitDeviceError = null
             )
         }
-        // Load catalog data when opening the dialog
-        loadDeviceCatalog()
-        // If editing, load types for the device's category
-        if (mode is DeviceFormMode.Edit && mode.device.categoryId != null) {
-            loadDeviceTypesByCategory(mode.device.categoryId)
-        }
+        // Catalogs already loaded at ViewModel init - types filtered in UI
     }
 
     private fun dismissDeviceFormDialog() {
@@ -1019,40 +1071,6 @@ class ClientDetailViewModel(
         }
     }
 
-    /**
-     * Loads device catalog data (categories and units).
-     * Types are loaded separately when category is selected.
-     */
-    private fun loadDeviceCatalog() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingDeviceCatalog = true) }
-
-            val categoriesResult = devicesRepository.getDeviceCategories()
-            val unitsResult = devicesRepository.getUnits()
-
-            _uiState.update { state ->
-                state.copy(
-                    deviceCategories = categoriesResult.getOrDefault(emptyList()),
-                    deviceUnits = unitsResult.getOrDefault(emptyList()),
-                    isLoadingDeviceCatalog = false
-                )
-            }
-        }
-    }
-
-    /**
-     * Loads device types filtered by the selected category.
-     */
-    private fun loadDeviceTypesByCategory(categoryId: Short) {
-        viewModelScope.launch {
-            val typesResult = devicesRepository.getDeviceTypes(categoryId)
-            _uiState.update { state ->
-                state.copy(
-                    deviceTypes = typesResult.getOrDefault(emptyList())
-                )
-            }
-        }
-    }
 
     // === Alerts Tab Methods ===
 
@@ -1088,8 +1106,7 @@ class ClientDetailViewModel(
                 submitAlertError = null
             )
         }
-        // Load catalog data when opening the dialog
-        loadAlertCatalog()
+        // Catalogs already loaded at ViewModel init
     }
 
     private fun dismissAlertFormDialog() {
@@ -1204,26 +1221,6 @@ class ClientDetailViewModel(
     }
 
     /**
-     * Loads alert catalog data (types and severities).
-     */
-    private fun loadAlertCatalog() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingAlertCatalog = true) }
-
-            val typesResult = alertsRepository.getAlertTypes()
-            val severitiesResult = alertsRepository.getAlertSeverities()
-
-            _uiState.update { state ->
-                state.copy(
-                    alertTypes = typesResult.getOrDefault(emptyList()),
-                    alertSeverities = severitiesResult.getOrDefault(emptyList()),
-                    isLoadingAlertCatalog = false
-                )
-            }
-        }
-    }
-
-    /**
      * Resolves an alert.
      */
     private fun resolveAlert(alert: Alert) {
@@ -1306,31 +1303,7 @@ class ClientDetailViewModel(
                 submitSettingError = null
             )
         }
-        // Load periods catalog for form dropdowns
-        loadSettingCatalog()
-        // Also load device types (parameters) if not already loaded
-        if (_uiState.value.deviceTypes.isEmpty()) {
-            loadDeviceCatalog()
-        }
-    }
-
-    private fun loadSettingCatalog() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingSettingCatalog = true) }
-
-            settingsRepository.getPeriods()
-                .onSuccess { periods ->
-                    _uiState.update {
-                        it.copy(
-                            periods = periods,
-                            isLoadingSettingCatalog = false
-                        )
-                    }
-                }
-                .onFailure {
-                    _uiState.update { it.copy(isLoadingSettingCatalog = false) }
-                }
-        }
+        // Catalogs already loaded at ViewModel init
     }
 
     private fun dismissSettingFormDialog() {
