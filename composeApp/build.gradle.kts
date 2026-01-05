@@ -171,7 +171,8 @@ compose.desktop {
 buildkonfig {
     packageName = "com.apptolast.greenhouse.admin"
     defaultConfigs {
+        // API_BASE_URL is injected from local.properties or GitHub Secrets in CI/CD
+        // Format: https://inverapi-dev.apptolast.com/api/v1/ (includes /api/v1/)
         buildConfigField(STRING, "API_BASE_URL", localProperties.getProperty("API_BASE_URL", ""))
-        buildConfigField(STRING, "AUTH_BASE_URL", localProperties.getProperty("AUTH_BASE_URL", ""))
     }
 }

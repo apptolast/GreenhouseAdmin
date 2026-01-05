@@ -50,10 +50,10 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
     // Add Authorization header interceptor
     // This ensures the token is read fresh from storage on each request
     client.plugin(HttpSend).intercept { request ->
-        // Skip auth header for auth endpoints (they don't need it)
-        val isAuthEndpoint = request.url.toString().contains("/api/auth/")
+        // Skip auth header for auth endpoints (login doesn't need it, logout uses it but is optional)
+        val isLoginEndpoint = request.url.toString().contains("/auth/login")
 
-        if (!isAuthEndpoint) {
+        if (!isLoginEndpoint) {
             tokenStorage.getAccessToken()?.let { token ->
                 request.headers.append(HttpHeaders.Authorization, "Bearer $token")
             }
