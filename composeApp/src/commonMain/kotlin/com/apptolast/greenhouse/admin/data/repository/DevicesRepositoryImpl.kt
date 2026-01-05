@@ -25,6 +25,7 @@ class DevicesRepositoryImpl(
     override suspend fun createDevice(
         tenantId: String,
         greenhouseId: String,
+        name: String?,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
@@ -32,6 +33,7 @@ class DevicesRepositoryImpl(
     ): Result<Device> = runCatching {
         val request = DeviceCreateRequest(
             greenhouseId = greenhouseId,
+            name = name,
             categoryId = categoryId,
             typeId = typeId,
             unitId = unitId,
@@ -43,12 +45,14 @@ class DevicesRepositoryImpl(
     override suspend fun updateDevice(
         tenantId: String,
         deviceId: String,
+        name: String?,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
         isActive: Boolean?
     ): Result<Device> = runCatching {
         val request = DeviceUpdateRequest(
+            name = name,
             categoryId = categoryId,
             typeId = typeId,
             unitId = unitId,

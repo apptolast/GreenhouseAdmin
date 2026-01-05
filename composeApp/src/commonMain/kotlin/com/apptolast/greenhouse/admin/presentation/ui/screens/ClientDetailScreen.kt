@@ -282,8 +282,8 @@ private fun ClientDetailScreenContent(
             onCategoryChanged = { categoryId ->
                 onEvent(ClientDetailEvent.OnDeviceCategoryChanged(categoryId))
             },
-            onSubmit = { greenhouseId, categoryId, typeId, unitId, isActive ->
-                onEvent(ClientDetailEvent.OnSubmitDeviceForm(greenhouseId, categoryId, typeId, unitId, isActive))
+            onSubmit = { greenhouseId, name, categoryId, typeId, unitId, isActive ->
+                onEvent(ClientDetailEvent.OnSubmitDeviceForm(greenhouseId, name, categoryId, typeId, unitId, isActive))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissDeviceFormDialog) }
         )

@@ -6,6 +6,7 @@ package com.apptolast.greenhouse.admin.data.model
  */
 data class DeviceFormData(
     val greenhouseId: String = "",
+    val name: String = "",
     val categoryId: Short? = Device.CATEGORY_SENSOR,
     val typeId: Short? = null,
     val unitId: Short? = null,
@@ -16,11 +17,12 @@ data class DeviceFormData(
      */
     data class ValidationErrors(
         val greenhouseId: String? = null,
+        val name: String? = null,
         val categoryId: String? = null,
         val typeId: String? = null
     ) {
         val hasErrors: Boolean
-            get() = greenhouseId != null || categoryId != null || typeId != null
+            get() = greenhouseId != null || name != null || categoryId != null || typeId != null
     }
 
     /**
@@ -29,6 +31,7 @@ data class DeviceFormData(
     fun validate(): ValidationErrors {
         return ValidationErrors(
             greenhouseId = if (greenhouseId.isBlank()) "error_greenhouse_required" else null,
+            name = if (name.length > MAX_NAME_LENGTH) "error_name_max_length" else null,
             categoryId = if (categoryId == null) "error_category_required" else null,
             typeId = if (typeId == null) "error_type_required" else null
         )
@@ -38,5 +41,9 @@ data class DeviceFormData(
      * Returns true if all required fields are valid.
      */
     val isValid: Boolean
-        get() = greenhouseId.isNotBlank() && categoryId != null && typeId != null
+        get() = greenhouseId.isNotBlank() && categoryId != null && typeId != null && name.length <= MAX_NAME_LENGTH
+
+    companion object {
+        const val MAX_NAME_LENGTH = 100
+    }
 }

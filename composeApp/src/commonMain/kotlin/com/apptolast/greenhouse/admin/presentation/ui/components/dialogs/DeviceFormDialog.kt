@@ -56,8 +56,10 @@ import greenhouseadmin.composeapp.generated.resources.dialog_edit_device_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_device_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_device_title
 import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
+import greenhouseadmin.composeapp.generated.resources.error_name_max_length
 import greenhouseadmin.composeapp.generated.resources.error_type_required
 import greenhouseadmin.composeapp.generated.resources.label_category
+import greenhouseadmin.composeapp.generated.resources.label_device_name
 import greenhouseadmin.composeapp.generated.resources.label_device_type
 import greenhouseadmin.composeapp.generated.resources.label_greenhouse
 import greenhouseadmin.composeapp.generated.resources.label_is_active
@@ -81,7 +83,7 @@ fun DeviceFormDialog(
     isSubmitting: Boolean = false,
     error: String? = null,
     onCategoryChanged: (Short) -> Unit = {},
-    onSubmit: (greenhouseId: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _ -> },
+    onSubmit: (greenhouseId: String, name: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -90,6 +92,7 @@ fun DeviceFormDialog(
             is DeviceFormMode.Create -> DeviceFormData()
             is DeviceFormMode.Edit -> DeviceFormData(
                 greenhouseId = mode.device.greenhouseId,
+                name = mode.device.name ?: "",
                 categoryId = mode.device.categoryId,
                 typeId = mode.device.typeId,
                 unitId = mode.device.unitId,
@@ -107,11 +110,13 @@ fun DeviceFormDialog(
     var unitExpanded by remember { mutableStateOf(false) }
 
     val greenhouseErrorMsg = stringResource(Res.string.error_greenhouse_required)
+    val nameMaxLengthErrorMsg = stringResource(Res.string.error_name_max_length)
     val typeErrorMsg = stringResource(Res.string.error_type_required)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
             "error_greenhouse_required" -> greenhouseErrorMsg
+            "error_name_max_length" -> nameMaxLengthErrorMsg
             "error_type_required" -> typeErrorMsg
             else -> null
         }
@@ -257,6 +262,61 @@ fun DeviceFormDialog(
                     if (hasAttemptedSubmit && validationErrors.greenhouseId != null) {
                         Text(
                             text = getErrorMessage(validationErrors.greenhouseId) ?: "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Name text field (optional)
+                Column {
+                    Text(
+                        text = stringResource(Res.string.label_device_name),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    OutlinedTextField(
+                        value = formData.name,
+                        onValueChange = {
+                            if (it.length <= DeviceFormData.MAX_NAME_LENGTH) {
+                                formData = formData.copy(name = it)
+                                if (hasAttemptedSubmit) validationErrors = formData.validate()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSubmitting,
+                        isError = hasAttemptedSubmit && validationErrors.name != null,
+                        singleLine = true,
+                        placeholder = {
+                            Text(
+                                text = "e.g., Sensor Temperatura Norte",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                        },
+                        supportingText = {
+                            Text(
+                                text = "${formData.name.length}/${DeviceFormData.MAX_NAME_LENGTH}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                            errorBorderColor = MaterialTheme.colorScheme.error
+                        )
+                    )
+
+                    if (hasAttemptedSubmit && validationErrors.name != null) {
+                        Text(
+                            text = getErrorMessage(validationErrors.name) ?: "",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(top = 4.dp)
@@ -529,6 +589,7 @@ fun DeviceFormDialog(
                             if (!validationErrors.hasErrors) {
                                 onSubmit(
                                     formData.greenhouseId,
+                                    formData.name,
                                     formData.categoryId,
                                     formData.typeId,
                                     formData.unitId,
@@ -604,6 +665,7 @@ private object DeviceFormDialogPreviewData {
         id = "1",
         tenantId = "tenant1",
         greenhouseId = "gh1",
+        name = "Sensor Temperatura Norte",
         categoryId = Device.CATEGORY_SENSOR,
         categoryName = "SENSOR",
         typeId = 1,

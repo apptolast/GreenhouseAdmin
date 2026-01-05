@@ -41,6 +41,7 @@ import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_category
 import greenhouseadmin.composeapp.generated.resources.header_id
+import greenhouseadmin.composeapp.generated.resources.header_name
 import greenhouseadmin.composeapp.generated.resources.header_status
 import greenhouseadmin.composeapp.generated.resources.status_active
 import greenhouseadmin.composeapp.generated.resources.status_inactive
@@ -49,7 +50,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Table displaying list of devices with headers and rows.
- * Columns: ID | CATEGORY | STATUS | ACTIONS
+ * Columns: ID | NAME | CATEGORY | STATUS | ACTIONS
  */
 @Composable
 fun DevicesTable(
@@ -98,7 +99,16 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(2f)
+            modifier = Modifier.weight(1.5f)
+        )
+
+        // NAME column
+        Text(
+            text = stringResource(Res.string.header_name),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1.5f)
         )
 
         // CATEGORY column
@@ -150,7 +160,18 @@ private fun DeviceTableRow(
             style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
             fontFamily = FontFamily.Monospace,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(2f),
+            modifier = Modifier.weight(1.5f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        // NAME - Device name (or empty if not set)
+        Text(
+            text = device.name ?: "-",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = if (device.name != null) FontWeight.Medium else FontWeight.Normal,
+            modifier = Modifier.weight(1.5f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -256,6 +277,7 @@ private object DevicesTablePreviewData {
             id = "550e8400-e29b-41d4-a716-446655440001",
             tenantId = "tenant1",
             greenhouseId = "gh1",
+            name = "Sensor Temperatura Invernadero 1",
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "SENSOR",
             typeId = 1,
@@ -268,6 +290,7 @@ private object DevicesTablePreviewData {
             id = "042e3d10-7041-4c32-abd7-063036ce24ba",
             tenantId = "tenant1",
             greenhouseId = "gh1",
+            name = null, // Device without name
             categoryId = Device.CATEGORY_ACTUATOR,
             categoryName = "ACTUATOR",
             typeId = 2,
@@ -280,6 +303,7 @@ private object DevicesTablePreviewData {
             id = "4c5a5263-68da-4688-93c7-ddf81b5dafb2",
             tenantId = "tenant1",
             greenhouseId = "gh1",
+            name = "Sensor CO2 Norte",
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "SENSOR",
             typeId = 3,

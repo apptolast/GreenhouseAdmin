@@ -155,6 +155,7 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnDismissDeviceFormDialog -> dismissDeviceFormDialog()
             is ClientDetailEvent.OnSubmitDeviceForm -> submitDeviceForm(
                 event.greenhouseId,
+                event.name,
                 event.categoryId,
                 event.typeId,
                 event.unitId,
@@ -892,12 +893,14 @@ class ClientDetailViewModel(
 
     private fun submitDeviceForm(
         greenhouseId: String,
+        name: String,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
         isActive: Boolean
     ) {
         val mode = _uiState.value.deviceFormMode
+        val deviceName = name.ifBlank { null } // Convert empty string to null
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingDevice = true, submitDeviceError = null) }
@@ -907,6 +910,7 @@ class ClientDetailViewModel(
                     devicesRepository.createDevice(
                         tenantId = clientId,
                         greenhouseId = greenhouseId,
+                        name = deviceName,
                         categoryId = categoryId,
                         typeId = typeId,
                         unitId = unitId,
@@ -918,6 +922,7 @@ class ClientDetailViewModel(
                     devicesRepository.updateDevice(
                         tenantId = clientId,
                         deviceId = mode.device.id,
+                        name = deviceName,
                         categoryId = categoryId,
                         typeId = typeId,
                         unitId = unitId,

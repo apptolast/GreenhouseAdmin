@@ -56,7 +56,6 @@ import greenhouseadmin.composeapp.generated.resources.dialog_edit_alert_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_alert_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_alert_title
 import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
-import greenhouseadmin.composeapp.generated.resources.error_message_min_length
 import greenhouseadmin.composeapp.generated.resources.error_message_required
 import greenhouseadmin.composeapp.generated.resources.field_alert_type
 import greenhouseadmin.composeapp.generated.resources.field_greenhouse
@@ -107,13 +106,11 @@ fun AlertFormDialog(
 
     val greenhouseRequiredMsg = stringResource(Res.string.error_greenhouse_required)
     val messageRequiredMsg = stringResource(Res.string.error_message_required)
-    val messageMinLengthMsg = stringResource(Res.string.error_message_min_length)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
             "error_greenhouse_required" -> greenhouseRequiredMsg
             "error_message_required" -> messageRequiredMsg
-            "error_message_min_length" -> messageMinLengthMsg
             else -> null
         }
     }

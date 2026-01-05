@@ -11,6 +11,7 @@ data class DeviceResponse(
     val id: String,
     val tenantId: String,
     val greenhouseId: String,
+    val name: String? = null,
     val categoryId: Short? = null,
     val categoryName: String? = null,
     val typeId: Short? = null,
@@ -28,6 +29,7 @@ data class DeviceResponse(
 @Serializable
 data class DeviceCreateRequest(
     val greenhouseId: String,
+    val name: String? = null,
     val categoryId: Short? = null,
     val typeId: Short? = null,
     val unitId: Short? = null,
@@ -39,6 +41,7 @@ data class DeviceCreateRequest(
  */
 @Serializable
 data class DeviceUpdateRequest(
+    val name: String? = null,
     val categoryId: Short? = null,
     val typeId: Short? = null,
     val unitId: Short? = null,
@@ -54,6 +57,7 @@ data class Device(
     val id: String,
     val tenantId: String,
     val greenhouseId: String,
+    val name: String? = null,
     val categoryId: Short? = null,
     val categoryName: String? = null,
     val typeId: Short? = null,
@@ -75,18 +79,19 @@ data class Device(
         }
 
     /**
-     * Returns the first letter of the type name as initial for avatars.
+     * Returns the first letter of the name or type name as initial for avatars.
      */
     val initial: String
-        get() = typeName?.firstOrNull()?.uppercaseChar()?.toString()
+        get() = name?.firstOrNull()?.uppercaseChar()?.toString()
+            ?: typeName?.firstOrNull()?.uppercaseChar()?.toString()
             ?: categoryName?.firstOrNull()?.uppercaseChar()?.toString()
             ?: "D"
 
     /**
-     * Returns a display name combining category and type.
+     * Returns a display name (name if available, otherwise category and type).
      */
     val displayName: String
-        get() = buildString {
+        get() = name ?: buildString {
             if (typeName != null) {
                 append(typeName)
             } else if (categoryName != null) {
@@ -130,6 +135,7 @@ fun DeviceResponse.toDevice() = Device(
     id = id,
     tenantId = tenantId,
     greenhouseId = greenhouseId,
+    name = name,
     categoryId = categoryId,
     categoryName = categoryName,
     typeId = typeId,

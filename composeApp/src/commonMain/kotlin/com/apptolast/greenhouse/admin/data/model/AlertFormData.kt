@@ -26,11 +26,7 @@ data class AlertFormData(
     fun validate(): ValidationErrors {
         return ValidationErrors(
             greenhouseId = if (greenhouseId.isBlank()) "error_greenhouse_required" else null,
-            message = when {
-                message.isBlank() -> "error_message_required"
-                message.length < 5 -> "error_message_min_length"
-                else -> null
-            }
+            message = if (message.isBlank()) "error_message_required" else null
         )
     }
 

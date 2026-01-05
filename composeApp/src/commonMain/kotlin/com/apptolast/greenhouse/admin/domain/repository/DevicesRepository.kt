@@ -21,6 +21,7 @@ interface DevicesRepository {
      * Creates a new device for a tenant.
      * @param tenantId The tenant ID the device belongs to
      * @param greenhouseId The greenhouse ID where the device is installed
+     * @param name Optional display name for the device
      * @param categoryId Device category (1=SENSOR, 2=ACTUATOR)
      * @param typeId Device type ID
      * @param unitId Unit of measure ID
@@ -30,6 +31,7 @@ interface DevicesRepository {
     suspend fun createDevice(
         tenantId: String,
         greenhouseId: String,
+        name: String?,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
@@ -40,6 +42,7 @@ interface DevicesRepository {
      * Updates an existing device.
      * @param tenantId The tenant ID the device belongs to
      * @param deviceId The device ID to update
+     * @param name New display name (optional)
      * @param categoryId New category ID (optional)
      * @param typeId New type ID (optional)
      * @param unitId New unit ID (optional)
@@ -49,6 +52,7 @@ interface DevicesRepository {
     suspend fun updateDevice(
         tenantId: String,
         deviceId: String,
+        name: String?,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
