@@ -201,6 +201,7 @@
 
     <!-- Sector Validation Errors -->
     <string name="error_greenhouse_required">Please select a greenhouse</string>
+    <string name="error_category_required">Category is required</string>
     <string name="error_variety_min_length">Variety must be at least 2 characters</string>
     <string name="error_area_required">Area is required</string>
     <string name="error_area_invalid">Please enter a valid number</string>
@@ -222,9 +223,20 @@
     <string name="devices_empty">No devices found for this client.</string>
 
     <!-- Device Table Headers -->
+    <string name="header_id">ID</string>
     <string name="header_type">TYPE</string>
+    <string name="header_category">CATEGORY</string>
 
-    <!-- Device Type and Status -->
+    <!-- Device Category -->
+    <string name="device_category_sensor">Sensor</string>
+    <string name="device_category_actuator">Actuator</string>
+    <string name="label_category">Category Type</string>
+    <string name="label_greenhouse">Greenhouse</string>
+    <string name="label_device_name">Device Name</string>
+    <string name="label_is_active">Active</string>
+    <string name="error_name_required">Name is required</string>
+
+    <!-- Legacy - kept for compatibility -->
     <string name="device_type_sensor">Sensor</string>
     <string name="device_type_actuator">Actuator</string>
     <string name="device_status_online">Online</string>

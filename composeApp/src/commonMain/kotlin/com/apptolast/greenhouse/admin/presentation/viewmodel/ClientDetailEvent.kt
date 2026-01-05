@@ -5,8 +5,6 @@ import com.apptolast.greenhouse.admin.data.model.AlertSeverity
 import com.apptolast.greenhouse.admin.data.model.AlertStatus
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.Device
-import com.apptolast.greenhouse.admin.data.model.DeviceStatus
-import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.Sector
@@ -274,9 +272,12 @@ sealed interface ClientDetailEvent {
      * User submitted the device form (create or edit).
      */
     data class OnSubmitDeviceForm(
+        val greenhouseId: String,
         val name: String,
-        val type: DeviceType,
-        val status: DeviceStatus
+        val categoryId: Short?,
+        val typeId: Short?,
+        val unitId: Short?,
+        val isActive: Boolean
     ) : ClientDetailEvent
 
     // === Alerts Tab Events ===

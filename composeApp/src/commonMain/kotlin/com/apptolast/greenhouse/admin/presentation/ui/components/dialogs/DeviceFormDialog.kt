@@ -26,37 +26,39 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.apptolast.greenhouse.admin.data.model.Device
 import com.apptolast.greenhouse.admin.data.model.DeviceFormData
-import com.apptolast.greenhouse.admin.data.model.DeviceStatus
-import com.apptolast.greenhouse.admin.data.model.DeviceType
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DeviceFormMode
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.button_cancel
 import greenhouseadmin.composeapp.generated.resources.button_create_device
 import greenhouseadmin.composeapp.generated.resources.button_save
-import greenhouseadmin.composeapp.generated.resources.device_status_offline
-import greenhouseadmin.composeapp.generated.resources.device_status_online
-import greenhouseadmin.composeapp.generated.resources.device_type_actuator
-import greenhouseadmin.composeapp.generated.resources.device_type_sensor
+import greenhouseadmin.composeapp.generated.resources.device_category_actuator
+import greenhouseadmin.composeapp.generated.resources.device_category_sensor
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_device_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_device_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_device_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_device_title
-import greenhouseadmin.composeapp.generated.resources.error_name_min_length
-import greenhouseadmin.composeapp.generated.resources.field_status
-import greenhouseadmin.composeapp.generated.resources.field_type
-import greenhouseadmin.composeapp.generated.resources.label_name
+import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
+import greenhouseadmin.composeapp.generated.resources.error_name_required
+import greenhouseadmin.composeapp.generated.resources.label_category
+import greenhouseadmin.composeapp.generated.resources.label_device_name
+import greenhouseadmin.composeapp.generated.resources.label_greenhouse
+import greenhouseadmin.composeapp.generated.resources.label_is_active
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -67,9 +69,10 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun DeviceFormDialog(
     mode: DeviceFormMode,
+    greenhouses: List<Greenhouse> = emptyList(),
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (name: String, type: DeviceType, status: DeviceStatus) -> Unit = { _, _, _ -> },
+    onSubmit: (greenhouseId: String, name: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -77,9 +80,12 @@ fun DeviceFormDialog(
         when (mode) {
             is DeviceFormMode.Create -> DeviceFormData()
             is DeviceFormMode.Edit -> DeviceFormData(
-                name = mode.device.name,
-                type = mode.device.type,
-                status = mode.device.status
+                greenhouseId = mode.device.greenhouseId,
+                name = mode.device.categoryName ?: "",
+                categoryId = mode.device.categoryId,
+                typeId = mode.device.typeId,
+                unitId = mode.device.unitId,
+                isActive = mode.device.isActive
             )
         }
     }
@@ -87,14 +93,16 @@ fun DeviceFormDialog(
     var formData by remember(mode) { mutableStateOf(initialFormData) }
     var validationErrors by remember { mutableStateOf(DeviceFormData.ValidationErrors()) }
     var hasAttemptedSubmit by remember { mutableStateOf(false) }
-    var typeExpanded by remember { mutableStateOf(false) }
-    var statusExpanded by remember { mutableStateOf(false) }
+    var greenhouseExpanded by remember { mutableStateOf(false) }
+    var categoryExpanded by remember { mutableStateOf(false) }
 
-    val nameErrorMsg = stringResource(Res.string.error_name_min_length)
+    val greenhouseErrorMsg = stringResource(Res.string.error_greenhouse_required)
+    val nameErrorMsg = stringResource(Res.string.error_name_required)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
-            "error_name_min_length" -> nameErrorMsg
+            "error_greenhouse_required" -> greenhouseErrorMsg
+            "error_name_required" -> nameErrorMsg
             else -> null
         }
     }
@@ -116,10 +124,11 @@ fun DeviceFormDialog(
         stringResource(Res.string.button_create_device)
     }
 
-    val typeSensorText = stringResource(Res.string.device_type_sensor)
-    val typeActuatorText = stringResource(Res.string.device_type_actuator)
-    val statusOnlineText = stringResource(Res.string.device_status_online)
-    val statusOfflineText = stringResource(Res.string.device_status_offline)
+    val categorySensorText = stringResource(Res.string.device_category_sensor)
+    val categoryActuatorText = stringResource(Res.string.device_category_actuator)
+
+    // Find selected greenhouse name
+    val selectedGreenhouse = greenhouses.find { it.id == formData.greenhouseId }
 
     Dialog(onDismissRequest = { if (!isSubmitting) onDismiss() }) {
         Card(
@@ -150,24 +159,10 @@ fun DeviceFormDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Name field
-                DeviceFormTextField(
-                    value = formData.name,
-                    onValueChange = {
-                        formData = formData.copy(name = it)
-                        if (hasAttemptedSubmit) validationErrors = formData.validate()
-                    },
-                    label = stringResource(Res.string.label_name),
-                    error = getErrorMessage(validationErrors.name),
-                    enabled = !isSubmitting
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Type dropdown
+                // Greenhouse dropdown (required, not editable in edit mode)
                 Column {
                     Text(
-                        text = stringResource(Res.string.field_type),
+                        text = stringResource(Res.string.label_greenhouse),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -175,13 +170,129 @@ fun DeviceFormDialog(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     ExposedDropdownMenuBox(
-                        expanded = typeExpanded,
-                        onExpandedChange = { if (!isSubmitting) typeExpanded = it }
+                        expanded = greenhouseExpanded,
+                        onExpandedChange = { if (!isSubmitting && !isEditMode) greenhouseExpanded = it }
                     ) {
                         OutlinedTextField(
-                            value = when (formData.type) {
-                                DeviceType.SENSOR -> typeSensorText
-                                DeviceType.ACTUATOR -> typeActuatorText
+                            value = selectedGreenhouse?.name ?: "",
+                            onValueChange = {},
+                            readOnly = true,
+                            enabled = !isSubmitting && !isEditMode,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                            trailingIcon = {
+                                if (!isEditMode) {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = greenhouseExpanded)
+                                }
+                            },
+                            isError = hasAttemptedSubmit && validationErrors.greenhouseId != null,
+                            shape = RoundedCornerShape(8.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                errorBorderColor = MaterialTheme.colorScheme.error,
+                                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+
+                        if (!isEditMode) {
+                            ExposedDropdownMenu(
+                                expanded = greenhouseExpanded,
+                                onDismissRequest = { greenhouseExpanded = false }
+                            ) {
+                                greenhouses.forEach { greenhouse ->
+                                    DropdownMenuItem(
+                                        text = { Text(greenhouse.name) },
+                                        onClick = {
+                                            formData = formData.copy(greenhouseId = greenhouse.id)
+                                            greenhouseExpanded = false
+                                            if (hasAttemptedSubmit) validationErrors = formData.validate()
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (hasAttemptedSubmit && validationErrors.greenhouseId != null) {
+                        Text(
+                            text = getErrorMessage(validationErrors.greenhouseId) ?: "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Device Name text field
+                Column {
+                    Text(
+                        text = stringResource(Res.string.label_device_name),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    OutlinedTextField(
+                        value = formData.name,
+                        onValueChange = {
+                            formData = formData.copy(name = it)
+                            if (hasAttemptedSubmit) validationErrors = formData.validate()
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSubmitting,
+                        isError = hasAttemptedSubmit && validationErrors.name != null,
+                        singleLine = true,
+                        placeholder = {
+                            Text(
+                                text = "Temperature Sensor A1...",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                            errorBorderColor = MaterialTheme.colorScheme.error
+                        )
+                    )
+
+                    if (hasAttemptedSubmit && validationErrors.name != null) {
+                        Text(
+                            text = getErrorMessage(validationErrors.name) ?: "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Category Type dropdown
+                Column {
+                    Text(
+                        text = stringResource(Res.string.label_category),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    ExposedDropdownMenuBox(
+                        expanded = categoryExpanded,
+                        onExpandedChange = { if (!isSubmitting) categoryExpanded = it }
+                    ) {
+                        OutlinedTextField(
+                            value = when (formData.categoryId) {
+                                Device.CATEGORY_SENSOR -> categorySensorText
+                                Device.CATEGORY_ACTUATOR -> categoryActuatorText
+                                else -> categorySensorText
                             },
                             onValueChange = {},
                             readOnly = true,
@@ -189,7 +300,7 @@ fun DeviceFormDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
                             shape = RoundedCornerShape(8.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -198,21 +309,21 @@ fun DeviceFormDialog(
                         )
 
                         ExposedDropdownMenu(
-                            expanded = typeExpanded,
-                            onDismissRequest = { typeExpanded = false }
+                            expanded = categoryExpanded,
+                            onDismissRequest = { categoryExpanded = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text(typeSensorText) },
+                                text = { Text(categorySensorText) },
                                 onClick = {
-                                    formData = formData.copy(type = DeviceType.SENSOR)
-                                    typeExpanded = false
+                                    formData = formData.copy(categoryId = Device.CATEGORY_SENSOR)
+                                    categoryExpanded = false
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text(typeActuatorText) },
+                                text = { Text(categoryActuatorText) },
                                 onClick = {
-                                    formData = formData.copy(type = DeviceType.ACTUATOR)
-                                    typeExpanded = false
+                                    formData = formData.copy(categoryId = Device.CATEGORY_ACTUATOR)
+                                    categoryExpanded = false
                                 }
                             )
                         }
@@ -221,59 +332,27 @@ fun DeviceFormDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Status dropdown
-                Column {
+                // Active switch
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = stringResource(Res.string.field_status),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = stringResource(Res.string.label_is_active),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    ExposedDropdownMenuBox(
-                        expanded = statusExpanded,
-                        onExpandedChange = { if (!isSubmitting) statusExpanded = it }
-                    ) {
-                        OutlinedTextField(
-                            value = when (formData.status) {
-                                DeviceStatus.ONLINE -> statusOnlineText
-                                DeviceStatus.OFFLINE -> statusOfflineText
-                            },
-                            onValueChange = {},
-                            readOnly = true,
-                            enabled = !isSubmitting,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = statusExpanded) },
-                            shape = RoundedCornerShape(8.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                            )
+                    Switch(
+                        checked = formData.isActive,
+                        onCheckedChange = { formData = formData.copy(isActive = it) },
+                        enabled = !isSubmitting,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                         )
-
-                        ExposedDropdownMenu(
-                            expanded = statusExpanded,
-                            onDismissRequest = { statusExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(statusOnlineText) },
-                                onClick = {
-                                    formData = formData.copy(status = DeviceStatus.ONLINE)
-                                    statusExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(statusOfflineText) },
-                                onClick = {
-                                    formData = formData.copy(status = DeviceStatus.OFFLINE)
-                                    statusExpanded = false
-                                }
-                            )
-                        }
-                    }
+                    )
                 }
 
                 // Error message
@@ -308,7 +387,14 @@ fun DeviceFormDialog(
                             hasAttemptedSubmit = true
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
-                                onSubmit(formData.name, formData.type, formData.status)
+                                onSubmit(
+                                    formData.greenhouseId,
+                                    formData.name,
+                                    formData.categoryId,
+                                    formData.typeId,
+                                    formData.unitId,
+                                    formData.isActive
+                                )
                             }
                         },
                         enabled = !isSubmitting,
@@ -333,57 +419,43 @@ fun DeviceFormDialog(
     }
 }
 
-@Composable
-private fun DeviceFormTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    error: String?,
-    enabled: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = enabled,
-            isError = error != null,
-            singleLine = true,
-            shape = RoundedCornerShape(8.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                errorBorderColor = MaterialTheme.colorScheme.error
-            )
-        )
-
-        if (error != null) {
-            Text(
-                text = error,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
-    }
-}
-
 private object DeviceFormDialogPreviewData {
+    val sampleGreenhouses = listOf(
+        Greenhouse(
+            id = "gh1",
+            name = "Main Greenhouse",
+            tenantId = "tenant1",
+            location = null,
+            areaM2 = 1500.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
+        ),
+        Greenhouse(
+            id = "gh2",
+            name = "North Greenhouse",
+            tenantId = "tenant1",
+            location = null,
+            areaM2 = 800.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
+        )
+    )
+
     val sampleDevice = Device(
         id = "1",
-        name = "Sensor Temperatura A1",
-        type = DeviceType.SENSOR,
-        status = DeviceStatus.ONLINE,
-        clientId = "client1"
+        tenantId = "tenant1",
+        greenhouseId = "gh1",
+        categoryId = Device.CATEGORY_SENSOR,
+        categoryName = "Temperature Sensor A1",
+        typeId = 1,
+        typeName = "Temperature",
+        unitId = 1,
+        unitSymbol = "°C",
+        isActive = true
     )
 }
 
@@ -391,7 +463,10 @@ private object DeviceFormDialogPreviewData {
 @Composable
 private fun DeviceFormDialogCreatePreview() {
     GreenhouseAdminTheme {
-        DeviceFormDialog(mode = DeviceFormMode.Create)
+        DeviceFormDialog(
+            mode = DeviceFormMode.Create,
+            greenhouses = DeviceFormDialogPreviewData.sampleGreenhouses
+        )
     }
 }
 
@@ -399,6 +474,9 @@ private fun DeviceFormDialogCreatePreview() {
 @Composable
 private fun DeviceFormDialogEditPreview() {
     GreenhouseAdminTheme {
-        DeviceFormDialog(mode = DeviceFormMode.Edit(DeviceFormDialogPreviewData.sampleDevice))
+        DeviceFormDialog(
+            mode = DeviceFormMode.Edit(DeviceFormDialogPreviewData.sampleDevice),
+            greenhouses = DeviceFormDialogPreviewData.sampleGreenhouses
+        )
     }
 }

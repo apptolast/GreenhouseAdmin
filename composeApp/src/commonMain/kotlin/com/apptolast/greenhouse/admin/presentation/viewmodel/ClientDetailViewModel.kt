@@ -7,8 +7,6 @@ import com.apptolast.greenhouse.admin.data.model.AlertSeverity
 import com.apptolast.greenhouse.admin.data.model.AlertStatus
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.Device
-import com.apptolast.greenhouse.admin.data.model.DeviceStatus
-import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.Sector
@@ -156,7 +154,14 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnConfirmDeleteDevice -> confirmDeleteDevice()
             is ClientDetailEvent.OnCancelDeleteDevice -> cancelDeleteDevice()
             is ClientDetailEvent.OnDismissDeviceFormDialog -> dismissDeviceFormDialog()
-            is ClientDetailEvent.OnSubmitDeviceForm -> submitDeviceForm(event.name, event.type, event.status)
+            is ClientDetailEvent.OnSubmitDeviceForm -> submitDeviceForm(
+                event.greenhouseId,
+                event.name,
+                event.categoryId,
+                event.typeId,
+                event.unitId,
+                event.isActive
+            )
 
             // Alerts events
             is ClientDetailEvent.LoadAlerts -> loadAlerts()
@@ -234,6 +239,10 @@ class ClientDetailViewModel(
             ClientDetailTab.DEVICES -> {
                 if (_uiState.value.devices.isEmpty() && !_uiState.value.isLoadingDevices) {
                     loadDevices()
+                }
+                // Also load greenhouses for the dropdown if not already loaded
+                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
+                    loadGreenhouses()
                 }
             }
 
@@ -823,7 +832,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingDevices = true, devicesError = null) }
 
-            devicesRepository.getDevicesByClientId(clientId)
+            devicesRepository.getDevicesByTenantId(clientId)
                 .onSuccess { devices ->
                     _uiState.update {
                         it.copy(
@@ -863,7 +872,15 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitDeviceForm(name: String, type: DeviceType, status: DeviceStatus) {
+    @Suppress("UNUSED_PARAMETER")
+    private fun submitDeviceForm(
+        greenhouseId: String,
+        name: String,
+        categoryId: Short?,
+        typeId: Short?,
+        unitId: Short?,
+        isActive: Boolean
+    ) {
         val mode = _uiState.value.deviceFormMode
 
         viewModelScope.launch {
@@ -871,23 +888,25 @@ class ClientDetailViewModel(
 
             val result = when (mode) {
                 is DeviceFormMode.Create -> {
-                    val newDevice = Device(
-                        id = "",
-                        name = name.trim(),
-                        type = type,
-                        status = status,
-                        clientId = clientId
+                    devicesRepository.createDevice(
+                        tenantId = clientId,
+                        greenhouseId = greenhouseId,
+                        categoryId = categoryId,
+                        typeId = typeId,
+                        unitId = unitId,
+                        isActive = isActive
                     )
-                    devicesRepository.createDevice(newDevice)
                 }
 
                 is DeviceFormMode.Edit -> {
-                    val updatedDevice = mode.device.copy(
-                        name = name.trim(),
-                        type = type,
-                        status = status
+                    devicesRepository.updateDevice(
+                        tenantId = clientId,
+                        deviceId = mode.device.id,
+                        categoryId = categoryId,
+                        typeId = typeId,
+                        unitId = unitId,
+                        isActive = isActive
                     )
-                    devicesRepository.updateDevice(updatedDevice)
                 }
             }
 
@@ -938,7 +957,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingDevice = true, deleteDeviceError = null) }
 
-            devicesRepository.deleteDevice(device.id)
+            devicesRepository.deleteDevice(clientId, device.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(

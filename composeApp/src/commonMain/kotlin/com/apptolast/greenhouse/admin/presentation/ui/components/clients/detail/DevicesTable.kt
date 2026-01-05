@@ -27,30 +27,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.apptolast.greenhouse.admin.data.model.Device
-import com.apptolast.greenhouse.admin.data.model.DeviceStatus
-import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
-import greenhouseadmin.composeapp.generated.resources.device_status_offline
-import greenhouseadmin.composeapp.generated.resources.device_status_online
-import greenhouseadmin.composeapp.generated.resources.device_type_actuator
-import greenhouseadmin.composeapp.generated.resources.device_type_sensor
 import greenhouseadmin.composeapp.generated.resources.header_actions
-import greenhouseadmin.composeapp.generated.resources.header_name
+import greenhouseadmin.composeapp.generated.resources.header_category
+import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_status
-import greenhouseadmin.composeapp.generated.resources.header_type
+import greenhouseadmin.composeapp.generated.resources.status_active
+import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Table displaying list of devices with headers and rows.
+ * Columns: ID | CATEGORY | STATUS | ACTIONS
  */
 @Composable
 fun DevicesTable(
@@ -60,7 +59,7 @@ fun DevicesTable(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -89,32 +88,44 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // ID column
         Text(
-            text = stringResource(Res.string.header_name),
+            text = stringResource(Res.string.header_id),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.5f)
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(2f)
         )
+
+        // CATEGORY column
         Text(
-            text = stringResource(Res.string.header_type),
+            text = stringResource(Res.string.header_category),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.SemiBold,
             modifier = Modifier.weight(1f)
         )
+
+        // STATUS column
         Text(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(0.8f)
         )
+
+        // ACTIONS column
         Text(
             text = stringResource(Res.string.header_actions),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(80.dp),
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.width(88.dp),
             textAlign = TextAlign.Center
         )
     }
@@ -130,66 +141,60 @@ private fun DeviceTableRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // NAME with avatar
-        Row(
-            modifier = Modifier.weight(1.5f),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            DeviceAvatar(
-                initials = device.initials,
-                deviceType = device.type,
-                modifier = Modifier.size(36.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = device.name,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        // TYPE
-        DeviceTypeBadge(
-            type = device.type,
-            modifier = Modifier.weight(1f)
+        // ID - Full UUID with monospace font, smaller size to fit
+        Text(
+            text = device.id,
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+            fontFamily = FontFamily.Monospace,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(2f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
 
-        // STATUS
-        DeviceStatusBadge(
-            status = device.status,
-            modifier = Modifier.weight(1f)
+        // CATEGORY - Plain text
+        Text(
+            text = device.categoryName ?: device.categoryDisplayName,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        // STATUS - Dot indicator with text
+        DeviceStatusIndicator(
+            isActive = device.isActive,
+            modifier = Modifier.weight(0.8f)
         )
 
         // ACTIONS
         Row(
-            modifier = Modifier.width(80.dp),
+            modifier = Modifier.width(88.dp),
             horizontalArrangement = Arrangement.Center
         ) {
             IconButton(
                 onClick = onEdit,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(36.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = stringResource(Res.string.action_edit),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(18.dp)
                 )
             }
             IconButton(
                 onClick = onDelete,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(36.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = stringResource(Res.string.action_delete),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -198,103 +203,48 @@ private fun DeviceTableRow(
 }
 
 /**
- * Avatar component for devices with colored background based on type.
+ * Status indicator with colored dot and text.
  */
 @Composable
-fun DeviceAvatar(
-    initials: String,
-    deviceType: DeviceType,
+fun DeviceStatusIndicator(
+    isActive: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = when (deviceType) {
-        DeviceType.SENSOR -> Color(0xFF9C27B0) // Purple for sensors
-        DeviceType.ACTUATOR -> Color(0xFFFF9800) // Orange for actuators
+    val dotColor = if (isActive) {
+        Color(0xFF00E676) // Green
+    } else {
+        Color(0xFFFF5252) // Red
     }
 
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(backgroundColor),
-        contentAlignment = Alignment.Center
+    val textRes = if (isActive) {
+        Res.string.status_active
+    } else {
+        Res.string.status_inactive
+    }
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
-        Text(
-            text = initials,
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.White,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-/**
- * Type badge for devices.
- */
-@Composable
-fun DeviceTypeBadge(
-    type: DeviceType,
-    modifier: Modifier = Modifier
-) {
-    val (backgroundColor, textColor, textRes) = when (type) {
-        DeviceType.SENSOR -> Triple(
-            Color(0xFF9C27B0).copy(alpha = 0.15f),
-            Color(0xFF9C27B0),
-            Res.string.device_type_sensor
+        // Dot indicator
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(dotColor)
         )
 
-        DeviceType.ACTUATOR -> Triple(
-            Color(0xFFFF9800).copy(alpha = 0.15f),
-            Color(0xFFFF9800),
-            Res.string.device_type_actuator
-        )
-    }
+        Spacer(modifier = Modifier.width(8.dp))
 
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
         Text(
             text = stringResource(textRes),
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-/**
- * Status badge for devices.
- */
-@Composable
-fun DeviceStatusBadge(
-    status: DeviceStatus,
-    modifier: Modifier = Modifier
-) {
-    val (backgroundColor, textColor, textRes) = when (status) {
-        DeviceStatus.ONLINE -> Triple(
-            Color(0xFF00E676).copy(alpha = 0.15f),
-            Color(0xFF00E676),
-            Res.string.device_status_online
-        )
-
-        DeviceStatus.OFFLINE -> Triple(
-            MaterialTheme.colorScheme.error.copy(alpha = 0.15f),
-            MaterialTheme.colorScheme.error,
-            Res.string.device_status_offline
-        )
-    }
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Text(
-            text = stringResource(textRes),
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (isActive) {
+                Color(0xFF00E676)
+            } else {
+                MaterialTheme.colorScheme.error
+            },
             fontWeight = FontWeight.Medium
         )
     }
@@ -303,25 +253,40 @@ fun DeviceStatusBadge(
 private object DevicesTablePreviewData {
     val sampleDevices = listOf(
         Device(
-            id = "1",
-            name = "Sensor Temperatura A1",
-            type = DeviceType.SENSOR,
-            status = DeviceStatus.ONLINE,
-            clientId = "client1"
+            id = "550e8400-e29b-41d4-a716-446655440001",
+            tenantId = "tenant1",
+            greenhouseId = "gh1",
+            categoryId = Device.CATEGORY_SENSOR,
+            categoryName = "SENSOR",
+            typeId = 1,
+            typeName = "Temperature",
+            unitId = 1,
+            unitSymbol = "°C",
+            isActive = true
         ),
         Device(
-            id = "2",
-            name = "Valvula Riego Norte",
-            type = DeviceType.ACTUATOR,
-            status = DeviceStatus.ONLINE,
-            clientId = "client1"
+            id = "042e3d10-7041-4c32-abd7-063036ce24ba",
+            tenantId = "tenant1",
+            greenhouseId = "gh1",
+            categoryId = Device.CATEGORY_ACTUATOR,
+            categoryName = "ACTUATOR",
+            typeId = 2,
+            typeName = "Valve",
+            unitId = null,
+            unitSymbol = null,
+            isActive = true
         ),
         Device(
-            id = "3",
-            name = "Sensor CO2 B2",
-            type = DeviceType.SENSOR,
-            status = DeviceStatus.OFFLINE,
-            clientId = "client1"
+            id = "4c5a5263-68da-4688-93c7-ddf81b5dafb2",
+            tenantId = "tenant1",
+            greenhouseId = "gh1",
+            categoryId = Device.CATEGORY_SENSOR,
+            categoryName = "SENSOR",
+            typeId = 3,
+            typeName = "CO2",
+            unitId = 2,
+            unitSymbol = "ppm",
+            isActive = false
         )
     )
 }
@@ -336,12 +301,12 @@ private fun DevicesTablePreview() {
 
 @Preview
 @Composable
-private fun DeviceAvatarPreview() {
+private fun DeviceStatusIndicatorPreview() {
     GreenhouseAdminTheme {
-        Row {
-            DeviceAvatar(initials = "ST", deviceType = DeviceType.SENSOR)
-            Spacer(modifier = Modifier.width(8.dp))
-            DeviceAvatar(initials = "VR", deviceType = DeviceType.ACTUATOR)
+        Column {
+            DeviceStatusIndicator(isActive = true)
+            Spacer(modifier = Modifier.size(8.dp))
+            DeviceStatusIndicator(isActive = false)
         }
     }
 }

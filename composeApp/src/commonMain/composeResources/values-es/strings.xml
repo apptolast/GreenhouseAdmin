@@ -201,6 +201,7 @@
 
     <!-- Sector Validation Errors -->
     <string name="error_greenhouse_required">Por favor, selecciona un invernadero</string>
+    <string name="error_category_required">La categoría es obligatoria</string>
     <string name="error_variety_min_length">La variedad debe tener al menos 2 caracteres</string>
     <string name="error_area_required">El área es obligatoria</string>
     <string name="error_area_invalid">Por favor, introduce un número válido</string>
@@ -222,9 +223,20 @@
     <string name="devices_empty">No se encontraron dispositivos para este cliente.</string>
 
     <!-- Device Table Headers -->
+    <string name="header_id">ID</string>
     <string name="header_type">TIPO</string>
+    <string name="header_category">CATEGORÍA</string>
 
-    <!-- Device Type and Status -->
+    <!-- Device Category -->
+    <string name="device_category_sensor">Sensor</string>
+    <string name="device_category_actuator">Actuador</string>
+    <string name="label_category">Tipo de Categoría</string>
+    <string name="label_greenhouse">Invernadero</string>
+    <string name="label_device_name">Nombre del Dispositivo</string>
+    <string name="label_is_active">Activo</string>
+    <string name="error_name_required">El nombre es obligatorio</string>
+
+    <!-- Legacy - kept for compatibility -->
     <string name="device_type_sensor">Sensor</string>
     <string name="device_type_actuator">Actuador</string>
     <string name="device_status_online">En línea</string>

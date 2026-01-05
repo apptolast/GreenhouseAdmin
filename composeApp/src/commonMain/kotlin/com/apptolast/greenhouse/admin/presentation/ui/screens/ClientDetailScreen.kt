@@ -24,8 +24,6 @@ import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.Device
-import com.apptolast.greenhouse.admin.data.model.DeviceStatus
-import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.User
 import com.apptolast.greenhouse.admin.data.model.UserRole
@@ -274,10 +272,11 @@ private fun ClientDetailScreenContent(
     if (uiState.showDeviceFormDialog) {
         DeviceFormDialog(
             mode = uiState.deviceFormMode,
+            greenhouses = uiState.greenhouses,
             isSubmitting = uiState.isSubmittingDevice,
             error = uiState.submitDeviceError,
-            onSubmit = { name, type, status ->
-                onEvent(ClientDetailEvent.OnSubmitDeviceForm(name, type, status))
+            onSubmit = { greenhouseId, name, categoryId, typeId, unitId, isActive ->
+                onEvent(ClientDetailEvent.OnSubmitDeviceForm(greenhouseId, name, categoryId, typeId, unitId, isActive))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissDeviceFormDialog) }
         )
@@ -286,7 +285,7 @@ private fun ClientDetailScreenContent(
     // Device Delete Confirmation Dialog
     if (uiState.showDeleteDeviceConfirmation && uiState.deviceToDelete != null) {
         DeleteConfirmationDialog(
-            clientName = uiState.deviceToDelete.name,
+            clientName = uiState.deviceToDelete.displayName,
             isDeleting = uiState.isDeletingDevice,
             error = uiState.deleteDeviceError,
             onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteDevice) },
@@ -591,24 +590,39 @@ private object ClientDetailScreenPreviewData {
     val sampleDevices = listOf(
         Device(
             id = "1",
-            name = "Sensor Temperatura A1",
-            type = DeviceType.SENSOR,
-            status = DeviceStatus.ONLINE,
-            clientId = "12345"
+            tenantId = "12345",
+            greenhouseId = "gh1",
+            categoryId = Device.CATEGORY_SENSOR,
+            categoryName = "Sensor",
+            typeId = 1,
+            typeName = "Temperature",
+            unitId = 1,
+            unitSymbol = "°C",
+            isActive = true
         ),
         Device(
             id = "2",
-            name = "Valvula Riego Norte",
-            type = DeviceType.ACTUATOR,
-            status = DeviceStatus.ONLINE,
-            clientId = "12345"
+            tenantId = "12345",
+            greenhouseId = "gh1",
+            categoryId = Device.CATEGORY_ACTUATOR,
+            categoryName = "Actuator",
+            typeId = 2,
+            typeName = "Valve",
+            unitId = null,
+            unitSymbol = null,
+            isActive = true
         ),
         Device(
             id = "3",
-            name = "Sensor CO2 B2",
-            type = DeviceType.SENSOR,
-            status = DeviceStatus.OFFLINE,
-            clientId = "12345"
+            tenantId = "12345",
+            greenhouseId = "gh1",
+            categoryId = Device.CATEGORY_SENSOR,
+            categoryName = "Sensor",
+            typeId = 3,
+            typeName = "CO2",
+            unitId = 2,
+            unitSymbol = "ppm",
+            isActive = false
         )
     )
 }
