@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
@@ -38,6 +39,7 @@ import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
+import greenhouseadmin.composeapp.generated.resources.copy_id
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_category
 import greenhouseadmin.composeapp.generated.resources.header_id
@@ -57,6 +59,7 @@ fun DevicesTable(
     devices: List<Device>,
     onEditDevice: (Device) -> Unit = {},
     onDeleteDevice: (Device) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -76,7 +79,8 @@ fun DevicesTable(
                 DeviceTableRow(
                     device = device,
                     onEdit = { onEditDevice(device) },
-                    onDelete = { onDeleteDevice(device) }
+                    onDelete = { onDeleteDevice(device) },
+                    onCopyId = { onCopyId(device.id) }
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
@@ -146,6 +150,7 @@ private fun DeviceTableRow(
     device: Device,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    onCopyId: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -154,16 +159,32 @@ private fun DeviceTableRow(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // ID - Full UUID with monospace font, smaller size to fit
-        Text(
-            text = device.id,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-            fontFamily = FontFamily.Monospace,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        // ID - Full UUID with monospace font, smaller size to fit, with copy button
+        Row(
             modifier = Modifier.weight(1.5f),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = device.id,
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                fontFamily = FontFamily.Monospace,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            IconButton(
+                onClick = onCopyId,
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ContentCopy,
+                    contentDescription = stringResource(Res.string.copy_id),
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+            }
+        }
 
         // NAME - Device name (or empty if not set)
         Text(

@@ -37,7 +37,7 @@ import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.client_detail_back
-import greenhouseadmin.composeapp.generated.resources.client_detail_ref
+import greenhouseadmin.composeapp.generated.resources.client_detail_id
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -163,9 +163,11 @@ private fun CompactHeader(
                     ClientStatusBadge(status = client.status)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(Res.string.client_detail_ref, client.id.take(5)),
+                        text = stringResource(Res.string.client_detail_id, client.id),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -241,9 +243,11 @@ private fun ExpandedHeader(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = stringResource(Res.string.client_detail_ref, client.id.take(5)),
+                    text = stringResource(Res.string.client_detail_id, client.id),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 

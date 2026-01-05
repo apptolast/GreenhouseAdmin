@@ -51,6 +51,7 @@ fun ClientDetailDevicesTab(
     onAddDevice: () -> Unit = {},
     onEditDevice: (Device) -> Unit = {},
     onDeleteDevice: (Device) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -126,7 +127,8 @@ fun ClientDetailDevicesTab(
                 DevicesTable(
                     devices = devices,
                     onEditDevice = onEditDevice,
-                    onDeleteDevice = onDeleteDevice
+                    onDeleteDevice = onDeleteDevice,
+                    onCopyId = onCopyId
                 )
             }
         }

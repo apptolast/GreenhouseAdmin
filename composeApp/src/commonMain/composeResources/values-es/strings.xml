@@ -115,8 +115,10 @@
 
     <!-- Client Detail Screen -->
     <string name="client_detail_back">Volver a la Lista</string>
-    <string name="client_detail_ref">Ref: CLI-%1$s</string>
+    <string name="client_detail_id">ID: %1$s</string>
     <string name="client_detail_since">Desde %1$s</string>
+    <string name="copy_id">Copiar ID</string>
+    <string name="id_copied">ID copiado al portapapeles</string>
 
     <!-- Client Detail Tabs -->
     <string name="tab_general">General</string>

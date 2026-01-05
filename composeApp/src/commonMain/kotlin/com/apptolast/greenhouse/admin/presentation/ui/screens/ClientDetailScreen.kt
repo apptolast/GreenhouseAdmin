@@ -14,13 +14,20 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.data.local.ClipboardManager
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.Device
@@ -60,14 +67,17 @@ import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.app_name
 import greenhouseadmin.composeapp.generated.resources.breadcrumb_clients
 import greenhouseadmin.composeapp.generated.resources.error_unknown
+import greenhouseadmin.composeapp.generated.resources.id_copied
 import greenhouseadmin.composeapp.generated.resources.new_alert
 import greenhouseadmin.composeapp.generated.resources.new_device
 import greenhouseadmin.composeapp.generated.resources.new_greenhouse
 import greenhouseadmin.composeapp.generated.resources.new_sector
 import greenhouseadmin.composeapp.generated.resources.new_setting
 import greenhouseadmin.composeapp.generated.resources.new_user
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -80,9 +90,13 @@ import org.koin.core.parameter.parametersOf
 fun ClientDetailScreen(
     clientId: String,
     onNavigateBack: () -> Unit,
-    viewModel: ClientDetailViewModel = koinViewModel { parametersOf(clientId) }
+    viewModel: ClientDetailViewModel = koinViewModel { parametersOf(clientId) },
+    clipboardManager: ClipboardManager = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val idCopiedMessage = stringResource(Res.string.id_copied)
 
     // Handle navigation after successful delete
     LaunchedEffect(uiState.shouldNavigateBack) {
@@ -92,10 +106,23 @@ fun ClientDetailScreen(
         }
     }
 
+    // Callback for copying ID to clipboard
+    val onCopyId: (String) -> Unit = { id ->
+        clipboardManager.copyToClipboard(id)
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                message = idCopiedMessage,
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+
     ClientDetailScreenContent(
         uiState = uiState,
         onEvent = viewModel::onEvent,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        onCopyId = onCopyId,
+        snackbarHostState = snackbarHostState
     )
 }
 
@@ -107,14 +134,17 @@ private fun ClientDetailScreenContent(
     uiState: ClientDetailUiState,
     onEvent: (ClientDetailEvent) -> Unit = {},
     onNavigateBack: () -> Unit = {},
+    onCopyId: (String) -> Unit = {},
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val client = uiState.client
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
         // Top bar with breadcrumb
         val breadcrumb = if (client != null) {
             "${stringResource(Res.string.breadcrumb_clients)} / ${client.name}"
@@ -154,10 +184,24 @@ private fun ClientDetailScreenContent(
                         uiState = uiState,
                         client = client,
                         onEvent = onEvent,
-                        onNavigateBack = onNavigateBack
+                        onNavigateBack = onNavigateBack,
+                        onCopyId = onCopyId
                     )
                 }
             }
+        }
+        }
+
+        // Snackbar for copy feedback
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) { snackbarData ->
+            Snackbar(
+                snackbarData = snackbarData,
+                containerColor = MaterialTheme.colorScheme.inverseSurface,
+                contentColor = MaterialTheme.colorScheme.inverseOnSurface
+            )
         }
     }
 
@@ -368,7 +412,8 @@ private fun ClientDetailContent(
     uiState: ClientDetailUiState,
     client: Client,
     onEvent: (ClientDetailEvent) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onCopyId: (String) -> Unit = {}
 ) {
     val contentPadding = AdaptiveDimens.contentPadding()
     val windowInfo = LocalAppWindowInfo.current
@@ -465,6 +510,7 @@ private fun ClientDetailContent(
                         onAddDevice = { onEvent(ClientDetailEvent.OnAddDeviceClicked) },
                         onEditDevice = { device -> onEvent(ClientDetailEvent.OnEditDeviceClicked(device)) },
                         onDeleteDevice = { device -> onEvent(ClientDetailEvent.OnDeleteDeviceClicked(device)) },
+                        onCopyId = onCopyId,
                         onRetry = { onEvent(ClientDetailEvent.LoadDevices) }
                     )
                 }
