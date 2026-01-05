@@ -6,6 +6,10 @@
 # Stage 1: Build the WASM application
 FROM gradle:8.10-jdk21 AS builder
 
+# Build argument for API URL (passed from CI/CD)
+ARG API_BASE_URL
+ENV API_BASE_URL=${API_BASE_URL}
+
 # CRÍTICO: Instalar libatomic1 para Node.js v25+ (requerido por Kotlin/WASM)
 # Ver: https://github.com/nodejs/node/issues/issues - Node.js v25 requiere libatomic
 USER root
@@ -28,6 +32,10 @@ COPY --chown=gradle:gradle composeApp/ composeApp/
 
 # Make gradlew executable
 RUN chmod +x gradlew
+
+# Create local.properties with API_BASE_URL from build argument
+RUN echo "API_BASE_URL=${API_BASE_URL}" > local.properties && \
+    echo "Created local.properties with API_BASE_URL"
 
 # Build the WASM distribution
 RUN ./gradlew :composeApp:wasmJsBrowserDistribution --no-daemon --stacktrace

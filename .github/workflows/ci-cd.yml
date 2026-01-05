@@ -108,6 +108,15 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=raw,value=dev-latest,enable=${{ github.ref == 'refs/heads/develop' }}
 
+      - name: Set API URL based on branch
+        id: api_url
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "url=${{ secrets.API_BASE_URL_PROD }}" >> $GITHUB_OUTPUT
+          else
+            echo "url=${{ secrets.API_BASE_URL_DEV }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -118,3 +127,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
+          build-args: |
+            API_BASE_URL=${{ steps.api_url.outputs.url }}
