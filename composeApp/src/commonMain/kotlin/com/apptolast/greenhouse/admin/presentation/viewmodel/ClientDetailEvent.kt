@@ -1,17 +1,14 @@
 package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import com.apptolast.greenhouse.admin.data.model.Alert
-import com.apptolast.greenhouse.admin.data.model.AlertSeverity
-import com.apptolast.greenhouse.admin.data.model.AlertStatus
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.Device
-import com.apptolast.greenhouse.admin.data.model.DeviceStatus
-import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
+import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.data.model.UserRole
 
 /**
  * Sealed interface representing all possible user intents/events on the Client Detail screen.
@@ -67,7 +64,7 @@ sealed interface ClientDetailEvent {
         val phone: String,
         val province: String,
         val country: String,
-        val location: String,
+        val location: Location?,
         val status: ClientStatus
     ) : ClientDetailEvent
 
@@ -132,9 +129,11 @@ sealed interface ClientDetailEvent {
      * User submitted the user form (create or edit).
      */
     data class OnSubmitUserForm(
-        val name: String,
+        val username: String,
         val email: String,
-        val phone: String
+        val password: String?,
+        val role: UserRole,
+        val isActive: Boolean
     ) : ClientDetailEvent
 
     // === Greenhouses Tab Events ===
@@ -179,8 +178,10 @@ sealed interface ClientDetailEvent {
      */
     data class OnSubmitGreenhouseForm(
         val name: String,
-        val description: String,
-        val status: GreenhouseStatus
+        val location: Location?,
+        val areaM2: Double?,
+        val timezone: String?,
+        val isActive: Boolean
     ) : ClientDetailEvent
 
     // === Sectors Tab Events ===
@@ -224,10 +225,8 @@ sealed interface ClientDetailEvent {
      * User submitted the sector form (create or edit).
      */
     data class OnSubmitSectorForm(
-        val name: String,
         val greenhouseId: String,
-        val greenhouseName: String,
-        val area: Double
+        val variety: String
     ) : ClientDetailEvent
 
     // === Devices Tab Events ===
@@ -271,10 +270,18 @@ sealed interface ClientDetailEvent {
      * User submitted the device form (create or edit).
      */
     data class OnSubmitDeviceForm(
+        val greenhouseId: String,
         val name: String,
-        val type: DeviceType,
-        val status: DeviceStatus
+        val categoryId: Short?,
+        val typeId: Short?,
+        val unitId: Short?,
+        val isActive: Boolean
     ) : ClientDetailEvent
+
+    /**
+     * User changed the device category in the form (triggers type filtering).
+     */
+    data class OnDeviceCategoryChanged(val categoryId: Short) : ClientDetailEvent
 
     // === Alerts Tab Events ===
 
@@ -317,10 +324,21 @@ sealed interface ClientDetailEvent {
      * User submitted the alert form (create or edit).
      */
     data class OnSubmitAlertForm(
-        val title: String,
-        val severity: AlertSeverity,
-        val status: AlertStatus
+        val greenhouseId: String,
+        val alertTypeId: Short?,
+        val severityId: Short?,
+        val message: String
     ) : ClientDetailEvent
+
+    /**
+     * User clicked resolve on a specific alert.
+     */
+    data class OnResolveAlertClicked(val alert: Alert) : ClientDetailEvent
+
+    /**
+     * User clicked reopen on a specific alert.
+     */
+    data class OnReopenAlertClicked(val alert: Alert) : ClientDetailEvent
 
     // === Settings Tab Events ===
 
@@ -363,8 +381,11 @@ sealed interface ClientDetailEvent {
      * User submitted the setting form (create or edit).
      */
     data class OnSubmitSettingForm(
-        val key: String,
-        val value: String,
-        val description: String
+        val greenhouseId: String,
+        val parameterId: Short,
+        val periodId: Short,
+        val minValue: Double?,
+        val maxValue: Double?,
+        val isActive: Boolean
     ) : ClientDetailEvent
 }

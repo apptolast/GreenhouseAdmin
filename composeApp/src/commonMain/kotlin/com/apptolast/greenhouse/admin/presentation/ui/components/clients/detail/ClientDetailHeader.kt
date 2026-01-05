@@ -37,8 +37,7 @@ import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.client_detail_back
-import greenhouseadmin.composeapp.generated.resources.client_detail_ref
-import greenhouseadmin.composeapp.generated.resources.client_detail_since
+import greenhouseadmin.composeapp.generated.resources.client_detail_id
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -164,9 +163,11 @@ private fun CompactHeader(
                     ClientStatusBadge(status = client.status)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(Res.string.client_detail_ref, client.id.take(5)),
+                        text = stringResource(Res.string.client_detail_id, client.id),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -242,14 +243,11 @@ private fun ExpandedHeader(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "${
-                        stringResource(
-                            Res.string.client_detail_ref,
-                            client.id.take(5)
-                        )
-                    } • ${stringResource(Res.string.client_detail_since, formatDate(client.createdAt))}",
+                    text = stringResource(Res.string.client_detail_id, client.id),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
@@ -291,46 +289,6 @@ private fun ExpandedHeader(
     }
 }
 
-/**
- * Formats a Unix timestamp (milliseconds) to a human-readable date string.
- * Uses simple calculation - multiplatform compatible.
- */
-private fun formatDate(timestamp: Long): String {
-    val months = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-
-    // Convert milliseconds to days since epoch (Jan 1, 1970)
-    val daysSinceEpoch = (timestamp / 86400000L).toInt()
-
-    // Calculate year and day of year
-    var year = 1970
-    var remainingDays = daysSinceEpoch
-
-    while (true) {
-        val daysInYear = if (isLeapYear(year)) 366 else 365
-        if (remainingDays < daysInYear) break
-        remainingDays -= daysInYear
-        year++
-    }
-
-    // Calculate month from remaining days
-    val daysInMonths = if (isLeapYear(year)) {
-        intArrayOf(31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-    } else {
-        intArrayOf(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-    }
-
-    var month = 0
-    while (month < 12 && remainingDays >= daysInMonths[month]) {
-        remainingDays -= daysInMonths[month]
-        month++
-    }
-
-    return "${months[month]} $year"
-}
-
-private fun isLeapYear(year: Int): Boolean =
-    (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
-
 private object ClientDetailHeaderPreviewData {
     val sampleClient = Client(
         id = "12345",
@@ -339,9 +297,6 @@ private object ClientDetailHeaderPreviewData {
         phone = "+34 612 345 678",
         province = "Almeria",
         country = "Spain",
-        location = "Calle Mayor 123",
-        createdAt = 1735689600000L,
-        updatedAt = 1735689600000L,
         status = ClientStatus.ACTIVE
     )
 }

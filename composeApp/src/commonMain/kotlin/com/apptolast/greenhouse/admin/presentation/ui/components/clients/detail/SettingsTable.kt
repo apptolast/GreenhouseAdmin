@@ -37,14 +37,18 @@ import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
-import greenhouseadmin.composeapp.generated.resources.header_description
-import greenhouseadmin.composeapp.generated.resources.header_key
-import greenhouseadmin.composeapp.generated.resources.header_value
+import greenhouseadmin.composeapp.generated.resources.header_parameter
+import greenhouseadmin.composeapp.generated.resources.header_period
+import greenhouseadmin.composeapp.generated.resources.header_range
+import greenhouseadmin.composeapp.generated.resources.header_status
+import greenhouseadmin.composeapp.generated.resources.status_active
+import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Table displaying list of settings with headers and rows.
+ * New structure: PARAMETER | PERIOD | RANGE | STATUS | ACTIONS
  */
 @Composable
 fun SettingsTable(
@@ -87,22 +91,29 @@ private fun SettingsTableHeader(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = stringResource(Res.string.header_key),
+            text = stringResource(Res.string.header_parameter),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
         Text(
-            text = stringResource(Res.string.header_value),
+            text = stringResource(Res.string.header_period),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.8f)
+        )
+        Text(
+            text = stringResource(Res.string.header_range),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
         Text(
-            text = stringResource(Res.string.header_description),
+            text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(0.6f),
+            textAlign = TextAlign.Center
         )
         Text(
             text = stringResource(Res.string.header_actions),
@@ -121,13 +132,16 @@ private fun SettingTableRow(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val activeText = stringResource(Res.string.status_active)
+    val inactiveText = stringResource(Res.string.status_inactive)
+
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // KEY with avatar
+        // PARAMETER with avatar
         Row(
             modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
@@ -138,7 +152,7 @@ private fun SettingTableRow(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = setting.key,
+                text = setting.displayName,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -147,9 +161,17 @@ private fun SettingTableRow(
             )
         }
 
-        // VALUE
+        // PERIOD badge
+        Box(
+            modifier = Modifier.weight(0.8f),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            PeriodBadge(periodName = setting.periodDisplayName)
+        }
+
+        // RANGE
         Text(
-            text = setting.value,
+            text = setting.rangeDisplay,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f),
@@ -157,15 +179,17 @@ private fun SettingTableRow(
             overflow = TextOverflow.Ellipsis
         )
 
-        // DESCRIPTION
-        Text(
-            text = setting.description,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.5f),
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
+        // STATUS badge
+        Box(
+            modifier = Modifier.weight(0.6f),
+            contentAlignment = Alignment.Center
+        ) {
+            SettingStatusBadge(
+                isActive = setting.isActive,
+                activeText = activeText,
+                inactiveText = inactiveText
+            )
+        }
 
         // ACTIONS
         Row(
@@ -221,28 +245,130 @@ fun SettingAvatar(
     }
 }
 
+/**
+ * Badge component for displaying period (DAY/NIGHT/ALL).
+ */
+@Composable
+private fun PeriodBadge(
+    periodName: String,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = when (periodName.uppercase()) {
+        "DAY" -> Color(0xFFFFB74D).copy(alpha = 0.2f) // Orange tint
+        "NIGHT" -> Color(0xFF5C6BC0).copy(alpha = 0.2f) // Indigo tint
+        "ALL", "ALL DAY" -> Color(0xFF4CAF50).copy(alpha = 0.2f) // Green tint
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val textColor = when (periodName.uppercase()) {
+        "DAY" -> Color(0xFFFF8F00) // Dark orange
+        "NIGHT" -> Color(0xFF3949AB) // Dark indigo
+        "ALL", "ALL DAY" -> Color(0xFF2E7D32) // Dark green
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(backgroundColor)
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = periodName,
+            style = MaterialTheme.typography.labelSmall,
+            color = textColor,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+/**
+ * Badge component for displaying active/inactive status.
+ */
+@Composable
+private fun SettingStatusBadge(
+    isActive: Boolean,
+    activeText: String,
+    inactiveText: String,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = if (isActive) {
+        Color(0xFF00E676).copy(alpha = 0.15f)
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    val textColor = if (isActive) {
+        Color(0xFF00E676)
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(backgroundColor)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(6.dp)
+                .clip(CircleShape)
+                .background(textColor)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = if (isActive) activeText else inactiveText,
+            style = MaterialTheme.typography.labelSmall,
+            color = textColor,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
 private object SettingsTablePreviewData {
     val sampleSettings = listOf(
         Setting(
             id = "1",
-            key = "notification_email",
-            value = "test@example.com",
-            description = "Email address for receiving notifications",
-            clientId = "client1"
+            greenhouseId = "gh1",
+            greenhouseName = "Greenhouse A",
+            tenantId = "t1",
+            parameterId = 1,
+            parameterName = "Temperature",
+            periodId = 1,
+            periodName = "DAY",
+            minValue = 18.0,
+            maxValue = 25.0,
+            isActive = true,
+            createdAt = "2024-01-15T10:30:00Z"
         ),
         Setting(
             id = "2",
-            key = "temperature_unit",
-            value = "celsius",
-            description = "Temperature display unit",
-            clientId = "client1"
+            greenhouseId = "gh1",
+            greenhouseName = "Greenhouse A",
+            tenantId = "t1",
+            parameterId = 2,
+            parameterName = "Humidity",
+            periodId = 2,
+            periodName = "NIGHT",
+            minValue = 60.0,
+            maxValue = 80.0,
+            isActive = true,
+            createdAt = "2024-01-15T10:30:00Z"
         ),
         Setting(
             id = "3",
-            key = "language",
-            value = "es",
-            description = "Preferred language for communications",
-            clientId = "client1"
+            greenhouseId = "gh1",
+            greenhouseName = "Greenhouse A",
+            tenantId = "t1",
+            parameterId = 1,
+            parameterName = "Temperature",
+            periodId = 3,
+            periodName = "ALL",
+            minValue = 15.0,
+            maxValue = null,
+            isActive = false,
+            createdAt = "2024-01-15T10:30:00Z"
         )
     )
 }
@@ -260,11 +386,23 @@ private fun SettingsTablePreview() {
 private fun SettingAvatarPreview() {
     GreenhouseAdminTheme {
         Row {
-            SettingAvatar(initials = "NO")
-            Spacer(modifier = Modifier.width(8.dp))
             SettingAvatar(initials = "TE")
             Spacer(modifier = Modifier.width(8.dp))
-            SettingAvatar(initials = "LA")
+            SettingAvatar(initials = "HU")
+            Spacer(modifier = Modifier.width(8.dp))
+            SettingAvatar(initials = "LI")
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PeriodBadgePreview() {
+    GreenhouseAdminTheme {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PeriodBadge(periodName = "Day")
+            PeriodBadge(periodName = "Night")
+            PeriodBadge(periodName = "All Day")
         }
     }
 }

@@ -31,9 +31,6 @@ private object GeneralTabPreviewData {
         phone = "+34 612 345 678",
         province = "Almeria",
         country = "Spain",
-        location = "Calle Mayor 123",
-        createdAt = 1735689600000L,
-        updatedAt = 1735689600000L,
         status = ClientStatus.ACTIVE
     )
 }

@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -32,27 +34,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Alert
-import com.apptolast.greenhouse.admin.data.model.AlertSeverity
-import com.apptolast.greenhouse.admin.data.model.AlertStatus
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
-import greenhouseadmin.composeapp.generated.resources.alert_status_dismissed
-import greenhouseadmin.composeapp.generated.resources.alert_status_read
-import greenhouseadmin.composeapp.generated.resources.alert_status_unread
+import greenhouseadmin.composeapp.generated.resources.action_reopen
+import greenhouseadmin.composeapp.generated.resources.action_resolve
+import greenhouseadmin.composeapp.generated.resources.alert_active
+import greenhouseadmin.composeapp.generated.resources.alert_resolved
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_date
+import greenhouseadmin.composeapp.generated.resources.header_greenhouse
+import greenhouseadmin.composeapp.generated.resources.header_message
 import greenhouseadmin.composeapp.generated.resources.header_severity
 import greenhouseadmin.composeapp.generated.resources.header_status
-import greenhouseadmin.composeapp.generated.resources.header_title
-import greenhouseadmin.composeapp.generated.resources.severity_critical
-import greenhouseadmin.composeapp.generated.resources.severity_high
-import greenhouseadmin.composeapp.generated.resources.severity_low
-import greenhouseadmin.composeapp.generated.resources.severity_medium
+import greenhouseadmin.composeapp.generated.resources.header_type
+import greenhouseadmin.composeapp.generated.resources.label_not_assigned
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kotlin.time.Clock
 
 /**
  * Table displaying list of alerts with headers and rows.
@@ -62,6 +61,8 @@ fun AlertsTable(
     alerts: List<Alert>,
     onEditAlert: (Alert) -> Unit = {},
     onDeleteAlert: (Alert) -> Unit = {},
+    onResolveAlert: (Alert) -> Unit = {},
+    onReopenAlert: (Alert) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -81,7 +82,9 @@ fun AlertsTable(
                 AlertTableRow(
                     alert = alert,
                     onEdit = { onEditAlert(alert) },
-                    onDelete = { onDeleteAlert(alert) }
+                    onDelete = { onDeleteAlert(alert) },
+                    onResolve = { onResolveAlert(alert) },
+                    onReopen = { onReopenAlert(alert) }
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
@@ -98,34 +101,46 @@ private fun AlertsTableHeader(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = stringResource(Res.string.header_title),
+            text = stringResource(Res.string.header_message),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1.5f)
         )
         Text(
-            text = stringResource(Res.string.header_severity),
+            text = stringResource(Res.string.header_greenhouse),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = stringResource(Res.string.header_type),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.8f)
+        )
+        Text(
+            text = stringResource(Res.string.header_severity),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.8f)
         )
         Text(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.8f)
         )
         Text(
             text = stringResource(Res.string.header_date),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.8f)
         )
         Text(
             text = stringResource(Res.string.header_actions),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(80.dp),
+            modifier = Modifier.width(120.dp),
             textAlign = TextAlign.Center
         )
     }
@@ -136,60 +151,111 @@ private fun AlertTableRow(
     alert: Alert,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    onResolve: () -> Unit,
+    onReopen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val notAssignedText = stringResource(Res.string.label_not_assigned)
+
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // TITLE with avatar
+        // MESSAGE with avatar
         Row(
             modifier = Modifier.weight(1.5f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AlertAvatar(
                 initials = alert.initials,
-                severity = alert.severity,
+                severityLevel = alert.severityLevel,
                 modifier = Modifier.size(36.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = alert.title,
+                text = alert.message,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
-        // SEVERITY
-        AlertSeverityBadge(
-            severity = alert.severity,
-            modifier = Modifier.weight(1f)
+        // GREENHOUSE
+        Text(
+            text = alert.greenhouseName ?: notAssignedText,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
 
-        // STATUS
-        AlertStatusBadge(
-            status = alert.status,
-            modifier = Modifier.weight(1f)
+        // TYPE
+        Text(
+            text = alert.alertTypeName ?: notAssignedText,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.8f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        // SEVERITY
+        AlertSeverityBadge(
+            severityName = alert.severityName,
+            severityLevel = alert.severityLevel,
+            modifier = Modifier.weight(0.8f)
+        )
+
+        // STATUS (Resolved/Active)
+        AlertResolvedBadge(
+            isResolved = alert.isResolved,
+            modifier = Modifier.weight(0.8f)
         )
 
         // DATE
         Text(
-            text = formatRelativeTime(alert.createdAt),
+            text = formatDateString(alert.createdAt),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.8f)
         )
 
         // ACTIONS
         Row(
-            modifier = Modifier.width(80.dp),
+            modifier = Modifier.width(120.dp),
             horizontalArrangement = Arrangement.Center
         ) {
+            // Resolve/Reopen button
+            if (alert.isResolved) {
+                IconButton(
+                    onClick = onReopen,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = stringResource(Res.string.action_reopen),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            } else {
+                IconButton(
+                    onClick = onResolve,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = stringResource(Res.string.action_resolve),
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
             IconButton(
                 onClick = onEdit,
                 modifier = Modifier.size(32.dp)
@@ -217,40 +283,34 @@ private fun AlertTableRow(
 }
 
 /**
- * Formats a timestamp to relative time (e.g., "2 hours ago", "1 day ago").
+ * Formats an ISO date string to a more readable format.
  */
-private fun formatRelativeTime(timestamp: Long): String {
-    val now = Clock.System.now().toEpochMilliseconds()
-    val diff = now - timestamp
-
-    val seconds = diff / 1000
-    val minutes = seconds / 60
-    val hours = minutes / 60
-    val days = hours / 24
-
-    return when {
-        days > 0 -> "${days}d ago"
-        hours > 0 -> "${hours}h ago"
-        minutes > 0 -> "${minutes}m ago"
-        else -> "Just now"
+private fun formatDateString(dateString: String): String {
+    return try {
+        // Parse ISO format: "2024-01-15T10:30:00Z"
+        val parts = dateString.split("T")
+        if (parts.size >= 2) {
+            val datePart = parts[0] // "2024-01-15"
+            val timePart = parts[1].split(":").take(2).joinToString(":") // "10:30"
+            "$datePart $timePart"
+        } else {
+            dateString
+        }
+    } catch (e: Exception) {
+        dateString
     }
 }
 
 /**
- * Avatar component for alerts with colored background based on severity.
+ * Avatar component for alerts with colored background based on severity level.
  */
 @Composable
 fun AlertAvatar(
     initials: String,
-    severity: AlertSeverity,
+    severityLevel: Short?,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = when (severity) {
-        AlertSeverity.LOW -> Color(0xFF2196F3) // Blue
-        AlertSeverity.MEDIUM -> Color(0xFFFF9800) // Orange
-        AlertSeverity.HIGH -> Color(0xFFF44336) // Red
-        AlertSeverity.CRITICAL -> Color(0xFF9C27B0) // Purple
-    }
+    val backgroundColor = getSeverityColor(severityLevel)
 
     Box(
         modifier = modifier
@@ -268,36 +328,52 @@ fun AlertAvatar(
 }
 
 /**
- * Severity badge for alerts.
+ * Severity badge for alerts using API data.
  */
 @Composable
 fun AlertSeverityBadge(
-    severity: AlertSeverity,
+    severityName: String?,
+    severityLevel: Short?,
     modifier: Modifier = Modifier
 ) {
-    val (backgroundColor, textColor, textRes) = when (severity) {
-        AlertSeverity.LOW -> Triple(
-            Color(0xFF2196F3).copy(alpha = 0.15f),
-            Color(0xFF2196F3),
-            Res.string.severity_low
-        )
+    val notAssignedText = stringResource(Res.string.label_not_assigned)
+    val textColor = getSeverityColor(severityLevel)
+    val backgroundColor = textColor.copy(alpha = 0.15f)
 
-        AlertSeverity.MEDIUM -> Triple(
-            Color(0xFFFF9800).copy(alpha = 0.15f),
-            Color(0xFFFF9800),
-            Res.string.severity_medium
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(backgroundColor)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = severityName ?: notAssignedText,
+            style = MaterialTheme.typography.labelSmall,
+            color = textColor,
+            fontWeight = FontWeight.Medium
         )
+    }
+}
 
-        AlertSeverity.HIGH -> Triple(
+/**
+ * Badge showing resolved/active status.
+ */
+@Composable
+fun AlertResolvedBadge(
+    isResolved: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val (backgroundColor, textColor, textRes) = if (isResolved) {
+        Triple(
+            Color(0xFF4CAF50).copy(alpha = 0.15f),
+            Color(0xFF4CAF50),
+            Res.string.alert_resolved
+        )
+    } else {
+        Triple(
             Color(0xFFF44336).copy(alpha = 0.15f),
             Color(0xFFF44336),
-            Res.string.severity_high
-        )
-
-        AlertSeverity.CRITICAL -> Triple(
-            Color(0xFF9C27B0).copy(alpha = 0.15f),
-            Color(0xFF9C27B0),
-            Res.string.severity_critical
+            Res.string.alert_active
         )
     }
 
@@ -317,82 +393,75 @@ fun AlertSeverityBadge(
 }
 
 /**
- * Status badge for alerts.
+ * Get color based on severity level.
+ * Default colors when API color is not available.
  */
-@Composable
-fun AlertStatusBadge(
-    status: AlertStatus,
-    modifier: Modifier = Modifier
-) {
-    val (backgroundColor, textColor, textRes) = when (status) {
-        AlertStatus.UNREAD -> Triple(
-            Color(0xFFF44336).copy(alpha = 0.15f),
-            Color(0xFFF44336),
-            Res.string.alert_status_unread
-        )
-
-        AlertStatus.READ -> Triple(
-            Color(0xFF00E676).copy(alpha = 0.15f),
-            Color(0xFF00E676),
-            Res.string.alert_status_read
-        )
-
-        AlertStatus.DISMISSED -> Triple(
-            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f),
-            MaterialTheme.colorScheme.onSurfaceVariant,
-            Res.string.alert_status_dismissed
-        )
+private fun getSeverityColor(severityLevel: Short?): Color {
+    return when (severityLevel?.toInt()) {
+        1 -> Color(0xFF2196F3) // Blue - Info/Low
+        2 -> Color(0xFFFF9800) // Orange - Medium/Warning
+        3 -> Color(0xFFF44336) // Red - High
+        4 -> Color(0xFF9C27B0) // Purple - Critical
+        else -> Color(0xFF757575) // Gray - Unknown/Not assigned
     }
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Text(
-            text = stringResource(textRes),
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-private object AlertsTablePreviewData {
-    val sampleAlerts = listOf(
-        Alert(
-            id = "1",
-            title = "Temperatura alta en Sector A",
-            severity = AlertSeverity.HIGH,
-            status = AlertStatus.UNREAD,
-            createdAt = Clock.System.now().toEpochMilliseconds() - 3600000,
-            clientId = "client1"
-        ),
-        Alert(
-            id = "2",
-            title = "Humedad baja detectada",
-            severity = AlertSeverity.MEDIUM,
-            status = AlertStatus.READ,
-            createdAt = Clock.System.now().toEpochMilliseconds() - 86400000,
-            clientId = "client1"
-        ),
-        Alert(
-            id = "3",
-            title = "Sensor CO2 desconectado",
-            severity = AlertSeverity.CRITICAL,
-            status = AlertStatus.UNREAD,
-            createdAt = Clock.System.now().toEpochMilliseconds() - 1800000,
-            clientId = "client1"
-        )
-    )
 }
 
 @Preview
 @Composable
 private fun AlertsTablePreview() {
     GreenhouseAdminTheme {
-        AlertsTable(alerts = AlertsTablePreviewData.sampleAlerts)
+        AlertsTable(
+            alerts = listOf(
+                Alert(
+                    id = "1",
+                    tenantId = "t1",
+                    greenhouseId = "g1",
+                    greenhouseName = "Greenhouse A",
+                    alertTypeId = 1,
+                    alertTypeName = "Temperature",
+                    severityId = 3,
+                    severityName = "High",
+                    severityLevel = 3,
+                    message = "Temperature exceeds threshold in Sector A",
+                    isResolved = false,
+                    resolvedAt = null,
+                    resolvedByUserName = null,
+                    createdAt = "2024-01-15T10:30:00Z"
+                ),
+                Alert(
+                    id = "2",
+                    tenantId = "t1",
+                    greenhouseId = "g1",
+                    greenhouseName = "Greenhouse A",
+                    alertTypeId = 2,
+                    alertTypeName = "Humidity",
+                    severityId = 2,
+                    severityName = "Medium",
+                    severityLevel = 2,
+                    message = "Humidity below optimal range",
+                    isResolved = true,
+                    resolvedAt = "2024-01-15T12:00:00Z",
+                    resolvedByUserName = "Admin User",
+                    createdAt = "2024-01-14T08:00:00Z"
+                ),
+                Alert(
+                    id = "3",
+                    tenantId = "t1",
+                    greenhouseId = "g2",
+                    greenhouseName = "Greenhouse B",
+                    alertTypeId = null,
+                    alertTypeName = null,
+                    severityId = 4,
+                    severityName = "Critical",
+                    severityLevel = 4,
+                    message = "CO2 sensor disconnected",
+                    isResolved = false,
+                    resolvedAt = null,
+                    resolvedByUserName = null,
+                    createdAt = "2024-01-15T09:45:00Z"
+                )
+            )
+        )
     }
 }
 
@@ -401,13 +470,13 @@ private fun AlertsTablePreview() {
 private fun AlertAvatarPreview() {
     GreenhouseAdminTheme {
         Row {
-            AlertAvatar(initials = "TA", severity = AlertSeverity.LOW)
+            AlertAvatar(initials = "TA", severityLevel = 1)
             Spacer(modifier = Modifier.width(8.dp))
-            AlertAvatar(initials = "HB", severity = AlertSeverity.MEDIUM)
+            AlertAvatar(initials = "HB", severityLevel = 2)
             Spacer(modifier = Modifier.width(8.dp))
-            AlertAvatar(initials = "SC", severity = AlertSeverity.HIGH)
+            AlertAvatar(initials = "SC", severityLevel = 3)
             Spacer(modifier = Modifier.width(8.dp))
-            AlertAvatar(initials = "CR", severity = AlertSeverity.CRITICAL)
+            AlertAvatar(initials = "CR", severityLevel = 4)
         }
     }
 }

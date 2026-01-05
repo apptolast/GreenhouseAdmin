@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -20,10 +19,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -34,11 +33,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.SectorFormData
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
@@ -51,14 +48,10 @@ import greenhouseadmin.composeapp.generated.resources.dialog_edit_sector_subtitl
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_sector_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_sector_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_sector_title
-import greenhouseadmin.composeapp.generated.resources.error_area_invalid
-import greenhouseadmin.composeapp.generated.resources.error_area_positive
-import greenhouseadmin.composeapp.generated.resources.error_area_required
 import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
-import greenhouseadmin.composeapp.generated.resources.error_name_min_length
-import greenhouseadmin.composeapp.generated.resources.field_area
+import greenhouseadmin.composeapp.generated.resources.error_variety_min_length
 import greenhouseadmin.composeapp.generated.resources.field_greenhouse
-import greenhouseadmin.composeapp.generated.resources.label_name
+import greenhouseadmin.composeapp.generated.resources.label_variety
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -72,7 +65,7 @@ fun SectorFormDialog(
     greenhouses: List<Greenhouse>,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (name: String, greenhouseId: String, greenhouseName: String, area: Double) -> Unit = { _, _, _, _ -> },
+    onSubmit: (greenhouseId: String, variety: String) -> Unit = { _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -80,9 +73,8 @@ fun SectorFormDialog(
         when (mode) {
             is SectorFormMode.Create -> SectorFormData()
             is SectorFormMode.Edit -> SectorFormData(
-                name = mode.sector.name,
-                greenhouseId = mode.sector.greenhouseId,
-                area = mode.sector.area.toString()
+                variety = mode.sector.variety ?: "",
+                greenhouseId = mode.sector.greenhouseId
             )
         }
     }
@@ -93,19 +85,13 @@ fun SectorFormDialog(
     var greenhouseExpanded by remember { mutableStateOf(false) }
 
     // Get error message strings
-    val nameErrorMsg = stringResource(Res.string.error_name_min_length)
+    val varietyErrorMsg = stringResource(Res.string.error_variety_min_length)
     val greenhouseRequiredMsg = stringResource(Res.string.error_greenhouse_required)
-    val areaRequiredMsg = stringResource(Res.string.error_area_required)
-    val areaInvalidMsg = stringResource(Res.string.error_area_invalid)
-    val areaPositiveMsg = stringResource(Res.string.error_area_positive)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
-            "error_name_min_length" -> nameErrorMsg
+            "error_variety_min_length" -> varietyErrorMsg
             "error_greenhouse_required" -> greenhouseRequiredMsg
-            "error_area_required" -> areaRequiredMsg
-            "error_area_invalid" -> areaInvalidMsg
-            "error_area_positive" -> areaPositiveMsg
             else -> null
         }
     }
@@ -158,21 +144,7 @@ fun SectorFormDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Name field
-                SectorFormTextField(
-                    value = formData.name,
-                    onValueChange = {
-                        formData = formData.copy(name = it)
-                        if (hasAttemptedSubmit) validationErrors = formData.validate()
-                    },
-                    label = stringResource(Res.string.label_name),
-                    error = getErrorMessage(validationErrors.name),
-                    enabled = !isSubmitting
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Greenhouse dropdown
+                // Greenhouse dropdown (only for Create mode, or show as read-only in Edit)
                 Column {
                     Text(
                         text = stringResource(Res.string.field_greenhouse),
@@ -183,40 +155,48 @@ fun SectorFormDialog(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     ExposedDropdownMenuBox(
-                        expanded = greenhouseExpanded,
-                        onExpandedChange = { if (!isSubmitting) greenhouseExpanded = it }
+                        expanded = greenhouseExpanded && !isEditMode,
+                        onExpandedChange = { if (!isSubmitting && !isEditMode) greenhouseExpanded = it }
                     ) {
                         OutlinedTextField(
                             value = selectedGreenhouse?.name ?: "",
                             onValueChange = {},
                             readOnly = true,
-                            enabled = !isSubmitting,
+                            enabled = !isSubmitting && !isEditMode,
                             isError = hasAttemptedSubmit && validationErrors.greenhouseId != null,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .menuAnchor(MenuAnchorType.PrimaryNotEditable),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = greenhouseExpanded) },
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                            trailingIcon = {
+                                if (!isEditMode) {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = greenhouseExpanded)
+                                }
+                            },
                             shape = RoundedCornerShape(8.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                                errorBorderColor = MaterialTheme.colorScheme.error
+                                errorBorderColor = MaterialTheme.colorScheme.error,
+                                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface
                             )
                         )
 
-                        ExposedDropdownMenu(
-                            expanded = greenhouseExpanded,
-                            onDismissRequest = { greenhouseExpanded = false }
-                        ) {
-                            greenhouses.forEach { greenhouse ->
-                                DropdownMenuItem(
-                                    text = { Text(greenhouse.name) },
-                                    onClick = {
-                                        formData = formData.copy(greenhouseId = greenhouse.id)
-                                        greenhouseExpanded = false
-                                        if (hasAttemptedSubmit) validationErrors = formData.validate()
-                                    }
-                                )
+                        if (!isEditMode) {
+                            ExposedDropdownMenu(
+                                expanded = greenhouseExpanded,
+                                onDismissRequest = { greenhouseExpanded = false }
+                            ) {
+                                greenhouses.forEach { greenhouse ->
+                                    DropdownMenuItem(
+                                        text = { Text(greenhouse.name) },
+                                        onClick = {
+                                            formData = formData.copy(greenhouseId = greenhouse.id)
+                                            greenhouseExpanded = false
+                                            if (hasAttemptedSubmit) validationErrors = formData.validate()
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -233,17 +213,16 @@ fun SectorFormDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Area field
+                // Variety field
                 SectorFormTextField(
-                    value = formData.area,
+                    value = formData.variety,
                     onValueChange = {
-                        formData = formData.copy(area = it)
+                        formData = formData.copy(variety = it)
                         if (hasAttemptedSubmit) validationErrors = formData.validate()
                     },
-                    label = stringResource(Res.string.field_area),
-                    error = getErrorMessage(validationErrors.area),
-                    enabled = !isSubmitting,
-                    keyboardType = KeyboardType.Decimal
+                    label = stringResource(Res.string.label_variety),
+                    error = getErrorMessage(validationErrors.variety),
+                    enabled = !isSubmitting
                 )
 
                 // Error message
@@ -278,8 +257,7 @@ fun SectorFormDialog(
                             hasAttemptedSubmit = true
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
-                                val greenhouseName = selectedGreenhouse?.name ?: ""
-                                onSubmit(formData.name, formData.greenhouseId, greenhouseName, formData.areaValue)
+                                onSubmit(formData.greenhouseId, formData.variety)
                             }
                         },
                         enabled = !isSubmitting,
@@ -311,8 +289,7 @@ private fun SectorFormTextField(
     label: String,
     error: String?,
     enabled: Boolean,
-    modifier: Modifier = Modifier,
-    keyboardType: KeyboardType = KeyboardType.Text
+    modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
         Text(
@@ -330,7 +307,6 @@ private fun SectorFormTextField(
             enabled = enabled,
             isError = error != null,
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -353,27 +329,32 @@ private fun SectorFormTextField(
 private object SectorFormDialogPreviewData {
     val sampleSector = Sector(
         id = "1",
-        name = "Sector Norte A",
         greenhouseId = "gh1",
-        greenhouseName = "Invernadero Principal",
-        area = 150.0,
-        clientId = "client1"
+        variety = "Tomate Cherry"
     )
 
     val sampleGreenhouses = listOf(
         Greenhouse(
             id = "gh1",
             name = "Invernadero Principal",
-            description = "Produccion de tomates",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "client1"
+            tenantId = "client1",
+            location = null,
+            areaM2 = 1500.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
             id = "gh2",
             name = "Invernadero Norte",
-            description = "Cultivo de lechugas",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "client1"
+            tenantId = "client1",
+            location = null,
+            areaM2 = 800.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         )
     )
 }

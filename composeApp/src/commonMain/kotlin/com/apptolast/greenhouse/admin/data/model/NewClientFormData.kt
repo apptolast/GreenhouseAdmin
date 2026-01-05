@@ -10,9 +10,20 @@ data class NewClientFormData(
     val phone: String = "",
     val province: String = "",
     val country: String = "",
-    val location: String = "",
+    val latitude: String = "",
+    val longitude: String = "",
     val status: ClientStatus = ClientStatus.PENDING
 ) {
+    /**
+     * Creates a Location object from the latitude and longitude strings.
+     * Returns null if either coordinate is blank or invalid.
+     */
+    fun toLocation(): Location? {
+        val lat = latitude.toDoubleOrNull()
+        val lon = longitude.toDoubleOrNull()
+        return if (lat != null && lon != null) Location(lat, lon) else null
+    }
+
     /**
      * Validation errors for each field.
      */

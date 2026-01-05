@@ -171,7 +171,7 @@ private fun ClientCard(
 
             ClientInfoRow(
                 icon = Icons.Default.LocationOn,
-                text = "${client.location}, ${client.province}"
+                text = client.province
             )
         }
     }
@@ -213,9 +213,6 @@ private object ClientsCardsPreviewData {
             phone = "+34 612 345 678",
             province = "Almeria",
             country = "Spain",
-            location = "Calle Mayor 123",
-            createdAt = 1735689600000L,
-            updatedAt = 1735689600000L,
             status = ClientStatus.ACTIVE
         ),
         Client(
@@ -225,9 +222,6 @@ private object ClientsCardsPreviewData {
             phone = "+34 623 456 789",
             province = "Murcia",
             country = "Spain",
-            location = "Av. Libertad 45",
-            createdAt = 1735689600000L,
-            updatedAt = 1735689600000L,
             status = ClientStatus.PENDING
         ),
         Client(
@@ -237,9 +231,6 @@ private object ClientsCardsPreviewData {
             phone = "+34 634 567 890",
             province = "Valencia",
             country = "Spain",
-            location = "Plaza Central 8",
-            createdAt = 1735689600000L,
-            updatedAt = 1735689600000L,
             status = ClientStatus.INACTIVE
         )
     )

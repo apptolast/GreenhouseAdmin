@@ -1,10 +1,16 @@
 package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import com.apptolast.greenhouse.admin.data.model.Alert
+import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
+import com.apptolast.greenhouse.admin.data.model.AlertType
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.Device
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
+import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.MenuItem
+import com.apptolast.greenhouse.admin.data.model.Period
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.User
@@ -23,6 +29,10 @@ data class ClientDetailUiState(
     val selectedMenuId: String = "clients",
     val alertCount: Int = 0,
     val topBarSearchQuery: String = "",
+
+    // Catalogs state (preloaded on init for all form dropdowns)
+    val isCatalogsLoading: Boolean = true,
+    val catalogsError: String? = null,
 
     // Client data
     val client: Client? = null,
@@ -111,6 +121,11 @@ data class ClientDetailUiState(
     val isDeletingDevice: Boolean = false,
     val deleteDeviceError: String? = null,
 
+    // Device catalog state (preloaded at init)
+    val deviceCategories: List<DeviceCatalogCategory> = emptyList(),
+    val deviceTypes: List<DeviceCatalogType> = emptyList(),
+    val deviceUnits: List<DeviceCatalogUnit> = emptyList(),
+
     // Alerts tab state
     val alerts: List<Alert> = emptyList(),
     val isLoadingAlerts: Boolean = false,
@@ -128,6 +143,10 @@ data class ClientDetailUiState(
     val isDeletingAlert: Boolean = false,
     val deleteAlertError: String? = null,
 
+    // Alert catalog state (preloaded at init)
+    val alertTypes: List<AlertType> = emptyList(),
+    val alertSeverities: List<AlertSeverityCatalog> = emptyList(),
+
     // Settings tab state
     val settings: List<Setting> = emptyList(),
     val isLoadingSettings: Boolean = false,
@@ -143,7 +162,10 @@ data class ClientDetailUiState(
     val showDeleteSettingConfirmation: Boolean = false,
     val settingToDelete: Setting? = null,
     val isDeletingSetting: Boolean = false,
-    val deleteSettingError: String? = null
+    val deleteSettingError: String? = null,
+
+    // Setting catalog state (preloaded at init)
+    val periods: List<Period> = emptyList()
 ) {
     /**
      * Returns true if in error state with no content.

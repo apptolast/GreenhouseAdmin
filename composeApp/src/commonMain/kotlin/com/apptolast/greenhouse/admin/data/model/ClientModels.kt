@@ -3,21 +3,42 @@ package com.apptolast.greenhouse.admin.data.model
 import kotlinx.serialization.Serializable
 
 /**
+ * Represents geographic coordinates.
+ * Matches the JSONB location field in the database: {lat: number, lon: number}
+ */
+@Serializable
+data class Location(
+    val lat: Double? = null,
+    val lon: Double? = null
+) {
+    /**
+     * Returns true if both coordinates are set.
+     */
+    val isValid: Boolean
+        get() = lat != null && lon != null
+
+    /**
+     * Returns a formatted string of coordinates or empty string if not valid.
+     */
+    val displayString: String
+        get() = if (isValid) "$lat, $lon" else ""
+}
+
+/**
  * Represents a client in the system.
- * MVP structure with simplified fields.
+ * Matches the TenantResponse structure from InvernaderosAPI.
  */
 @Serializable
 data class Client(
     val id: String,
     val name: String,
     val email: String,
-    val phone: String,
-    val province: String,
-    val country: String,
-    val location: String,
-    val createdAt: Long,
-    val updatedAt: Long,
-    val status: ClientStatus
+    val phone: String = "",
+    val province: String = "",
+    val country: String = "",
+    val location: Location? = null,
+    val isActive: Boolean? = true,
+    val status: ClientStatus = ClientStatus.ACTIVE
 ) {
     val initials: String
         get() = name.split(" ")
@@ -26,7 +47,11 @@ data class Client(
             .joinToString("")
 
     val fullLocation: String
-        get() = "$province, $country"
+        get() = buildString {
+            if (province.isNotBlank()) append(province)
+            if (province.isNotBlank() && country.isNotBlank()) append(", ")
+            if (country.isNotBlank()) append(country)
+        }.ifBlank { "-" }
 }
 
 /**
@@ -37,6 +62,16 @@ enum class ClientStatus {
     ACTIVE,
     PENDING,
     INACTIVE
+}
+
+/**
+ * Convert ClientStatus to isActive Boolean for API.
+ * Maps: ACTIVE -> true, INACTIVE -> false, PENDING -> null
+ */
+fun ClientStatus.toIsActive(): Boolean? = when (this) {
+    ClientStatus.ACTIVE -> true
+    ClientStatus.INACTIVE -> false
+    ClientStatus.PENDING -> null
 }
 
 /**

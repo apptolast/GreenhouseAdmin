@@ -26,8 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Device
-import com.apptolast.greenhouse.admin.data.model.DeviceStatus
-import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
@@ -53,6 +51,7 @@ fun ClientDetailDevicesTab(
     onAddDevice: () -> Unit = {},
     onEditDevice: (Device) -> Unit = {},
     onDeleteDevice: (Device) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -128,7 +127,8 @@ fun ClientDetailDevicesTab(
                 DevicesTable(
                     devices = devices,
                     onEditDevice = onEditDevice,
-                    onDeleteDevice = onDeleteDevice
+                    onDeleteDevice = onDeleteDevice,
+                    onCopyId = onCopyId
                 )
             }
         }
@@ -163,17 +163,27 @@ private object ClientDetailDevicesTabPreviewData {
     val sampleDevices = listOf(
         Device(
             id = "1",
-            name = "Sensor Temperatura A1",
-            type = DeviceType.SENSOR,
-            status = DeviceStatus.ONLINE,
-            clientId = "client1"
+            tenantId = "tenant1",
+            greenhouseId = "gh1",
+            categoryId = Device.CATEGORY_SENSOR,
+            categoryName = "Sensor",
+            typeId = 1,
+            typeName = "Temperature",
+            unitId = 1,
+            unitSymbol = "°C",
+            isActive = true
         ),
         Device(
             id = "2",
-            name = "Valvula Riego Norte",
-            type = DeviceType.ACTUATOR,
-            status = DeviceStatus.ONLINE,
-            clientId = "client1"
+            tenantId = "tenant1",
+            greenhouseId = "gh1",
+            categoryId = Device.CATEGORY_ACTUATOR,
+            categoryName = "Actuator",
+            typeId = 2,
+            typeName = "Valve",
+            unitId = null,
+            unitSymbol = null,
+            isActive = true
         )
     )
 }

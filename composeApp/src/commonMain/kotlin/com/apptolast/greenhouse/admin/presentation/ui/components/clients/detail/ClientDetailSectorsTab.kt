@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
@@ -46,6 +47,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun ClientDetailSectorsTab(
     sectors: List<Sector>,
+    greenhouses: List<Greenhouse> = emptyList(),
     isLoading: Boolean = false,
     error: String? = null,
     onAddSector: () -> Unit = {},
@@ -125,6 +127,7 @@ fun ClientDetailSectorsTab(
             else -> {
                 SectorsTable(
                     sectors = sectors,
+                    greenhouses = greenhouses,
                     onEditSector = onEditSector,
                     onDeleteSector = onDeleteSector
                 )
@@ -161,19 +164,27 @@ private object ClientDetailSectorsTabPreviewData {
     val sampleSectors = listOf(
         Sector(
             id = "1",
-            name = "Sector Norte A",
             greenhouseId = "gh1",
-            greenhouseName = "Invernadero Principal",
-            area = 150.0,
-            clientId = "client1"
+            variety = "Tomate Cherry"
         ),
         Sector(
             id = "2",
-            name = "Sector Norte B",
             greenhouseId = "gh1",
-            greenhouseName = "Invernadero Principal",
-            area = 120.5,
-            clientId = "client1"
+            variety = "Pimiento Rojo"
+        )
+    )
+
+    val sampleGreenhouses = listOf(
+        Greenhouse(
+            id = "gh1",
+            name = "Invernadero Principal",
+            tenantId = "client1",
+            location = null,
+            areaM2 = 1500.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         )
     )
 }
@@ -183,7 +194,10 @@ private object ClientDetailSectorsTabPreviewData {
 private fun ClientDetailSectorsTabPreview() {
     GreenhouseAdminTheme {
         ProvideAppWindowInfo {
-            ClientDetailSectorsTab(sectors = ClientDetailSectorsTabPreviewData.sampleSectors)
+            ClientDetailSectorsTab(
+                sectors = ClientDetailSectorsTabPreviewData.sampleSectors,
+                greenhouses = ClientDetailSectorsTabPreviewData.sampleGreenhouses
+            )
         }
     }
 }

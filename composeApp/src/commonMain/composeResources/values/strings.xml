@@ -34,10 +34,12 @@
 
     <!-- Client Table Headers -->
     <string name="header_name">NAME</string>
+    <string name="header_username">USERNAME</string>
     <string name="header_email">EMAIL</string>
     <string name="header_phone">PHONE</string>
     <string name="header_province">PROVINCE</string>
     <string name="header_location">LOCATION</string>
+    <string name="header_role">ROLE</string>
     <string name="header_status">STATUS</string>
     <string name="header_actions">ACTIONS</string>
 
@@ -65,24 +67,36 @@
     <string name="pagination_previous">Previous page</string>
     <string name="pagination_next">Next page</string>
     <string name="settings_coming_soon">Settings - Coming Soon</string>
+    <string name="label_select">Select...</string>
+    <string name="label_none">None</string>
+    <string name="label_loading">Loading...</string>
+    <string name="label_not_assigned">Not assigned</string>
 
     <!-- New Client Dialog -->
     <string name="dialog_new_client_title">Create New Client</string>
     <string name="dialog_new_client_subtitle">Add a new client to your network</string>
     <string name="label_name">Full Name</string>
+    <string name="label_username">Username</string>
     <string name="label_email">Email Address</string>
     <string name="label_phone">Phone Number</string>
+    <string name="label_password">Password</string>
+    <string name="label_role">Role</string>
     <string name="label_province">Province</string>
     <string name="label_country">Country</string>
-    <string name="label_location">Location/Address</string>
+    <string name="label_location">Location</string>
+    <string name="label_latitude">Latitude</string>
+    <string name="label_longitude">Longitude</string>
+    <string name="label_coordinates">COORDINATES</string>
     <string name="label_status">Initial Status</string>
     <string name="button_create">Create Client</string>
     <string name="button_cancel">Cancel</string>
 
     <!-- Validation Errors -->
     <string name="error_name_min_length">Name must be at least 2 characters</string>
+    <string name="error_username_min_length">Username must be at least 3 characters</string>
     <string name="error_email_invalid">Please enter a valid email address</string>
     <string name="error_phone_required">Phone number is required</string>
+    <string name="error_password_required">Password is required</string>
     <string name="error_province_required">Please select a province</string>
     <string name="error_country_required">Please select a country</string>
     <string name="error_create_client_failed">Failed to create client. Please try again.</string>
@@ -101,8 +115,10 @@
 
     <!-- Client Detail Screen -->
     <string name="client_detail_back">Back to List</string>
-    <string name="client_detail_ref">Ref: CLI-%1$s</string>
+    <string name="client_detail_id">ID: %1$s</string>
     <string name="client_detail_since">Since %1$s</string>
+    <string name="copy_id">Copy ID</string>
+    <string name="id_copied">ID copied to clipboard</string>
 
     <!-- Client Detail Tabs -->
     <string name="tab_general">General</string>
@@ -177,6 +193,7 @@
     <!-- Sector Table Headers -->
     <string name="header_greenhouse">GREENHOUSE</string>
     <string name="header_area">AREA</string>
+    <string name="header_variety">VARIETY</string>
 
     <!-- Sector Dialogs -->
     <string name="dialog_new_sector_title">Add New Sector</string>
@@ -186,9 +203,12 @@
     <string name="dialog_edit_sector_subtitle">Update sector information</string>
     <string name="field_greenhouse">Greenhouse</string>
     <string name="field_area">Area (m²)</string>
+    <string name="label_variety">Variety</string>
 
     <!-- Sector Validation Errors -->
     <string name="error_greenhouse_required">Please select a greenhouse</string>
+    <string name="error_category_required">Category is required</string>
+    <string name="error_variety_min_length">Variety must be at least 2 characters</string>
     <string name="error_area_required">Area is required</string>
     <string name="error_area_invalid">Please enter a valid number</string>
     <string name="error_area_positive">Area must be greater than 0</string>
@@ -209,9 +229,23 @@
     <string name="devices_empty">No devices found for this client.</string>
 
     <!-- Device Table Headers -->
+    <string name="header_id">ID</string>
     <string name="header_type">TYPE</string>
+    <string name="header_category">CATEGORY</string>
 
-    <!-- Device Type and Status -->
+    <!-- Device Category -->
+    <string name="device_category_sensor">Sensor</string>
+    <string name="device_category_actuator">Actuator</string>
+    <string name="label_category">Category</string>
+    <string name="label_greenhouse">Greenhouse</string>
+    <string name="label_device_type">Device Type</string>
+    <string name="label_unit">Unit</string>
+    <string name="label_is_active">Active</string>
+    <string name="label_device_name">Device Name</string>
+    <string name="error_type_required">Device type is required</string>
+    <string name="error_name_max_length">Name cannot exceed 100 characters</string>
+
+    <!-- Legacy - kept for compatibility -->
     <string name="device_type_sensor">Sensor</string>
     <string name="device_type_actuator">Actuator</string>
     <string name="device_status_online">Online</string>
@@ -242,6 +276,7 @@
 
     <!-- Alert Table Headers -->
     <string name="header_title">TITLE</string>
+    <string name="header_message">MESSAGE</string>
     <string name="header_severity">SEVERITY</string>
     <string name="header_date">DATE</string>
 
@@ -255,6 +290,12 @@
     <string name="alert_status_unread">Unread</string>
     <string name="alert_status_read">Read</string>
     <string name="alert_status_dismissed">Dismissed</string>
+    <string name="alert_resolved">Resolved</string>
+    <string name="alert_active">Active</string>
+
+    <!-- Alert Actions -->
+    <string name="action_resolve">Resolve</string>
+    <string name="action_reopen">Reopen</string>
 
     <!-- Alert Dialogs -->
     <string name="dialog_new_alert_title">Add New Alert</string>
@@ -263,15 +304,21 @@
     <string name="dialog_edit_alert_title">Edit Alert</string>
     <string name="dialog_edit_alert_subtitle">Update alert information</string>
     <string name="field_title">Title</string>
+    <string name="field_message">Message</string>
     <string name="field_severity">Severity</string>
+    <string name="field_alert_type">Alert Type</string>
 
     <!-- Alert Validation Errors -->
     <string name="error_title_required">Title is required</string>
+    <string name="error_message_required">Message is required</string>
+    <string name="error_message_min_length">Message must be at least 5 characters</string>
 
     <!-- Alert Errors -->
     <string name="error_create_alert_failed">Failed to create alert. Please try again.</string>
     <string name="error_update_alert_failed">Failed to update alert. Please try again.</string>
     <string name="error_delete_alert_failed">Failed to delete alert. Please try again.</string>
+    <string name="error_resolve_alert_failed">Failed to resolve alert. Please try again.</string>
+    <string name="error_reopen_alert_failed">Failed to reopen alert. Please try again.</string>
 
     <!-- Delete Alert Confirmation -->
     <string name="dialog_delete_alert_title">Delete Alert?</string>
@@ -279,28 +326,32 @@
 
     <!-- Settings Tab -->
     <string name="settings_title">Client Settings</string>
-    <string name="settings_subtitle">Manage configuration settings for this client.</string>
+    <string name="settings_subtitle">Manage parameter threshold settings for this client.</string>
     <string name="new_setting">New Setting</string>
     <string name="settings_empty">No settings found for this client.</string>
 
     <!-- Setting Table Headers -->
-    <string name="header_key">KEY</string>
-    <string name="header_value">VALUE</string>
+    <string name="header_parameter">PARAMETER</string>
+    <string name="header_period">PERIOD</string>
+    <string name="header_range">RANGE</string>
+
+    <!-- Setting Form Labels -->
+    <string name="label_parameter">Parameter</string>
+    <string name="label_period">Period</string>
+    <string name="label_min_value">Min Value</string>
+    <string name="label_max_value">Max Value</string>
 
     <!-- Setting Dialogs -->
     <string name="dialog_new_setting_title">Add New Setting</string>
-    <string name="dialog_new_setting_subtitle">Add a configuration setting to this client</string>
+    <string name="dialog_new_setting_subtitle">Configure a parameter threshold for a greenhouse</string>
     <string name="button_create_setting">Add Setting</string>
     <string name="dialog_edit_setting_title">Edit Setting</string>
-    <string name="dialog_edit_setting_subtitle">Update setting information</string>
-    <string name="field_key">Key</string>
-    <string name="field_value">Value</string>
+    <string name="dialog_edit_setting_subtitle">Update parameter threshold configuration</string>
 
     <!-- Setting Validation Errors -->
-    <string name="error_key_required">Key is required</string>
-    <string name="error_key_min_length">Key must be at least 2 characters</string>
-    <string name="error_key_invalid">Key must start with a letter and contain only letters, numbers, and underscores</string>
-    <string name="error_value_required">Value is required</string>
+    <string name="error_parameter_required">Parameter is required</string>
+    <string name="error_period_required">Period is required</string>
+    <string name="error_min_greater_than_max">Min value cannot be greater than max value</string>
 
     <!-- Setting Errors -->
     <string name="error_create_setting_failed">Failed to create setting. Please try again.</string>
@@ -310,4 +361,16 @@
     <!-- Delete Setting Confirmation -->
     <string name="dialog_delete_setting_title">Delete Setting?</string>
     <string name="dialog_delete_setting_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_screen_title">Settings</string>
+    <string name="settings_account_section">Account</string>
+    <string name="settings_logged_in_as">Logged in as</string>
+    <string name="settings_role">Role</string>
+
+    <!-- Logout -->
+    <string name="logout_button">Log Out</string>
+    <string name="logout_confirmation_title">Log Out?</string>
+    <string name="logout_confirmation_message">Are you sure you want to log out? You will need to sign in again to access your account.</string>
+    <string name="logout_confirm_button">Log Out</string>
 </resources>

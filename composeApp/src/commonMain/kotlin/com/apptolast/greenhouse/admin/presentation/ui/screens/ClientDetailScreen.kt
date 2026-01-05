@@ -14,21 +14,26 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.data.local.ClipboardManager
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.Device
-import com.apptolast.greenhouse.admin.data.model.DeviceStatus
-import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.data.model.UserRole
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
@@ -62,14 +67,17 @@ import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.app_name
 import greenhouseadmin.composeapp.generated.resources.breadcrumb_clients
 import greenhouseadmin.composeapp.generated.resources.error_unknown
+import greenhouseadmin.composeapp.generated.resources.id_copied
 import greenhouseadmin.composeapp.generated.resources.new_alert
 import greenhouseadmin.composeapp.generated.resources.new_device
 import greenhouseadmin.composeapp.generated.resources.new_greenhouse
 import greenhouseadmin.composeapp.generated.resources.new_sector
 import greenhouseadmin.composeapp.generated.resources.new_setting
 import greenhouseadmin.composeapp.generated.resources.new_user
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -82,9 +90,13 @@ import org.koin.core.parameter.parametersOf
 fun ClientDetailScreen(
     clientId: String,
     onNavigateBack: () -> Unit,
-    viewModel: ClientDetailViewModel = koinViewModel { parametersOf(clientId) }
+    viewModel: ClientDetailViewModel = koinViewModel { parametersOf(clientId) },
+    clipboardManager: ClipboardManager = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val idCopiedMessage = stringResource(Res.string.id_copied)
 
     // Handle navigation after successful delete
     LaunchedEffect(uiState.shouldNavigateBack) {
@@ -94,10 +106,23 @@ fun ClientDetailScreen(
         }
     }
 
+    // Callback for copying ID to clipboard
+    val onCopyId: (String) -> Unit = { id ->
+        clipboardManager.copyToClipboard(id)
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                message = idCopiedMessage,
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+
     ClientDetailScreenContent(
         uiState = uiState,
         onEvent = viewModel::onEvent,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        onCopyId = onCopyId,
+        snackbarHostState = snackbarHostState
     )
 }
 
@@ -109,14 +134,17 @@ private fun ClientDetailScreenContent(
     uiState: ClientDetailUiState,
     onEvent: (ClientDetailEvent) -> Unit = {},
     onNavigateBack: () -> Unit = {},
+    onCopyId: (String) -> Unit = {},
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val client = uiState.client
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
         // Top bar with breadcrumb
         val breadcrumb = if (client != null) {
             "${stringResource(Res.string.breadcrumb_clients)} / ${client.name}"
@@ -156,10 +184,24 @@ private fun ClientDetailScreenContent(
                         uiState = uiState,
                         client = client,
                         onEvent = onEvent,
-                        onNavigateBack = onNavigateBack
+                        onNavigateBack = onNavigateBack,
+                        onCopyId = onCopyId
                     )
                 }
             }
+        }
+        }
+
+        // Snackbar for copy feedback
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) { snackbarData ->
+            Snackbar(
+                snackbarData = snackbarData,
+                containerColor = MaterialTheme.colorScheme.inverseSurface,
+                contentColor = MaterialTheme.colorScheme.inverseOnSurface
+            )
         }
     }
 
@@ -167,8 +209,6 @@ private fun ClientDetailScreenContent(
     if (uiState.showEditClientDialog && client != null) {
         ClientFormDialog(
             mode = ClientFormMode.Edit(client),
-            provinces = listOf(client.province), // Use current value as option
-            countries = listOf(client.country), // Use current value as option
             isSubmitting = uiState.isUpdatingClient,
             error = uiState.updateClientError,
             onSubmit = { _, name, email, phone, province, country, location, status ->
@@ -205,8 +245,8 @@ private fun ClientDetailScreenContent(
             mode = uiState.userFormMode,
             isSubmitting = uiState.isSubmittingUser,
             error = uiState.submitUserError,
-            onSubmit = { name, email, phone ->
-                onEvent(ClientDetailEvent.OnSubmitUserForm(name, email, phone))
+            onSubmit = { username, email, password, role, isActive ->
+                onEvent(ClientDetailEvent.OnSubmitUserForm(username, email, password, role, isActive))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissUserFormDialog) }
         )
@@ -215,7 +255,7 @@ private fun ClientDetailScreenContent(
     // User Delete Confirmation Dialog
     if (uiState.showDeleteUserConfirmation && uiState.userToDelete != null) {
         DeleteConfirmationDialog(
-            clientName = uiState.userToDelete.name,
+            clientName = uiState.userToDelete.username,
             isDeleting = uiState.isDeletingUser,
             error = uiState.deleteUserError,
             onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteUser) },
@@ -229,8 +269,8 @@ private fun ClientDetailScreenContent(
             mode = uiState.greenhouseFormMode,
             isSubmitting = uiState.isSubmittingGreenhouse,
             error = uiState.submitGreenhouseError,
-            onSubmit = { name, description, status ->
-                onEvent(ClientDetailEvent.OnSubmitGreenhouseForm(name, description, status))
+            onSubmit = { name, location, areaM2, timezone, isActive ->
+                onEvent(ClientDetailEvent.OnSubmitGreenhouseForm(name, location, areaM2, timezone, isActive))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissGreenhouseFormDialog) }
         )
@@ -254,8 +294,8 @@ private fun ClientDetailScreenContent(
             greenhouses = uiState.greenhouses,
             isSubmitting = uiState.isSubmittingSector,
             error = uiState.submitSectorError,
-            onSubmit = { name, greenhouseId, greenhouseName, area ->
-                onEvent(ClientDetailEvent.OnSubmitSectorForm(name, greenhouseId, greenhouseName, area))
+            onSubmit = { greenhouseId, variety ->
+                onEvent(ClientDetailEvent.OnSubmitSectorForm(greenhouseId, variety))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissSectorFormDialog) }
         )
@@ -264,7 +304,7 @@ private fun ClientDetailScreenContent(
     // Sector Delete Confirmation Dialog
     if (uiState.showDeleteSectorConfirmation && uiState.sectorToDelete != null) {
         DeleteConfirmationDialog(
-            clientName = uiState.sectorToDelete.name,
+            clientName = uiState.sectorToDelete.displayName,
             isDeleting = uiState.isDeletingSector,
             error = uiState.deleteSectorError,
             onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteSector) },
@@ -276,10 +316,15 @@ private fun ClientDetailScreenContent(
     if (uiState.showDeviceFormDialog) {
         DeviceFormDialog(
             mode = uiState.deviceFormMode,
+            greenhouses = uiState.greenhouses,
+            categories = uiState.deviceCategories,
+            allTypes = uiState.deviceTypes,
+            units = uiState.deviceUnits,
+            isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingDevice,
             error = uiState.submitDeviceError,
-            onSubmit = { name, type, status ->
-                onEvent(ClientDetailEvent.OnSubmitDeviceForm(name, type, status))
+            onSubmit = { greenhouseId, name, categoryId, typeId, unitId, isActive ->
+                onEvent(ClientDetailEvent.OnSubmitDeviceForm(greenhouseId, name, categoryId, typeId, unitId, isActive))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissDeviceFormDialog) }
         )
@@ -288,7 +333,7 @@ private fun ClientDetailScreenContent(
     // Device Delete Confirmation Dialog
     if (uiState.showDeleteDeviceConfirmation && uiState.deviceToDelete != null) {
         DeleteConfirmationDialog(
-            clientName = uiState.deviceToDelete.name,
+            clientName = uiState.deviceToDelete.displayName,
             isDeleting = uiState.isDeletingDevice,
             error = uiState.deleteDeviceError,
             onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteDevice) },
@@ -300,10 +345,14 @@ private fun ClientDetailScreenContent(
     if (uiState.showAlertFormDialog) {
         AlertFormDialog(
             mode = uiState.alertFormMode,
+            greenhouses = uiState.greenhouses,
+            alertTypes = uiState.alertTypes,
+            severities = uiState.alertSeverities,
+            isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingAlert,
             error = uiState.submitAlertError,
-            onSubmit = { title, severity, status ->
-                onEvent(ClientDetailEvent.OnSubmitAlertForm(title, severity, status))
+            onSubmit = { greenhouseId, alertTypeId, severityId, message ->
+                onEvent(ClientDetailEvent.OnSubmitAlertForm(greenhouseId, alertTypeId, severityId, message))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissAlertFormDialog) }
         )
@@ -312,7 +361,7 @@ private fun ClientDetailScreenContent(
     // Alert Delete Confirmation Dialog
     if (uiState.showDeleteAlertConfirmation && uiState.alertToDelete != null) {
         DeleteConfirmationDialog(
-            clientName = uiState.alertToDelete.title,
+            clientName = uiState.alertToDelete.message,
             isDeleting = uiState.isDeletingAlert,
             error = uiState.deleteAlertError,
             onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteAlert) },
@@ -324,10 +373,23 @@ private fun ClientDetailScreenContent(
     if (uiState.showSettingFormDialog) {
         SettingFormDialog(
             mode = uiState.settingFormMode,
+            greenhouses = uiState.greenhouses,
+            parameters = uiState.deviceTypes,
+            periods = uiState.periods,
+            isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingSetting,
             error = uiState.submitSettingError,
-            onSubmit = { key, value, description ->
-                onEvent(ClientDetailEvent.OnSubmitSettingForm(key, value, description))
+            onSubmit = { greenhouseId, parameterId, periodId, minValue, maxValue, isActive ->
+                onEvent(
+                    ClientDetailEvent.OnSubmitSettingForm(
+                        greenhouseId = greenhouseId,
+                        parameterId = parameterId,
+                        periodId = periodId,
+                        minValue = minValue,
+                        maxValue = maxValue,
+                        isActive = isActive
+                    )
+                )
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissSettingFormDialog) }
         )
@@ -336,7 +398,7 @@ private fun ClientDetailScreenContent(
     // Setting Delete Confirmation Dialog
     if (uiState.showDeleteSettingConfirmation && uiState.settingToDelete != null) {
         DeleteConfirmationDialog(
-            clientName = uiState.settingToDelete.key,
+            clientName = uiState.settingToDelete.displayName,
             isDeleting = uiState.isDeletingSetting,
             error = uiState.deleteSettingError,
             onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteSetting) },
@@ -350,7 +412,8 @@ private fun ClientDetailContent(
     uiState: ClientDetailUiState,
     client: Client,
     onEvent: (ClientDetailEvent) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onCopyId: (String) -> Unit = {}
 ) {
     val contentPadding = AdaptiveDimens.contentPadding()
     val windowInfo = LocalAppWindowInfo.current
@@ -429,6 +492,7 @@ private fun ClientDetailContent(
                 ClientDetailTab.SECTORS -> {
                     ClientDetailSectorsTab(
                         sectors = uiState.sectors,
+                        greenhouses = uiState.greenhouses,
                         isLoading = uiState.isLoadingSectors,
                         error = uiState.sectorsError,
                         onAddSector = { onEvent(ClientDetailEvent.OnAddSectorClicked) },
@@ -446,6 +510,7 @@ private fun ClientDetailContent(
                         onAddDevice = { onEvent(ClientDetailEvent.OnAddDeviceClicked) },
                         onEditDevice = { device -> onEvent(ClientDetailEvent.OnEditDeviceClicked(device)) },
                         onDeleteDevice = { device -> onEvent(ClientDetailEvent.OnDeleteDeviceClicked(device)) },
+                        onCopyId = onCopyId,
                         onRetry = { onEvent(ClientDetailEvent.LoadDevices) }
                     )
                 }
@@ -458,6 +523,8 @@ private fun ClientDetailContent(
                         onAddAlert = { onEvent(ClientDetailEvent.OnAddAlertClicked) },
                         onEditAlert = { alert -> onEvent(ClientDetailEvent.OnEditAlertClicked(alert)) },
                         onDeleteAlert = { alert -> onEvent(ClientDetailEvent.OnDeleteAlertClicked(alert)) },
+                        onResolveAlert = { alert -> onEvent(ClientDetailEvent.OnResolveAlertClicked(alert)) },
+                        onReopenAlert = { alert -> onEvent(ClientDetailEvent.OnReopenAlertClicked(alert)) },
                         onRetry = { onEvent(ClientDetailEvent.LoadAlerts) }
                     )
                 }
@@ -542,26 +609,25 @@ private object ClientDetailScreenPreviewData {
         phone = "+34 612 345 678",
         province = "Almeria",
         country = "Spain",
-        location = "Calle Mayor 123",
-        createdAt = 1735689600000L,
-        updatedAt = 1735689600000L,
         status = ClientStatus.ACTIVE
     )
 
     val sampleUsers = listOf(
         User(
             id = "1",
-            name = "Ana Martinez",
+            username = "anamartinez",
             email = "ana@freshveg.com",
-            phone = "+34 612 111 222",
-            clientId = "12345"
+            role = UserRole.ADMIN,
+            tenantId = "12345",
+            isActive = true
         ),
         User(
             id = "2",
-            name = "Carlos Ruiz",
+            username = "carlosruiz",
             email = "carlos@freshveg.com",
-            phone = "+34 623 222 333",
-            clientId = "12345"
+            role = UserRole.OPERATOR,
+            tenantId = "12345",
+            isActive = true
         )
     )
 
@@ -569,40 +635,63 @@ private object ClientDetailScreenPreviewData {
         Greenhouse(
             id = "1",
             name = "Invernadero Principal",
-            description = "Produccion de tomates y pimientos",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "12345"
+            tenantId = "12345",
+            location = null,
+            areaM2 = 1500.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
             id = "2",
             name = "Invernadero Norte",
-            description = "Cultivo de lechugas hidroponicas",
-            status = GreenhouseStatus.ACTIVE,
-            clientId = "12345"
+            tenantId = "12345",
+            location = null,
+            areaM2 = 800.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         )
     )
 
     val sampleDevices = listOf(
         Device(
             id = "1",
-            name = "Sensor Temperatura A1",
-            type = DeviceType.SENSOR,
-            status = DeviceStatus.ONLINE,
-            clientId = "12345"
+            tenantId = "12345",
+            greenhouseId = "gh1",
+            categoryId = Device.CATEGORY_SENSOR,
+            categoryName = "Sensor",
+            typeId = 1,
+            typeName = "Temperature",
+            unitId = 1,
+            unitSymbol = "°C",
+            isActive = true
         ),
         Device(
             id = "2",
-            name = "Valvula Riego Norte",
-            type = DeviceType.ACTUATOR,
-            status = DeviceStatus.ONLINE,
-            clientId = "12345"
+            tenantId = "12345",
+            greenhouseId = "gh1",
+            categoryId = Device.CATEGORY_ACTUATOR,
+            categoryName = "Actuator",
+            typeId = 2,
+            typeName = "Valve",
+            unitId = null,
+            unitSymbol = null,
+            isActive = true
         ),
         Device(
             id = "3",
-            name = "Sensor CO2 B2",
-            type = DeviceType.SENSOR,
-            status = DeviceStatus.OFFLINE,
-            clientId = "12345"
+            tenantId = "12345",
+            greenhouseId = "gh1",
+            categoryId = Device.CATEGORY_SENSOR,
+            categoryName = "Sensor",
+            typeId = 3,
+            typeName = "CO2",
+            unitId = 2,
+            unitSymbol = "ppm",
+            isActive = false
         )
     )
 }

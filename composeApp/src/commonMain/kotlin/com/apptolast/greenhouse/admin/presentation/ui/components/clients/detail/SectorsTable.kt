@@ -31,15 +31,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
-import greenhouseadmin.composeapp.generated.resources.header_area
 import greenhouseadmin.composeapp.generated.resources.header_greenhouse
-import greenhouseadmin.composeapp.generated.resources.header_name
+import greenhouseadmin.composeapp.generated.resources.header_variety
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -49,10 +49,14 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun SectorsTable(
     sectors: List<Sector>,
+    greenhouses: List<Greenhouse> = emptyList(),
     onEditSector: (Sector) -> Unit = {},
     onDeleteSector: (Sector) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    // Create a map for quick greenhouse name lookup
+    val greenhouseNameMap = greenhouses.associateBy({ it.id }, { it.name })
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -69,6 +73,7 @@ fun SectorsTable(
             sectors.forEach { sector ->
                 SectorTableRow(
                     sector = sector,
+                    greenhouseName = greenhouseNameMap[sector.greenhouseId],
                     onEdit = { onEditSector(sector) },
                     onDelete = { onDeleteSector(sector) }
                 )
@@ -87,7 +92,7 @@ private fun SectorsTableHeader(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = stringResource(Res.string.header_name),
+            text = stringResource(Res.string.header_variety),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1.5f)
@@ -97,12 +102,6 @@ private fun SectorsTableHeader(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1.5f)
-        )
-        Text(
-            text = stringResource(Res.string.header_area),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
         )
         Text(
             text = stringResource(Res.string.header_actions),
@@ -117,6 +116,7 @@ private fun SectorsTableHeader(modifier: Modifier = Modifier) {
 @Composable
 private fun SectorTableRow(
     sector: Sector,
+    greenhouseName: String?,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
@@ -127,18 +127,18 @@ private fun SectorTableRow(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // NAME with avatar
+        // VARIETY with avatar
         Row(
             modifier = Modifier.weight(1.5f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             SectorAvatar(
-                initials = sector.initials,
+                initials = sector.initial,
                 modifier = Modifier.size(36.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = sector.name,
+                text = sector.displayName,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -149,20 +149,12 @@ private fun SectorTableRow(
 
         // GREENHOUSE
         Text(
-            text = sector.greenhouseName,
+            text = greenhouseName ?: sector.greenhouseId,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1.5f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
-        )
-
-        // AREA
-        Text(
-            text = sector.formattedArea,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
         )
 
         // ACTIONS
@@ -223,27 +215,43 @@ private object SectorsTablePreviewData {
     val sampleSectors = listOf(
         Sector(
             id = "1",
-            name = "Sector Norte A",
             greenhouseId = "gh1",
-            greenhouseName = "Invernadero Principal",
-            area = 150.0,
-            clientId = "client1"
+            variety = "Tomate Cherry"
         ),
         Sector(
             id = "2",
-            name = "Sector Norte B",
             greenhouseId = "gh1",
-            greenhouseName = "Invernadero Principal",
-            area = 120.5,
-            clientId = "client1"
+            variety = "Pimiento Rojo"
         ),
         Sector(
             id = "3",
-            name = "Sector Sur",
             greenhouseId = "gh2",
-            greenhouseName = "Invernadero Norte",
-            area = 200.0,
-            clientId = "client1"
+            variety = "Pepino"
+        )
+    )
+
+    val sampleGreenhouses = listOf(
+        Greenhouse(
+            id = "gh1",
+            name = "Invernadero Principal",
+            tenantId = "client1",
+            location = null,
+            areaM2 = 1500.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
+        ),
+        Greenhouse(
+            id = "gh2",
+            name = "Invernadero Norte",
+            tenantId = "client1",
+            location = null,
+            areaM2 = 800.0,
+            timezone = "Europe/Madrid",
+            isActive = true,
+            createdAt = "2024-01-01T00:00:00Z",
+            updatedAt = "2024-01-01T00:00:00Z"
         )
     )
 }
@@ -252,7 +260,10 @@ private object SectorsTablePreviewData {
 @Composable
 private fun SectorsTablePreview() {
     GreenhouseAdminTheme {
-        SectorsTable(sectors = SectorsTablePreviewData.sampleSectors)
+        SectorsTable(
+            sectors = SectorsTablePreviewData.sampleSectors,
+            greenhouses = SectorsTablePreviewData.sampleGreenhouses
+        )
     }
 }
 
@@ -260,6 +271,6 @@ private fun SectorsTablePreview() {
 @Composable
 private fun SectorAvatarPreview() {
     GreenhouseAdminTheme {
-        SectorAvatar(initials = "SN")
+        SectorAvatar(initials = "T")
     }
 }

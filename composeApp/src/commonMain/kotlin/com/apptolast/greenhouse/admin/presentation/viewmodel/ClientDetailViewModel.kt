@@ -3,17 +3,19 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptolast.greenhouse.admin.data.model.Alert
-import com.apptolast.greenhouse.admin.data.model.AlertSeverity
-import com.apptolast.greenhouse.admin.data.model.AlertStatus
+import com.apptolast.greenhouse.admin.data.model.AlertCreateRequest
+import com.apptolast.greenhouse.admin.data.model.AlertUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.Device
-import com.apptolast.greenhouse.admin.data.model.DeviceStatus
-import com.apptolast.greenhouse.admin.data.model.DeviceType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
+import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
+import com.apptolast.greenhouse.admin.data.model.SettingCreateRequest
+import com.apptolast.greenhouse.admin.data.model.SettingUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.data.model.UserRole
+import com.apptolast.greenhouse.admin.data.model.toIsActive
 import com.apptolast.greenhouse.admin.domain.repository.AlertsRepository
 import com.apptolast.greenhouse.admin.domain.repository.ClientsRepository
 import com.apptolast.greenhouse.admin.domain.repository.DashboardRepository
@@ -22,12 +24,13 @@ import com.apptolast.greenhouse.admin.domain.repository.GreenhousesRepository
 import com.apptolast.greenhouse.admin.domain.repository.SectorsRepository
 import com.apptolast.greenhouse.admin.domain.repository.SettingsRepository
 import com.apptolast.greenhouse.admin.domain.repository.UsersRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
 
 /**
  * ViewModel for the Client Detail screen following MVVM+MVI pattern.
@@ -54,6 +57,8 @@ class ClientDetailViewModel(
     init {
         loadLayoutData()
         loadClient()
+        // Preload all catalogs for form dropdowns
+        loadAllCatalogs()
     }
 
     private fun loadLayoutData() {
@@ -109,7 +114,13 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnConfirmDeleteUser -> confirmDeleteUser()
             is ClientDetailEvent.OnCancelDeleteUser -> cancelDeleteUser()
             is ClientDetailEvent.OnDismissUserFormDialog -> dismissUserFormDialog()
-            is ClientDetailEvent.OnSubmitUserForm -> submitUserForm(event.name, event.email, event.phone)
+            is ClientDetailEvent.OnSubmitUserForm -> submitUserForm(
+                event.username,
+                event.email,
+                event.password,
+                event.role,
+                event.isActive
+            )
 
             // Greenhouses events
             is ClientDetailEvent.LoadGreenhouses -> loadGreenhouses()
@@ -121,8 +132,10 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnDismissGreenhouseFormDialog -> dismissGreenhouseFormDialog()
             is ClientDetailEvent.OnSubmitGreenhouseForm -> submitGreenhouseForm(
                 event.name,
-                event.description,
-                event.status
+                event.location,
+                event.areaM2,
+                event.timezone,
+                event.isActive
             )
 
             // Sectors events
@@ -134,10 +147,8 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnCancelDeleteSector -> cancelDeleteSector()
             is ClientDetailEvent.OnDismissSectorFormDialog -> dismissSectorFormDialog()
             is ClientDetailEvent.OnSubmitSectorForm -> submitSectorForm(
-                event.name,
                 event.greenhouseId,
-                event.greenhouseName,
-                event.area
+                event.variety
             )
 
             // Devices events
@@ -148,7 +159,17 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnConfirmDeleteDevice -> confirmDeleteDevice()
             is ClientDetailEvent.OnCancelDeleteDevice -> cancelDeleteDevice()
             is ClientDetailEvent.OnDismissDeviceFormDialog -> dismissDeviceFormDialog()
-            is ClientDetailEvent.OnSubmitDeviceForm -> submitDeviceForm(event.name, event.type, event.status)
+            is ClientDetailEvent.OnSubmitDeviceForm -> submitDeviceForm(
+                event.greenhouseId,
+                event.name,
+                event.categoryId,
+                event.typeId,
+                event.unitId,
+                event.isActive
+            )
+            // OnDeviceCategoryChanged is no longer needed - types are filtered locally in the dialog
+            is ClientDetailEvent.OnDeviceCategoryChanged -> { /* No-op: types filtered locally */
+            }
 
             // Alerts events
             is ClientDetailEvent.LoadAlerts -> loadAlerts()
@@ -158,7 +179,15 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnConfirmDeleteAlert -> confirmDeleteAlert()
             is ClientDetailEvent.OnCancelDeleteAlert -> cancelDeleteAlert()
             is ClientDetailEvent.OnDismissAlertFormDialog -> dismissAlertFormDialog()
-            is ClientDetailEvent.OnSubmitAlertForm -> submitAlertForm(event.title, event.severity, event.status)
+            is ClientDetailEvent.OnSubmitAlertForm -> submitAlertForm(
+                event.greenhouseId,
+                event.alertTypeId,
+                event.severityId,
+                event.message
+            )
+
+            is ClientDetailEvent.OnResolveAlertClicked -> resolveAlert(event.alert)
+            is ClientDetailEvent.OnReopenAlertClicked -> reopenAlert(event.alert)
 
             // Settings events
             is ClientDetailEvent.LoadSettings -> loadSettings()
@@ -168,7 +197,14 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnConfirmDeleteSetting -> confirmDeleteSetting()
             is ClientDetailEvent.OnCancelDeleteSetting -> cancelDeleteSetting()
             is ClientDetailEvent.OnDismissSettingFormDialog -> dismissSettingFormDialog()
-            is ClientDetailEvent.OnSubmitSettingForm -> submitSettingForm(event.key, event.value, event.description)
+            is ClientDetailEvent.OnSubmitSettingForm -> submitSettingForm(
+                event.greenhouseId,
+                event.parameterId,
+                event.periodId,
+                event.minValue,
+                event.maxValue,
+                event.isActive
+            )
         }
     }
 
@@ -197,9 +233,76 @@ class ClientDetailViewModel(
         }
     }
 
+    /**
+     * Preloads all catalog data needed for dropdown menus across all tabs.
+     * Called once during ViewModel initialization.
+     * All catalog endpoints are loaded in parallel for better performance.
+     */
+    private fun loadAllCatalogs() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCatalogsLoading = true, catalogsError = null) }
+
+            try {
+                coroutineScope {
+                    // Device catalogs
+                    val categoriesDeferred = async { devicesRepository.getDeviceCategories() }
+                    val typesDeferred = async { devicesRepository.getDeviceTypes(null) } // All types
+                    val unitsDeferred = async { devicesRepository.getUnits() }
+
+                    // Alert catalogs
+                    val alertTypesDeferred = async { alertsRepository.getAlertTypes() }
+                    val severitiesDeferred = async { alertsRepository.getAlertSeverities() }
+
+                    // Settings catalogs
+                    val periodsDeferred = async { settingsRepository.getPeriods() }
+
+                    // Greenhouses (tenant-specific but used across all tabs)
+                    val greenhousesDeferred = async { greenhousesRepository.getGreenhousesByTenantId(clientId) }
+
+                    // Await all results
+                    val categories = categoriesDeferred.await()
+                    val types = typesDeferred.await()
+                    val units = unitsDeferred.await()
+                    val alertTypes = alertTypesDeferred.await()
+                    val severities = severitiesDeferred.await()
+                    val periods = periodsDeferred.await()
+                    val greenhouses = greenhousesDeferred.await()
+
+                    // Update state with all catalog data
+                    _uiState.update { state ->
+                        state.copy(
+                            // Device catalogs
+                            deviceCategories = categories.getOrDefault(emptyList()),
+                            deviceTypes = types.getOrDefault(emptyList()),
+                            deviceUnits = units.getOrDefault(emptyList()),
+                            // Alert catalogs
+                            alertTypes = alertTypes.getOrDefault(emptyList()),
+                            alertSeverities = severities.getOrDefault(emptyList()),
+                            // Settings catalogs
+                            periods = periods.getOrDefault(emptyList()),
+                            // Greenhouses
+                            greenhouses = greenhouses.getOrDefault(emptyList()),
+                            // Loading state
+                            isCatalogsLoading = false,
+                            catalogsError = null
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isCatalogsLoading = false,
+                        catalogsError = e.message ?: "Error loading catalogs"
+                    )
+                }
+            }
+        }
+    }
+
     private fun selectTab(tab: ClientDetailTab) {
         _uiState.update { it.copy(selectedTab = tab) }
-        // Load data when tab is selected and not already loaded
+        // Load tab-specific data when tab is selected and not already loaded
+        // Note: Greenhouses and catalogs are preloaded at ViewModel init
         when (tab) {
             ClientDetailTab.USERS -> {
                 if (_uiState.value.users.isEmpty() && !_uiState.value.isLoadingUsers) {
@@ -208,6 +311,7 @@ class ClientDetailViewModel(
             }
 
             ClientDetailTab.GREENHOUSES -> {
+                // Greenhouses already loaded at init, but allow manual refresh
                 if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
                     loadGreenhouses()
                 }
@@ -216,10 +320,6 @@ class ClientDetailViewModel(
             ClientDetailTab.SECTORS -> {
                 if (_uiState.value.sectors.isEmpty() && !_uiState.value.isLoadingSectors) {
                     loadSectors()
-                }
-                // Also load greenhouses for the dropdown if not already loaded
-                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
-                    loadGreenhouses()
                 }
             }
 
@@ -235,7 +335,13 @@ class ClientDetailViewModel(
                 }
             }
 
-            else -> { /* No lazy loading for other tabs yet */
+            ClientDetailTab.SETTINGS -> {
+                if (_uiState.value.settings.isEmpty() && !_uiState.value.isLoadingSettings) {
+                    loadSettings()
+                }
+            }
+
+            else -> { /* No lazy loading for other tabs */
             }
         }
     }
@@ -265,7 +371,7 @@ class ClientDetailViewModel(
         phone: String,
         province: String,
         country: String,
-        location: String,
+        location: Location?,
         status: ClientStatus
     ) {
         val existingClient = _uiState.value.client ?: return
@@ -279,7 +385,8 @@ class ClientDetailViewModel(
                 phone = phone.trim(),
                 province = province,
                 country = country,
-                location = location.trim(),
+                location = location,
+                isActive = status.toIsActive(),
                 status = status
             )
 
@@ -377,7 +484,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingUsers = true, usersError = null) }
 
-            usersRepository.getUsersByClientId(clientId)
+            usersRepository.getUsersByTenantId(clientId)
                 .onSuccess { users ->
                     _uiState.update {
                         it.copy(
@@ -417,7 +524,7 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitUserForm(name: String, email: String, phone: String) {
+    private fun submitUserForm(username: String, email: String, password: String?, role: UserRole, isActive: Boolean) {
         val mode = _uiState.value.userFormMode
 
         viewModelScope.launch {
@@ -425,23 +532,26 @@ class ClientDetailViewModel(
 
             val result = when (mode) {
                 is UserFormMode.Create -> {
-                    val newUser = User(
-                        id = "",
-                        name = name.trim(),
+                    usersRepository.createUser(
+                        tenantId = clientId,
+                        username = username.trim(),
                         email = email.trim(),
-                        phone = phone.trim(),
-                        clientId = clientId
+                        password = password ?: "",
+                        role = role,
+                        isActive = isActive
                     )
-                    usersRepository.createUser(newUser)
                 }
 
                 is UserFormMode.Edit -> {
-                    val updatedUser = mode.user.copy(
-                        name = name.trim(),
+                    usersRepository.updateUser(
+                        tenantId = clientId,
+                        userId = mode.user.id,
+                        username = username.trim(),
                         email = email.trim(),
-                        phone = phone.trim()
+                        password = password?.takeIf { it.isNotBlank() },
+                        role = role,
+                        isActive = isActive
                     )
-                    usersRepository.updateUser(updatedUser)
                 }
             }
 
@@ -492,7 +602,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingUser = true, deleteUserError = null) }
 
-            usersRepository.deleteUser(user.id)
+            usersRepository.deleteUser(clientId, user.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(
@@ -520,7 +630,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingGreenhouses = true, greenhousesError = null) }
 
-            greenhousesRepository.getGreenhousesByClientId(clientId)
+            greenhousesRepository.getGreenhousesByTenantId(clientId)
                 .onSuccess { greenhouses ->
                     _uiState.update {
                         it.copy(
@@ -560,7 +670,13 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitGreenhouseForm(name: String, description: String, status: GreenhouseStatus) {
+    private fun submitGreenhouseForm(
+        name: String,
+        location: Location?,
+        areaM2: Double?,
+        timezone: String?,
+        isActive: Boolean
+    ) {
         val mode = _uiState.value.greenhouseFormMode
 
         viewModelScope.launch {
@@ -568,23 +684,26 @@ class ClientDetailViewModel(
 
             val result = when (mode) {
                 is GreenhouseFormMode.Create -> {
-                    val newGreenhouse = Greenhouse(
-                        id = "",
+                    greenhousesRepository.createGreenhouse(
+                        tenantId = clientId,
                         name = name.trim(),
-                        description = description.trim(),
-                        status = status,
-                        clientId = clientId
+                        location = location,
+                        areaM2 = areaM2,
+                        timezone = timezone,
+                        isActive = isActive
                     )
-                    greenhousesRepository.createGreenhouse(newGreenhouse)
                 }
 
                 is GreenhouseFormMode.Edit -> {
-                    val updatedGreenhouse = mode.greenhouse.copy(
+                    greenhousesRepository.updateGreenhouse(
+                        tenantId = clientId,
+                        greenhouseId = mode.greenhouse.id,
                         name = name.trim(),
-                        description = description.trim(),
-                        status = status
+                        location = location,
+                        areaM2 = areaM2,
+                        timezone = timezone,
+                        isActive = isActive
                     )
-                    greenhousesRepository.updateGreenhouse(updatedGreenhouse)
                 }
             }
 
@@ -635,7 +754,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingGreenhouse = true, deleteGreenhouseError = null) }
 
-            greenhousesRepository.deleteGreenhouse(greenhouse.id)
+            greenhousesRepository.deleteGreenhouse(clientId, greenhouse.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(
@@ -663,7 +782,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingSectors = true, sectorsError = null) }
 
-            sectorsRepository.getSectorsByClientId(clientId)
+            sectorsRepository.getSectorsByTenantId(clientId)
                 .onSuccess { sectors ->
                     _uiState.update {
                         it.copy(
@@ -703,7 +822,7 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitSectorForm(name: String, greenhouseId: String, greenhouseName: String, area: Double) {
+    private fun submitSectorForm(greenhouseId: String, variety: String) {
         val mode = _uiState.value.sectorFormMode
 
         viewModelScope.launch {
@@ -711,25 +830,19 @@ class ClientDetailViewModel(
 
             val result = when (mode) {
                 is SectorFormMode.Create -> {
-                    val newSector = Sector(
-                        id = "",
-                        name = name.trim(),
+                    sectorsRepository.createSector(
+                        tenantId = clientId,
                         greenhouseId = greenhouseId,
-                        greenhouseName = greenhouseName,
-                        area = area,
-                        clientId = clientId
+                        variety = variety.trim().takeIf { it.isNotBlank() }
                     )
-                    sectorsRepository.createSector(newSector)
                 }
 
                 is SectorFormMode.Edit -> {
-                    val updatedSector = mode.sector.copy(
-                        name = name.trim(),
-                        greenhouseId = greenhouseId,
-                        greenhouseName = greenhouseName,
-                        area = area
+                    sectorsRepository.updateSector(
+                        tenantId = clientId,
+                        sectorId = mode.sector.id,
+                        variety = variety.trim().takeIf { it.isNotBlank() }
                     )
-                    sectorsRepository.updateSector(updatedSector)
                 }
             }
 
@@ -780,7 +893,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingSector = true, deleteSectorError = null) }
 
-            sectorsRepository.deleteSector(sector.id)
+            sectorsRepository.deleteSector(clientId, sector.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(
@@ -808,7 +921,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingDevices = true, devicesError = null) }
 
-            devicesRepository.getDevicesByClientId(clientId)
+            devicesRepository.getDevicesByTenantId(clientId)
                 .onSuccess { devices ->
                     _uiState.update {
                         it.copy(
@@ -836,6 +949,7 @@ class ClientDetailViewModel(
                 submitDeviceError = null
             )
         }
+        // Catalogs already loaded at ViewModel init - types filtered in UI
     }
 
     private fun dismissDeviceFormDialog() {
@@ -848,31 +962,43 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitDeviceForm(name: String, type: DeviceType, status: DeviceStatus) {
+    private fun submitDeviceForm(
+        greenhouseId: String,
+        name: String,
+        categoryId: Short?,
+        typeId: Short?,
+        unitId: Short?,
+        isActive: Boolean
+    ) {
         val mode = _uiState.value.deviceFormMode
+        val deviceName = name.ifBlank { null } // Convert empty string to null
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingDevice = true, submitDeviceError = null) }
 
             val result = when (mode) {
                 is DeviceFormMode.Create -> {
-                    val newDevice = Device(
-                        id = "",
-                        name = name.trim(),
-                        type = type,
-                        status = status,
-                        clientId = clientId
+                    devicesRepository.createDevice(
+                        tenantId = clientId,
+                        greenhouseId = greenhouseId,
+                        name = deviceName,
+                        categoryId = categoryId,
+                        typeId = typeId,
+                        unitId = unitId,
+                        isActive = isActive
                     )
-                    devicesRepository.createDevice(newDevice)
                 }
 
                 is DeviceFormMode.Edit -> {
-                    val updatedDevice = mode.device.copy(
-                        name = name.trim(),
-                        type = type,
-                        status = status
+                    devicesRepository.updateDevice(
+                        tenantId = clientId,
+                        deviceId = mode.device.id,
+                        name = deviceName,
+                        categoryId = categoryId,
+                        typeId = typeId,
+                        unitId = unitId,
+                        isActive = isActive
                     )
-                    devicesRepository.updateDevice(updatedDevice)
                 }
             }
 
@@ -923,7 +1049,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingDevice = true, deleteDeviceError = null) }
 
-            devicesRepository.deleteDevice(device.id)
+            devicesRepository.deleteDevice(clientId, device.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(
@@ -945,13 +1071,14 @@ class ClientDetailViewModel(
         }
     }
 
+
     // === Alerts Tab Methods ===
 
     private fun loadAlerts() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingAlerts = true, alertsError = null) }
 
-            alertsRepository.getAlertsByClientId(clientId)
+            alertsRepository.getAlertsByTenantId(clientId)
                 .onSuccess { alerts ->
                     _uiState.update {
                         it.copy(
@@ -979,6 +1106,7 @@ class ClientDetailViewModel(
                 submitAlertError = null
             )
         }
+        // Catalogs already loaded at ViewModel init
     }
 
     private fun dismissAlertFormDialog() {
@@ -991,7 +1119,12 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitAlertForm(title: String, severity: AlertSeverity, status: AlertStatus) {
+    private fun submitAlertForm(
+        greenhouseId: String,
+        alertTypeId: Short?,
+        severityId: Short?,
+        message: String
+    ) {
         val mode = _uiState.value.alertFormMode
 
         viewModelScope.launch {
@@ -999,24 +1132,22 @@ class ClientDetailViewModel(
 
             val result = when (mode) {
                 is AlertFormMode.Create -> {
-                    val newAlert = Alert(
-                        id = "",
-                        title = title.trim(),
-                        severity = severity,
-                        status = status,
-                        createdAt = Clock.System.now().toEpochMilliseconds(),
-                        clientId = clientId
+                    val request = AlertCreateRequest(
+                        greenhouseId = greenhouseId,
+                        alertTypeId = alertTypeId,
+                        severityId = severityId,
+                        message = message.trim()
                     )
-                    alertsRepository.createAlert(newAlert)
+                    alertsRepository.createAlert(clientId, request)
                 }
 
                 is AlertFormMode.Edit -> {
-                    val updatedAlert = mode.alert.copy(
-                        title = title.trim(),
-                        severity = severity,
-                        status = status
+                    val request = AlertUpdateRequest(
+                        alertTypeId = alertTypeId,
+                        severityId = severityId,
+                        message = message.trim()
                     )
-                    alertsRepository.updateAlert(updatedAlert)
+                    alertsRepository.updateAlert(clientId, mode.alert.id, request)
                 }
             }
 
@@ -1067,7 +1198,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingAlert = true, deleteAlertError = null) }
 
-            alertsRepository.deleteAlert(alert.id)
+            alertsRepository.deleteAlert(clientId, alert.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(
@@ -1089,6 +1220,52 @@ class ClientDetailViewModel(
         }
     }
 
+    /**
+     * Resolves an alert.
+     */
+    private fun resolveAlert(alert: Alert) {
+        viewModelScope.launch {
+            alertsRepository.resolveAlert(clientId, alert.id)
+                .onSuccess { updatedAlert ->
+                    _uiState.update { state ->
+                        state.copy(
+                            alerts = state.alerts.map {
+                                if (it.id == alert.id) updatedAlert else it
+                            }
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(alertsError = error.message)
+                    }
+                }
+        }
+    }
+
+    /**
+     * Reopens a resolved alert.
+     */
+    private fun reopenAlert(alert: Alert) {
+        viewModelScope.launch {
+            alertsRepository.reopenAlert(clientId, alert.id)
+                .onSuccess { updatedAlert ->
+                    _uiState.update { state ->
+                        state.copy(
+                            alerts = state.alerts.map {
+                                if (it.id == alert.id) updatedAlert else it
+                            }
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(alertsError = error.message)
+                    }
+                }
+        }
+    }
+
     // =============================================
     // Settings Tab Handlers
     // =============================================
@@ -1097,7 +1274,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingSettings = true, settingsError = null) }
 
-            settingsRepository.getSettingsByClientId(clientId)
+            settingsRepository.getSettingsByTenantId(clientId)
                 .onSuccess { settings ->
                     _uiState.update {
                         it.copy(
@@ -1126,6 +1303,7 @@ class ClientDetailViewModel(
                 submitSettingError = null
             )
         }
+        // Catalogs already loaded at ViewModel init
     }
 
     private fun dismissSettingFormDialog() {
@@ -1138,7 +1316,14 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitSettingForm(key: String, value: String, description: String) {
+    private fun submitSettingForm(
+        greenhouseId: String,
+        parameterId: Short,
+        periodId: Short,
+        minValue: Double?,
+        maxValue: Double?,
+        isActive: Boolean
+    ) {
         val mode = _uiState.value.settingFormMode
 
         viewModelScope.launch {
@@ -1146,22 +1331,26 @@ class ClientDetailViewModel(
 
             val result = when (mode) {
                 is SettingFormMode.Create -> {
-                    val newSetting = Setting(
-                        id = "",
-                        key = key.trim(),
-                        value = value.trim(),
-                        description = description.trim(),
-                        clientId = clientId
+                    val request = SettingCreateRequest(
+                        greenhouseId = greenhouseId,
+                        parameterId = parameterId,
+                        periodId = periodId,
+                        minValue = minValue,
+                        maxValue = maxValue,
+                        isActive = isActive
                     )
-                    settingsRepository.createSetting(newSetting)
+                    settingsRepository.createSetting(clientId, request)
                 }
 
                 is SettingFormMode.Edit -> {
-                    val updatedSetting = mode.setting.copy(
-                        value = value.trim(),
-                        description = description.trim()
+                    val request = SettingUpdateRequest(
+                        parameterId = parameterId,
+                        periodId = periodId,
+                        minValue = minValue,
+                        maxValue = maxValue,
+                        isActive = isActive
                     )
-                    settingsRepository.updateSetting(updatedSetting)
+                    settingsRepository.updateSetting(clientId, mode.setting.id, request)
                 }
             }
 
@@ -1212,7 +1401,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingSetting = true, deleteSettingError = null) }
 
-            settingsRepository.deleteSetting(setting.id)
+            settingsRepository.deleteSetting(clientId, setting.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(

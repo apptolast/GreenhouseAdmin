@@ -32,14 +32,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.data.model.UserRole
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_email
-import greenhouseadmin.composeapp.generated.resources.header_name
-import greenhouseadmin.composeapp.generated.resources.header_phone
+import greenhouseadmin.composeapp.generated.resources.header_role
+import greenhouseadmin.composeapp.generated.resources.header_status
+import greenhouseadmin.composeapp.generated.resources.header_username
+import greenhouseadmin.composeapp.generated.resources.status_active
+import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -87,7 +91,7 @@ private fun UsersTableHeader(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = stringResource(Res.string.header_name),
+            text = stringResource(Res.string.header_username),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1.5f)
@@ -99,10 +103,16 @@ private fun UsersTableHeader(modifier: Modifier = Modifier) {
             modifier = Modifier.weight(2f)
         )
         Text(
-            text = stringResource(Res.string.header_phone),
+            text = stringResource(Res.string.header_role),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.2f)
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = stringResource(Res.string.header_status),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.8f)
         )
         Text(
             text = stringResource(Res.string.header_actions),
@@ -127,18 +137,18 @@ private fun UserTableRow(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // NAME with avatar
+        // USERNAME with avatar
         Row(
             modifier = Modifier.weight(1.5f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             UserAvatar(
-                initials = user.initials,
+                initial = user.initial,
                 modifier = Modifier.size(36.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = user.name,
+                text = user.username,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -157,14 +167,20 @@ private fun UserTableRow(
             overflow = TextOverflow.Ellipsis
         )
 
-        // PHONE
+        // ROLE
         Text(
-            text = user.phone,
+            text = user.role.displayName,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1.2f),
+            modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
+        )
+
+        // STATUS
+        StatusBadge(
+            isActive = user.isActive,
+            modifier = Modifier.weight(0.8f)
         )
 
         // ACTIONS
@@ -198,15 +214,56 @@ private fun UserTableRow(
     }
 }
 
+@Composable
+private fun StatusBadge(
+    isActive: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = if (isActive) {
+        Color(0xFF4CAF50).copy(alpha = 0.15f)
+    } else {
+        Color(0xFFF44336).copy(alpha = 0.15f)
+    }
+    val textColor = if (isActive) {
+        Color(0xFF4CAF50)
+    } else {
+        Color(0xFFF44336)
+    }
+    val statusText = if (isActive) {
+        stringResource(Res.string.status_active)
+    } else {
+        stringResource(Res.string.status_inactive)
+    }
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(4.dp))
+                .background(backgroundColor)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.labelSmall,
+                color = textColor,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
 /**
- * Avatar component for users with colored background based on initials.
+ * Avatar component for users with colored background based on initial.
  */
 @Composable
 fun UserAvatar(
-    initials: String,
+    initial: String,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = when (initials.firstOrNull()?.uppercaseChar()) {
+    val backgroundColor = when (initial.firstOrNull()?.uppercaseChar()) {
         'A' -> Color(0xFFE91E63)
         'B' -> Color(0xFF9C27B0)
         'C' -> Color(0xFF795548)
@@ -243,7 +300,7 @@ fun UserAvatar(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = initials,
+            text = initial,
             style = MaterialTheme.typography.labelMedium,
             color = Color.White,
             fontWeight = FontWeight.Bold
@@ -255,24 +312,27 @@ private object UsersTablePreviewData {
     val sampleUsers = listOf(
         User(
             id = "1",
-            name = "Ana Martinez",
+            username = "anamartinez",
             email = "ana@freshveg.com",
-            phone = "+34 612 111 222",
-            clientId = "client1"
+            role = UserRole.ADMIN,
+            tenantId = "client1",
+            isActive = true
         ),
         User(
             id = "2",
-            name = "Carlos Ruiz",
+            username = "carlosruiz",
             email = "carlos@freshveg.com",
-            phone = "+34 623 222 333",
-            clientId = "client1"
+            role = UserRole.OPERATOR,
+            tenantId = "client1",
+            isActive = true
         ),
         User(
             id = "3",
-            name = "Sofia Fernandez",
+            username = "sofiafernandez",
             email = "sofia@freshveg.com",
-            phone = "+34 634 333 444",
-            clientId = "client1"
+            role = UserRole.VIEWER,
+            tenantId = "client1",
+            isActive = false
         )
     )
 }
@@ -289,6 +349,6 @@ private fun UsersTablePreview() {
 @Composable
 private fun UserAvatarPreview() {
     GreenhouseAdminTheme {
-        UserAvatar(initials = "AM")
+        UserAvatar(initial = "A")
     }
 }

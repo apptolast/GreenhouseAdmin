@@ -3,6 +3,7 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.ClientStatusFilter
+import com.apptolast.greenhouse.admin.data.model.Location
 
 /**
  * Sealed interface representing all possible user intents/events on the Clients screen.
@@ -78,7 +79,7 @@ sealed interface ClientsEvent {
         val phone: String,
         val province: String,
         val country: String,
-        val location: String,
+        val location: Location?,
         val status: ClientStatus
     ) : ClientsEvent
 
@@ -97,7 +98,7 @@ sealed interface ClientsEvent {
         val phone: String,
         val province: String,
         val country: String,
-        val location: String,
+        val location: Location?,
         val status: ClientStatus
     ) : ClientsEvent
 
