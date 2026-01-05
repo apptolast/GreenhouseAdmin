@@ -332,10 +332,23 @@ private fun ClientDetailScreenContent(
     if (uiState.showSettingFormDialog) {
         SettingFormDialog(
             mode = uiState.settingFormMode,
+            greenhouses = uiState.greenhouses,
+            parameters = uiState.deviceTypes,
+            periods = uiState.periods,
+            isLoadingCatalog = uiState.isLoadingSettingCatalog || uiState.isLoadingDeviceCatalog,
             isSubmitting = uiState.isSubmittingSetting,
             error = uiState.submitSettingError,
-            onSubmit = { key, value, description ->
-                onEvent(ClientDetailEvent.OnSubmitSettingForm(key, value, description))
+            onSubmit = { greenhouseId, parameterId, periodId, minValue, maxValue, isActive ->
+                onEvent(
+                    ClientDetailEvent.OnSubmitSettingForm(
+                        greenhouseId = greenhouseId,
+                        parameterId = parameterId,
+                        periodId = periodId,
+                        minValue = minValue,
+                        maxValue = maxValue,
+                        isActive = isActive
+                    )
+                )
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissSettingFormDialog) }
         )
@@ -344,7 +357,7 @@ private fun ClientDetailScreenContent(
     // Setting Delete Confirmation Dialog
     if (uiState.showDeleteSettingConfirmation && uiState.settingToDelete != null) {
         DeleteConfirmationDialog(
-            clientName = uiState.settingToDelete.key,
+            clientName = uiState.settingToDelete.displayName,
             isDeleting = uiState.isDeletingSetting,
             error = uiState.deleteSettingError,
             onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteSetting) },

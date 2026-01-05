@@ -324,28 +324,32 @@
 
     <!-- Settings Tab -->
     <string name="settings_title">Client Settings</string>
-    <string name="settings_subtitle">Manage configuration settings for this client.</string>
+    <string name="settings_subtitle">Manage parameter threshold settings for this client.</string>
     <string name="new_setting">New Setting</string>
     <string name="settings_empty">No settings found for this client.</string>
 
     <!-- Setting Table Headers -->
-    <string name="header_key">KEY</string>
-    <string name="header_value">VALUE</string>
+    <string name="header_parameter">PARAMETER</string>
+    <string name="header_period">PERIOD</string>
+    <string name="header_range">RANGE</string>
+
+    <!-- Setting Form Labels -->
+    <string name="label_parameter">Parameter</string>
+    <string name="label_period">Period</string>
+    <string name="label_min_value">Min Value</string>
+    <string name="label_max_value">Max Value</string>
 
     <!-- Setting Dialogs -->
     <string name="dialog_new_setting_title">Add New Setting</string>
-    <string name="dialog_new_setting_subtitle">Add a configuration setting to this client</string>
+    <string name="dialog_new_setting_subtitle">Configure a parameter threshold for a greenhouse</string>
     <string name="button_create_setting">Add Setting</string>
     <string name="dialog_edit_setting_title">Edit Setting</string>
-    <string name="dialog_edit_setting_subtitle">Update setting information</string>
-    <string name="field_key">Key</string>
-    <string name="field_value">Value</string>
+    <string name="dialog_edit_setting_subtitle">Update parameter threshold configuration</string>
 
     <!-- Setting Validation Errors -->
-    <string name="error_key_required">Key is required</string>
-    <string name="error_key_min_length">Key must be at least 2 characters</string>
-    <string name="error_key_invalid">Key must start with a letter and contain only letters, numbers, and underscores</string>
-    <string name="error_value_required">Value is required</string>
+    <string name="error_parameter_required">Parameter is required</string>
+    <string name="error_period_required">Period is required</string>
+    <string name="error_min_greater_than_max">Min value cannot be greater than max value</string>
 
     <!-- Setting Errors -->
     <string name="error_create_setting_failed">Failed to create setting. Please try again.</string>

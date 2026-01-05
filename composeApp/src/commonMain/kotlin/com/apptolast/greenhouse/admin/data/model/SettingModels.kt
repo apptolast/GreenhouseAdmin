@@ -2,21 +2,165 @@ package com.apptolast.greenhouse.admin.data.model
 
 import kotlinx.serialization.Serializable
 
+// ==================== PERIOD DTOs (Catalog) ====================
+
 /**
- * Domain model for Setting entity.
- * Represents a client-specific configuration setting.
+ * Response DTO for Period from catalog API.
+ * Periods define when a setting applies: DAY, NIGHT, or ALL (24h).
  */
 @Serializable
-data class Setting(
+data class PeriodResponse(
+    val id: Short,
+    val name: String
+)
+
+// ==================== SETTING DTOs ====================
+
+/**
+ * Response DTO for Setting from API.
+ * Represents parameter threshold configuration for a greenhouse.
+ */
+@Serializable
+data class SettingResponse(
     val id: String,
-    val key: String,
-    val value: String,
-    val description: String,
-    val clientId: String
+    val greenhouseId: String,
+    val tenantId: String,
+    val parameterId: Short,
+    val parameterName: String? = null,
+    val periodId: Short,
+    val periodName: String? = null,
+    val minValue: Double? = null,
+    val maxValue: Double? = null,
+    val isActive: Boolean = true,
+    val createdAt: String,
+    val updatedAt: String
+)
+
+/**
+ * Request DTO for creating a new Setting.
+ */
+@Serializable
+data class SettingCreateRequest(
+    val greenhouseId: String,
+    val parameterId: Short,
+    val periodId: Short,
+    val minValue: Double? = null,
+    val maxValue: Double? = null,
+    val isActive: Boolean = true
+)
+
+/**
+ * Request DTO for updating an existing Setting.
+ * All fields are optional - only provided fields are updated.
+ */
+@Serializable
+data class SettingUpdateRequest(
+    val parameterId: Short? = null,
+    val periodId: Short? = null,
+    val minValue: Double? = null,
+    val maxValue: Double? = null,
+    val isActive: Boolean? = null
+)
+
+// ==================== DOMAIN MODELS ====================
+
+/**
+ * Domain model for Period catalog entry.
+ */
+data class Period(
+    val id: Short,
+    val name: String
 ) {
     /**
-     * Returns the first two letters of the key (uppercase) for avatar display.
+     * Display name for the period (e.g., "Day", "Night", "All Day").
+     */
+    val displayName: String
+        get() = when (name.uppercase()) {
+            "DAY" -> "Day"
+            "NIGHT" -> "Night"
+            "ALL" -> "All Day"
+            else -> name
+        }
+}
+
+/**
+ * Domain model for Setting entity.
+ * Represents parameter threshold configuration for a greenhouse.
+ * Parameters reference device_types (e.g., TEMPERATURE, HUMIDITY).
+ */
+data class Setting(
+    val id: String,
+    val greenhouseId: String,
+    val greenhouseName: String? = null,
+    val tenantId: String,
+    val parameterId: Short,
+    val parameterName: String?,
+    val periodId: Short,
+    val periodName: String?,
+    val minValue: Double?,
+    val maxValue: Double?,
+    val isActive: Boolean,
+    val createdAt: String
+) {
+    /**
+     * Returns the first two letters of the parameter name (uppercase) for avatar display.
      */
     val initials: String
-        get() = key.take(2).uppercase()
+        get() = parameterName?.take(2)?.uppercase() ?: "SE"
+
+    /**
+     * Display name for the setting (parameter name or fallback).
+     */
+    val displayName: String
+        get() = parameterName ?: "Parameter $parameterId"
+
+    /**
+     * Formatted display of the value range.
+     */
+    val rangeDisplay: String
+        get() = when {
+            minValue != null && maxValue != null -> "$minValue - $maxValue"
+            minValue != null -> "≥ $minValue"
+            maxValue != null -> "≤ $maxValue"
+            else -> "-"
+        }
+
+    /**
+     * Display name for the period.
+     */
+    val periodDisplayName: String
+        get() = when (periodName?.uppercase()) {
+            "DAY" -> "Day"
+            "NIGHT" -> "Night"
+            "ALL" -> "All Day"
+            else -> periodName ?: "Period $periodId"
+        }
 }
+
+// ==================== EXTENSION FUNCTIONS ====================
+
+/**
+ * Converts PeriodResponse DTO to Period domain model.
+ */
+fun PeriodResponse.toDomain() = Period(
+    id = id,
+    name = name
+)
+
+/**
+ * Converts SettingResponse DTO to Setting domain model.
+ */
+fun SettingResponse.toDomain() = Setting(
+    id = id,
+    greenhouseId = greenhouseId,
+    greenhouseName = null,
+    tenantId = tenantId,
+    parameterId = parameterId,
+    parameterName = parameterName,
+    periodId = periodId,
+    periodName = periodName,
+    minValue = minValue,
+    maxValue = maxValue,
+    isActive = isActive,
+    createdAt = createdAt
+)

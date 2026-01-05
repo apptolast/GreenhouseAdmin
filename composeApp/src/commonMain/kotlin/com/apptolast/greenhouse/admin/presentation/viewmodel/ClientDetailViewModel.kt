@@ -11,6 +11,8 @@ import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
+import com.apptolast.greenhouse.admin.data.model.SettingCreateRequest
+import com.apptolast.greenhouse.admin.data.model.SettingUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.User
 import com.apptolast.greenhouse.admin.data.model.UserRole
 import com.apptolast.greenhouse.admin.data.model.toIsActive
@@ -189,7 +191,14 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnConfirmDeleteSetting -> confirmDeleteSetting()
             is ClientDetailEvent.OnCancelDeleteSetting -> cancelDeleteSetting()
             is ClientDetailEvent.OnDismissSettingFormDialog -> dismissSettingFormDialog()
-            is ClientDetailEvent.OnSubmitSettingForm -> submitSettingForm(event.key, event.value, event.description)
+            is ClientDetailEvent.OnSubmitSettingForm -> submitSettingForm(
+                event.greenhouseId,
+                event.parameterId,
+                event.periodId,
+                event.minValue,
+                event.maxValue,
+                event.isActive
+            )
         }
     }
 
@@ -257,6 +266,16 @@ class ClientDetailViewModel(
             ClientDetailTab.ALERTS -> {
                 if (_uiState.value.alerts.isEmpty() && !_uiState.value.isLoadingAlerts) {
                     loadAlerts()
+                }
+                // Also load greenhouses for the dropdown if not already loaded
+                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
+                    loadGreenhouses()
+                }
+            }
+
+            ClientDetailTab.SETTINGS -> {
+                if (_uiState.value.settings.isEmpty() && !_uiState.value.isLoadingSettings) {
+                    loadSettings()
                 }
                 // Also load greenhouses for the dropdown if not already loaded
                 if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
@@ -1258,7 +1277,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingSettings = true, settingsError = null) }
 
-            settingsRepository.getSettingsByClientId(clientId)
+            settingsRepository.getSettingsByTenantId(clientId)
                 .onSuccess { settings ->
                     _uiState.update {
                         it.copy(
@@ -1287,6 +1306,31 @@ class ClientDetailViewModel(
                 submitSettingError = null
             )
         }
+        // Load periods catalog for form dropdowns
+        loadSettingCatalog()
+        // Also load device types (parameters) if not already loaded
+        if (_uiState.value.deviceTypes.isEmpty()) {
+            loadDeviceCatalog()
+        }
+    }
+
+    private fun loadSettingCatalog() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingSettingCatalog = true) }
+
+            settingsRepository.getPeriods()
+                .onSuccess { periods ->
+                    _uiState.update {
+                        it.copy(
+                            periods = periods,
+                            isLoadingSettingCatalog = false
+                        )
+                    }
+                }
+                .onFailure {
+                    _uiState.update { it.copy(isLoadingSettingCatalog = false) }
+                }
+        }
     }
 
     private fun dismissSettingFormDialog() {
@@ -1299,7 +1343,14 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitSettingForm(key: String, value: String, description: String) {
+    private fun submitSettingForm(
+        greenhouseId: String,
+        parameterId: Short,
+        periodId: Short,
+        minValue: Double?,
+        maxValue: Double?,
+        isActive: Boolean
+    ) {
         val mode = _uiState.value.settingFormMode
 
         viewModelScope.launch {
@@ -1307,22 +1358,26 @@ class ClientDetailViewModel(
 
             val result = when (mode) {
                 is SettingFormMode.Create -> {
-                    val newSetting = Setting(
-                        id = "",
-                        key = key.trim(),
-                        value = value.trim(),
-                        description = description.trim(),
-                        clientId = clientId
+                    val request = SettingCreateRequest(
+                        greenhouseId = greenhouseId,
+                        parameterId = parameterId,
+                        periodId = periodId,
+                        minValue = minValue,
+                        maxValue = maxValue,
+                        isActive = isActive
                     )
-                    settingsRepository.createSetting(newSetting)
+                    settingsRepository.createSetting(clientId, request)
                 }
 
                 is SettingFormMode.Edit -> {
-                    val updatedSetting = mode.setting.copy(
-                        value = value.trim(),
-                        description = description.trim()
+                    val request = SettingUpdateRequest(
+                        parameterId = parameterId,
+                        periodId = periodId,
+                        minValue = minValue,
+                        maxValue = maxValue,
+                        isActive = isActive
                     )
-                    settingsRepository.updateSetting(updatedSetting)
+                    settingsRepository.updateSetting(clientId, mode.setting.id, request)
                 }
             }
 
@@ -1373,7 +1428,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingSetting = true, deleteSettingError = null) }
 
-            settingsRepository.deleteSetting(setting.id)
+            settingsRepository.deleteSetting(clientId, setting.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(

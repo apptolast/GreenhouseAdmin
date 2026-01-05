@@ -381,8 +381,11 @@ sealed interface ClientDetailEvent {
      * User submitted the setting form (create or edit).
      */
     data class OnSubmitSettingForm(
-        val key: String,
-        val value: String,
-        val description: String
+        val greenhouseId: String,
+        val parameterId: Short,
+        val periodId: Short,
+        val minValue: Double?,
+        val maxValue: Double?,
+        val isActive: Boolean
     ) : ClientDetailEvent
 }

@@ -10,6 +10,7 @@ import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.MenuItem
+import com.apptolast.greenhouse.admin.data.model.Period
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.User
@@ -159,7 +160,11 @@ data class ClientDetailUiState(
     val showDeleteSettingConfirmation: Boolean = false,
     val settingToDelete: Setting? = null,
     val isDeletingSetting: Boolean = false,
-    val deleteSettingError: String? = null
+    val deleteSettingError: String? = null,
+
+    // Setting catalog state (for form dropdowns)
+    val periods: List<Period> = emptyList(),
+    val isLoadingSettingCatalog: Boolean = false
 ) {
     /**
      * Returns true if in error state with no content.

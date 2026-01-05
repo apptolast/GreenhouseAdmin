@@ -161,17 +161,31 @@ private object ClientDetailSettingsTabPreviewData {
     val sampleSettings = listOf(
         Setting(
             id = "1",
-            key = "notification_email",
-            value = "test@example.com",
-            description = "Email address for receiving notifications",
-            clientId = "client1"
+            greenhouseId = "gh1",
+            greenhouseName = "Greenhouse A",
+            tenantId = "t1",
+            parameterId = 1,
+            parameterName = "Temperature",
+            periodId = 1,
+            periodName = "DAY",
+            minValue = 18.0,
+            maxValue = 25.0,
+            isActive = true,
+            createdAt = "2024-01-15T10:30:00Z"
         ),
         Setting(
             id = "2",
-            key = "temperature_unit",
-            value = "celsius",
-            description = "Temperature display unit",
-            clientId = "client1"
+            greenhouseId = "gh1",
+            greenhouseName = "Greenhouse A",
+            tenantId = "t1",
+            parameterId = 2,
+            parameterName = "Humidity",
+            periodId = 2,
+            periodName = "NIGHT",
+            minValue = 60.0,
+            maxValue = 80.0,
+            isActive = true,
+            createdAt = "2024-01-15T10:30:00Z"
         )
     )
 }

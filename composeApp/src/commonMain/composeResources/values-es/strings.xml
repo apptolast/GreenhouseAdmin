@@ -324,28 +324,32 @@
 
     <!-- Settings Tab -->
     <string name="settings_title">Ajustes del Cliente</string>
-    <string name="settings_subtitle">Gestiona los ajustes de configuración de este cliente.</string>
+    <string name="settings_subtitle">Gestiona los umbrales de parámetros para este cliente.</string>
     <string name="new_setting">Nuevo Ajuste</string>
     <string name="settings_empty">No se encontraron ajustes para este cliente.</string>
 
     <!-- Setting Table Headers -->
-    <string name="header_key">CLAVE</string>
-    <string name="header_value">VALOR</string>
+    <string name="header_parameter">PARÁMETRO</string>
+    <string name="header_period">PERÍODO</string>
+    <string name="header_range">RANGO</string>
+
+    <!-- Setting Form Labels -->
+    <string name="label_parameter">Parámetro</string>
+    <string name="label_period">Período</string>
+    <string name="label_min_value">Valor Mínimo</string>
+    <string name="label_max_value">Valor Máximo</string>
 
     <!-- Setting Dialogs -->
     <string name="dialog_new_setting_title">Añadir Nuevo Ajuste</string>
-    <string name="dialog_new_setting_subtitle">Añade un ajuste de configuración a este cliente</string>
+    <string name="dialog_new_setting_subtitle">Configura un umbral de parámetro para un invernadero</string>
     <string name="button_create_setting">Añadir Ajuste</string>
     <string name="dialog_edit_setting_title">Editar Ajuste</string>
-    <string name="dialog_edit_setting_subtitle">Actualizar información del ajuste</string>
-    <string name="field_key">Clave</string>
-    <string name="field_value">Valor</string>
+    <string name="dialog_edit_setting_subtitle">Actualizar configuración del umbral de parámetro</string>
 
     <!-- Setting Validation Errors -->
-    <string name="error_key_required">La clave es obligatoria</string>
-    <string name="error_key_min_length">La clave debe tener al menos 2 caracteres</string>
-    <string name="error_key_invalid">La clave debe empezar con una letra y contener solo letras, números y guiones bajos</string>
-    <string name="error_value_required">El valor es obligatorio</string>
+    <string name="error_parameter_required">El parámetro es obligatorio</string>
+    <string name="error_period_required">El período es obligatorio</string>
+    <string name="error_min_greater_than_max">El valor mínimo no puede ser mayor que el máximo</string>
 
     <!-- Setting Errors -->
     <string name="error_create_setting_failed">Error al crear el ajuste. Por favor, inténtalo de nuevo.</string>
