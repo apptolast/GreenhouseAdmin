@@ -1,6 +1,8 @@
 package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import com.apptolast.greenhouse.admin.data.model.Alert
+import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
+import com.apptolast.greenhouse.admin.data.model.AlertType
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.Device
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
@@ -136,6 +138,11 @@ data class ClientDetailUiState(
     val alertToDelete: Alert? = null,
     val isDeletingAlert: Boolean = false,
     val deleteAlertError: String? = null,
+
+    // Alert catalog state (for form dropdowns)
+    val alertTypes: List<AlertType> = emptyList(),
+    val alertSeverities: List<AlertSeverityCatalog> = emptyList(),
+    val isLoadingAlertCatalog: Boolean = false,
 
     // Settings tab state
     val settings: List<Setting> = emptyList(),

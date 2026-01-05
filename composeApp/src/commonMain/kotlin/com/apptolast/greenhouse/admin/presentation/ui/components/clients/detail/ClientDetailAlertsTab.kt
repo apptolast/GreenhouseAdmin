@@ -26,8 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Alert
-import com.apptolast.greenhouse.admin.data.model.AlertSeverity
-import com.apptolast.greenhouse.admin.data.model.AlertStatus
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
@@ -39,11 +37,10 @@ import greenhouseadmin.composeapp.generated.resources.alerts_title
 import greenhouseadmin.composeapp.generated.resources.new_alert
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kotlin.time.Clock
 
 /**
  * Alerts tab content for the client detail screen.
- * Displays a table of alerts with add/edit/delete functionality.
+ * Displays a table of alerts with add/edit/delete/resolve/reopen functionality.
  * On compact screens, the add button is hidden (FAB is shown by parent).
  */
 @Composable
@@ -54,6 +51,8 @@ fun ClientDetailAlertsTab(
     onAddAlert: () -> Unit = {},
     onEditAlert: (Alert) -> Unit = {},
     onDeleteAlert: (Alert) -> Unit = {},
+    onResolveAlert: (Alert) -> Unit = {},
+    onReopenAlert: (Alert) -> Unit = {},
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -129,7 +128,9 @@ fun ClientDetailAlertsTab(
                 AlertsTable(
                     alerts = alerts,
                     onEditAlert = onEditAlert,
-                    onDeleteAlert = onDeleteAlert
+                    onDeleteAlert = onDeleteAlert,
+                    onResolveAlert = onResolveAlert,
+                    onReopenAlert = onReopenAlert
                 )
             }
         }
@@ -164,19 +165,35 @@ private object ClientDetailAlertsTabPreviewData {
     val sampleAlerts = listOf(
         Alert(
             id = "1",
-            title = "Temperatura alta en Sector A",
-            severity = AlertSeverity.HIGH,
-            status = AlertStatus.UNREAD,
-            createdAt = Clock.System.now().toEpochMilliseconds() - 3600000,
-            clientId = "client1"
+            tenantId = "t1",
+            greenhouseId = "g1",
+            greenhouseName = "Greenhouse A",
+            alertTypeId = 1,
+            alertTypeName = "Temperature",
+            severityId = 3,
+            severityName = "High",
+            severityLevel = 3,
+            message = "Temperature exceeds threshold in Sector A",
+            isResolved = false,
+            resolvedAt = null,
+            resolvedByUserName = null,
+            createdAt = "2024-01-15T10:30:00Z"
         ),
         Alert(
             id = "2",
-            title = "Humedad baja detectada",
-            severity = AlertSeverity.MEDIUM,
-            status = AlertStatus.READ,
-            createdAt = Clock.System.now().toEpochMilliseconds() - 86400000,
-            clientId = "client1"
+            tenantId = "t1",
+            greenhouseId = "g1",
+            greenhouseName = "Greenhouse A",
+            alertTypeId = 2,
+            alertTypeName = "Humidity",
+            severityId = 2,
+            severityName = "Medium",
+            severityLevel = 2,
+            message = "Humidity below optimal range",
+            isResolved = true,
+            resolvedAt = "2024-01-15T12:00:00Z",
+            resolvedByUserName = "Admin User",
+            createdAt = "2024-01-14T08:00:00Z"
         )
     )
 }

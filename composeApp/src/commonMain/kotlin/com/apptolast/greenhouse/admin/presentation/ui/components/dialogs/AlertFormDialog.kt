@@ -1,6 +1,8 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.dialogs
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -32,19 +35,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.apptolast.greenhouse.admin.data.model.Alert
 import com.apptolast.greenhouse.admin.data.model.AlertFormData
-import com.apptolast.greenhouse.admin.data.model.AlertSeverity
-import com.apptolast.greenhouse.admin.data.model.AlertStatus
+import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
+import com.apptolast.greenhouse.admin.data.model.AlertType
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.AlertFormMode
 import greenhouseadmin.composeapp.generated.resources.Res
-import greenhouseadmin.composeapp.generated.resources.alert_status_dismissed
-import greenhouseadmin.composeapp.generated.resources.alert_status_read
-import greenhouseadmin.composeapp.generated.resources.alert_status_unread
 import greenhouseadmin.composeapp.generated.resources.button_cancel
 import greenhouseadmin.composeapp.generated.resources.button_create_alert
 import greenhouseadmin.composeapp.generated.resources.button_save
@@ -52,29 +55,34 @@ import greenhouseadmin.composeapp.generated.resources.dialog_edit_alert_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_alert_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_alert_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_alert_title
-import greenhouseadmin.composeapp.generated.resources.error_name_min_length
-import greenhouseadmin.composeapp.generated.resources.error_title_required
+import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
+import greenhouseadmin.composeapp.generated.resources.error_message_min_length
+import greenhouseadmin.composeapp.generated.resources.error_message_required
+import greenhouseadmin.composeapp.generated.resources.field_alert_type
+import greenhouseadmin.composeapp.generated.resources.field_greenhouse
+import greenhouseadmin.composeapp.generated.resources.field_message
 import greenhouseadmin.composeapp.generated.resources.field_severity
-import greenhouseadmin.composeapp.generated.resources.field_status
-import greenhouseadmin.composeapp.generated.resources.field_title
-import greenhouseadmin.composeapp.generated.resources.severity_critical
-import greenhouseadmin.composeapp.generated.resources.severity_high
-import greenhouseadmin.composeapp.generated.resources.severity_low
-import greenhouseadmin.composeapp.generated.resources.severity_medium
+import greenhouseadmin.composeapp.generated.resources.label_loading
+import greenhouseadmin.composeapp.generated.resources.label_none
+import greenhouseadmin.composeapp.generated.resources.label_select
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kotlin.time.Clock
 
 /**
  * Dialog for creating or editing an alert.
+ * Uses API catalogs for AlertType and Severity dropdowns.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlertFormDialog(
     mode: AlertFormMode,
+    greenhouses: List<Greenhouse> = emptyList(),
+    alertTypes: List<AlertType> = emptyList(),
+    severities: List<AlertSeverityCatalog> = emptyList(),
+    isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (title: String, severity: AlertSeverity, status: AlertStatus) -> Unit = { _, _, _ -> },
+    onSubmit: (greenhouseId: String, alertTypeId: Short?, severityId: Short?, message: String) -> Unit = { _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -82,9 +90,10 @@ fun AlertFormDialog(
         when (mode) {
             is AlertFormMode.Create -> AlertFormData()
             is AlertFormMode.Edit -> AlertFormData(
-                title = mode.alert.title,
-                severity = mode.alert.severity,
-                status = mode.alert.status
+                greenhouseId = mode.alert.greenhouseId,
+                alertTypeId = mode.alert.alertTypeId,
+                severityId = mode.alert.severityId,
+                message = mode.alert.message
             )
         }
     }
@@ -92,16 +101,19 @@ fun AlertFormDialog(
     var formData by remember(mode) { mutableStateOf(initialFormData) }
     var validationErrors by remember { mutableStateOf(AlertFormData.ValidationErrors()) }
     var hasAttemptedSubmit by remember { mutableStateOf(false) }
+    var greenhouseExpanded by remember { mutableStateOf(false) }
+    var alertTypeExpanded by remember { mutableStateOf(false) }
     var severityExpanded by remember { mutableStateOf(false) }
-    var statusExpanded by remember { mutableStateOf(false) }
 
-    val titleRequiredMsg = stringResource(Res.string.error_title_required)
-    val nameMinLengthMsg = stringResource(Res.string.error_name_min_length)
+    val greenhouseRequiredMsg = stringResource(Res.string.error_greenhouse_required)
+    val messageRequiredMsg = stringResource(Res.string.error_message_required)
+    val messageMinLengthMsg = stringResource(Res.string.error_message_min_length)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
-            "error_title_required" -> titleRequiredMsg
-            "error_name_min_length" -> nameMinLengthMsg
+            "error_greenhouse_required" -> greenhouseRequiredMsg
+            "error_message_required" -> messageRequiredMsg
+            "error_message_min_length" -> messageMinLengthMsg
             else -> null
         }
     }
@@ -123,20 +135,18 @@ fun AlertFormDialog(
         stringResource(Res.string.button_create_alert)
     }
 
-    // Severity options
-    val severityLowText = stringResource(Res.string.severity_low)
-    val severityMediumText = stringResource(Res.string.severity_medium)
-    val severityHighText = stringResource(Res.string.severity_high)
-    val severityCriticalText = stringResource(Res.string.severity_critical)
+    val selectText = stringResource(Res.string.label_select)
+    val noneText = stringResource(Res.string.label_none)
+    val loadingText = stringResource(Res.string.label_loading)
 
-    // Status options
-    val statusUnreadText = stringResource(Res.string.alert_status_unread)
-    val statusReadText = stringResource(Res.string.alert_status_read)
-    val statusDismissedText = stringResource(Res.string.alert_status_dismissed)
+    // Find selected items for display
+    val selectedGreenhouse = greenhouses.find { it.id == formData.greenhouseId }
+    val selectedAlertType = alertTypes.find { it.id == formData.alertTypeId }
+    val selectedSeverity = severities.find { it.id == formData.severityId }
 
     Dialog(onDismissRequest = { if (!isSubmitting) onDismiss() }) {
         Card(
-            modifier = modifier.width(420.dp),
+            modifier = modifier.width(480.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
@@ -163,155 +173,139 @@ fun AlertFormDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Title field
+                // Greenhouse dropdown (required)
+                AlertFormDropdown(
+                    label = stringResource(Res.string.field_greenhouse),
+                    expanded = greenhouseExpanded,
+                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) greenhouseExpanded = it },
+                    selectedText = selectedGreenhouse?.name ?: selectText,
+                    isLoading = isLoadingCatalog,
+                    loadingText = loadingText,
+                    enabled = !isSubmitting,
+                    isError = validationErrors.greenhouseId != null,
+                    errorMessage = getErrorMessage(validationErrors.greenhouseId)
+                ) {
+                    greenhouses.forEach { greenhouse ->
+                        DropdownMenuItem(
+                            text = { Text(greenhouse.name) },
+                            onClick = {
+                                formData = formData.copy(greenhouseId = greenhouse.id)
+                                greenhouseExpanded = false
+                                if (hasAttemptedSubmit) validationErrors = formData.validate()
+                            }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Alert Type dropdown (optional)
+                AlertFormDropdown(
+                    label = stringResource(Res.string.field_alert_type),
+                    expanded = alertTypeExpanded,
+                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) alertTypeExpanded = it },
+                    selectedText = selectedAlertType?.name ?: noneText,
+                    isLoading = isLoadingCatalog,
+                    loadingText = loadingText,
+                    enabled = !isSubmitting
+                ) {
+                    // Add "None" option
+                    DropdownMenuItem(
+                        text = { Text(noneText) },
+                        onClick = {
+                            formData = formData.copy(alertTypeId = null)
+                            alertTypeExpanded = false
+                        }
+                    )
+                    alertTypes.forEach { alertType ->
+                        DropdownMenuItem(
+                            text = {
+                                Column {
+                                    Text(alertType.name)
+                                    alertType.description?.let { desc ->
+                                        Text(
+                                            text = desc,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            },
+                            onClick = {
+                                formData = formData.copy(alertTypeId = alertType.id)
+                                alertTypeExpanded = false
+                            }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Severity dropdown (optional, with color indicators)
+                AlertFormDropdown(
+                    label = stringResource(Res.string.field_severity),
+                    expanded = severityExpanded,
+                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) severityExpanded = it },
+                    selectedText = selectedSeverity?.name ?: noneText,
+                    isLoading = isLoadingCatalog,
+                    loadingText = loadingText,
+                    enabled = !isSubmitting,
+                    leadingIcon = selectedSeverity?.color?.let { colorHex ->
+                        {
+                            Box(
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .background(parseColor(colorHex), CircleShape)
+                            )
+                        }
+                    }
+                ) {
+                    // Add "None" option
+                    DropdownMenuItem(
+                        text = { Text(noneText) },
+                        onClick = {
+                            formData = formData.copy(severityId = null)
+                            severityExpanded = false
+                        }
+                    )
+                    severities.forEach { severity ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    severity.color?.let { colorHex ->
+                                        Box(
+                                            modifier = Modifier
+                                                .size(12.dp)
+                                                .background(parseColor(colorHex), CircleShape)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                    }
+                                    Text(severity.name)
+                                }
+                            },
+                            onClick = {
+                                formData = formData.copy(severityId = severity.id)
+                                severityExpanded = false
+                            }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Message field
                 AlertFormTextField(
-                    value = formData.title,
+                    value = formData.message,
                     onValueChange = {
-                        formData = formData.copy(title = it)
+                        formData = formData.copy(message = it)
                         if (hasAttemptedSubmit) validationErrors = formData.validate()
                     },
-                    label = stringResource(Res.string.field_title),
-                    error = getErrorMessage(validationErrors.title),
-                    enabled = !isSubmitting
+                    label = stringResource(Res.string.field_message),
+                    error = getErrorMessage(validationErrors.message),
+                    enabled = !isSubmitting,
+                    minLines = 3,
+                    maxLines = 5
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Severity dropdown
-                Column {
-                    Text(
-                        text = stringResource(Res.string.field_severity),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    ExposedDropdownMenuBox(
-                        expanded = severityExpanded,
-                        onExpandedChange = { if (!isSubmitting) severityExpanded = it }
-                    ) {
-                        OutlinedTextField(
-                            value = when (formData.severity) {
-                                AlertSeverity.LOW -> severityLowText
-                                AlertSeverity.MEDIUM -> severityMediumText
-                                AlertSeverity.HIGH -> severityHighText
-                                AlertSeverity.CRITICAL -> severityCriticalText
-                            },
-                            onValueChange = {},
-                            readOnly = true,
-                            enabled = !isSubmitting,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = severityExpanded) },
-                            shape = RoundedCornerShape(8.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                            )
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = severityExpanded,
-                            onDismissRequest = { severityExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(severityLowText) },
-                                onClick = {
-                                    formData = formData.copy(severity = AlertSeverity.LOW)
-                                    severityExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(severityMediumText) },
-                                onClick = {
-                                    formData = formData.copy(severity = AlertSeverity.MEDIUM)
-                                    severityExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(severityHighText) },
-                                onClick = {
-                                    formData = formData.copy(severity = AlertSeverity.HIGH)
-                                    severityExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(severityCriticalText) },
-                                onClick = {
-                                    formData = formData.copy(severity = AlertSeverity.CRITICAL)
-                                    severityExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Status dropdown
-                Column {
-                    Text(
-                        text = stringResource(Res.string.field_status),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    ExposedDropdownMenuBox(
-                        expanded = statusExpanded,
-                        onExpandedChange = { if (!isSubmitting) statusExpanded = it }
-                    ) {
-                        OutlinedTextField(
-                            value = when (formData.status) {
-                                AlertStatus.UNREAD -> statusUnreadText
-                                AlertStatus.READ -> statusReadText
-                                AlertStatus.DISMISSED -> statusDismissedText
-                            },
-                            onValueChange = {},
-                            readOnly = true,
-                            enabled = !isSubmitting,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = statusExpanded) },
-                            shape = RoundedCornerShape(8.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                            )
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = statusExpanded,
-                            onDismissRequest = { statusExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(statusUnreadText) },
-                                onClick = {
-                                    formData = formData.copy(status = AlertStatus.UNREAD)
-                                    statusExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(statusReadText) },
-                                onClick = {
-                                    formData = formData.copy(status = AlertStatus.READ)
-                                    statusExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(statusDismissedText) },
-                                onClick = {
-                                    formData = formData.copy(status = AlertStatus.DISMISSED)
-                                    statusExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
 
                 // Error message
                 if (error != null) {
@@ -345,10 +339,15 @@ fun AlertFormDialog(
                             hasAttemptedSubmit = true
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
-                                onSubmit(formData.title, formData.severity, formData.status)
+                                onSubmit(
+                                    formData.greenhouseId,
+                                    formData.alertTypeId,
+                                    formData.severityId,
+                                    formData.message
+                                )
                             }
                         },
-                        enabled = !isSubmitting,
+                        enabled = !isSubmitting && !isLoadingCatalog,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
                         ),
@@ -370,6 +369,88 @@ fun AlertFormDialog(
     }
 }
 
+/**
+ * Dropdown field component for alert forms.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AlertFormDropdown(
+    label: String,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    selectedText: String,
+    isLoading: Boolean,
+    loadingText: String,
+    enabled: Boolean,
+    isError: Boolean = false,
+    errorMessage: String? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    menuContent: @Composable () -> Unit
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = onExpandedChange
+        ) {
+            OutlinedTextField(
+                value = if (isLoading) loadingText else selectedText,
+                onValueChange = {},
+                readOnly = true,
+                enabled = enabled && !isLoading,
+                isError = isError,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                leadingIcon = leadingIcon,
+                trailingIcon = {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    }
+                },
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                    errorBorderColor = MaterialTheme.colorScheme.error
+                )
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { onExpandedChange(false) }
+            ) {
+                menuContent()
+            }
+        }
+
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+    }
+}
+
+/**
+ * Text field component for alert forms.
+ */
 @Composable
 private fun AlertFormTextField(
     value: String,
@@ -377,6 +458,8 @@ private fun AlertFormTextField(
     label: String,
     error: String?,
     enabled: Boolean,
+    minLines: Int = 1,
+    maxLines: Int = 1,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -394,7 +477,8 @@ private fun AlertFormTextField(
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             isError = error != null,
-            singleLine = true,
+            minLines = minLines,
+            maxLines = maxLines,
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -414,22 +498,64 @@ private fun AlertFormTextField(
     }
 }
 
-private object AlertFormDialogPreviewData {
-    val sampleAlert = Alert(
-        id = "1",
-        title = "Temperatura alta en Sector A",
-        severity = AlertSeverity.HIGH,
-        status = AlertStatus.UNREAD,
-        createdAt = Clock.System.now().toEpochMilliseconds(),
-        clientId = "client1"
-    )
+/**
+ * Parse a hex color string to a Color.
+ */
+private fun parseColor(hexColor: String): Color {
+    return try {
+        val hex = hexColor.removePrefix("#")
+        val colorLong = hex.toLong(16)
+        when (hex.length) {
+            6 -> Color(0xFF000000 or colorLong)
+            8 -> Color(colorLong)
+            else -> Color.Gray
+        }
+    } catch (e: Exception) {
+        Color.Gray
+    }
 }
 
 @Preview
 @Composable
 private fun AlertFormDialogCreatePreview() {
     GreenhouseAdminTheme {
-        AlertFormDialog(mode = AlertFormMode.Create)
+        AlertFormDialog(
+            mode = AlertFormMode.Create,
+            greenhouses = listOf(
+                Greenhouse(id = "1", tenantId = "t1", name = "Greenhouse A"),
+                Greenhouse(id = "2", tenantId = "t1", name = "Greenhouse B")
+            ),
+            alertTypes = listOf(
+                AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),
+                AlertType(id = 2, name = "Humidity", description = "Humidity alerts")
+            ),
+            severities = listOf(
+                AlertSeverityCatalog(
+                    id = 1,
+                    name = "Low",
+                    level = 1,
+                    description = null,
+                    color = "#4CAF50",
+                    requiresAction = false
+                ),
+                AlertSeverityCatalog(
+                    id = 2,
+                    name = "Medium",
+                    level = 2,
+                    description = null,
+                    color = "#FF9800",
+                    requiresAction = false
+                ),
+                AlertSeverityCatalog(
+                    id = 3,
+                    name = "High",
+                    level = 3,
+                    description = null,
+                    color = "#F44336",
+                    requiresAction = true
+                )
+            )
+        )
     }
 }
 
@@ -437,6 +563,59 @@ private fun AlertFormDialogCreatePreview() {
 @Composable
 private fun AlertFormDialogEditPreview() {
     GreenhouseAdminTheme {
-        AlertFormDialog(mode = AlertFormMode.Edit(AlertFormDialogPreviewData.sampleAlert))
+        AlertFormDialog(
+            mode = AlertFormMode.Edit(
+                Alert(
+                    id = "1",
+                    tenantId = "t1",
+                    greenhouseId = "1",
+                    greenhouseName = "Greenhouse A",
+                    alertTypeId = 1,
+                    alertTypeName = "Temperature",
+                    severityId = 2,
+                    severityName = "Medium",
+                    severityLevel = 2,
+                    message = "Temperature exceeds threshold",
+                    isResolved = false,
+                    resolvedAt = null,
+                    resolvedByUserName = null,
+                    createdAt = "2024-01-15T10:30:00Z"
+                )
+            ),
+            greenhouses = listOf(
+                Greenhouse(id = "1", tenantId = "t1", name = "Greenhouse A"),
+                Greenhouse(id = "2", tenantId = "t1", name = "Greenhouse B")
+            ),
+            alertTypes = listOf(
+                AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),
+                AlertType(id = 2, name = "Humidity", description = "Humidity alerts")
+            ),
+            severities = listOf(
+                AlertSeverityCatalog(
+                    id = 1,
+                    name = "Low",
+                    level = 1,
+                    description = null,
+                    color = "#4CAF50",
+                    requiresAction = false
+                ),
+                AlertSeverityCatalog(
+                    id = 2,
+                    name = "Medium",
+                    level = 2,
+                    description = null,
+                    color = "#FF9800",
+                    requiresAction = false
+                ),
+                AlertSeverityCatalog(
+                    id = 3,
+                    name = "High",
+                    level = 3,
+                    description = null,
+                    color = "#F44336",
+                    requiresAction = true
+                )
+            )
+        )
     }
 }

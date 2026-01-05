@@ -67,6 +67,10 @@
     <string name="pagination_previous">Página anterior</string>
     <string name="pagination_next">Página siguiente</string>
     <string name="settings_coming_soon">Ajustes - Próximamente</string>
+    <string name="label_select">Seleccionar...</string>
+    <string name="label_none">Ninguno</string>
+    <string name="label_loading">Cargando...</string>
+    <string name="label_not_assigned">Sin asignar</string>
 
     <!-- New Client Dialog -->
     <string name="dialog_new_client_title">Crear Nuevo Cliente</string>
@@ -268,6 +272,7 @@
 
     <!-- Alert Table Headers -->
     <string name="header_title">TÍTULO</string>
+    <string name="header_message">MENSAJE</string>
     <string name="header_severity">SEVERIDAD</string>
     <string name="header_date">FECHA</string>
 
@@ -281,6 +286,12 @@
     <string name="alert_status_unread">No leída</string>
     <string name="alert_status_read">Leída</string>
     <string name="alert_status_dismissed">Descartada</string>
+    <string name="alert_resolved">Resuelta</string>
+    <string name="alert_active">Activa</string>
+
+    <!-- Alert Actions -->
+    <string name="action_resolve">Resolver</string>
+    <string name="action_reopen">Reabrir</string>
 
     <!-- Alert Dialogs -->
     <string name="dialog_new_alert_title">Añadir Nueva Alerta</string>
@@ -289,15 +300,21 @@
     <string name="dialog_edit_alert_title">Editar Alerta</string>
     <string name="dialog_edit_alert_subtitle">Actualizar información de la alerta</string>
     <string name="field_title">Título</string>
+    <string name="field_message">Mensaje</string>
     <string name="field_severity">Severidad</string>
+    <string name="field_alert_type">Tipo de Alerta</string>
 
     <!-- Alert Validation Errors -->
     <string name="error_title_required">El título es obligatorio</string>
+    <string name="error_message_required">El mensaje es obligatorio</string>
+    <string name="error_message_min_length">El mensaje debe tener al menos 5 caracteres</string>
 
     <!-- Alert Errors -->
     <string name="error_create_alert_failed">Error al crear la alerta. Por favor, inténtalo de nuevo.</string>
     <string name="error_update_alert_failed">Error al actualizar la alerta. Por favor, inténtalo de nuevo.</string>
     <string name="error_delete_alert_failed">Error al eliminar la alerta. Por favor, inténtalo de nuevo.</string>
+    <string name="error_resolve_alert_failed">Error al resolver la alerta. Por favor, inténtalo de nuevo.</string>
+    <string name="error_reopen_alert_failed">Error al reabrir la alerta. Por favor, inténtalo de nuevo.</string>
 
     <!-- Delete Alert Confirmation -->
     <string name="dialog_delete_alert_title">¿Eliminar Alerta?</string>

@@ -304,10 +304,14 @@ private fun ClientDetailScreenContent(
     if (uiState.showAlertFormDialog) {
         AlertFormDialog(
             mode = uiState.alertFormMode,
+            greenhouses = uiState.greenhouses,
+            alertTypes = uiState.alertTypes,
+            severities = uiState.alertSeverities,
+            isLoadingCatalog = uiState.isLoadingAlertCatalog,
             isSubmitting = uiState.isSubmittingAlert,
             error = uiState.submitAlertError,
-            onSubmit = { title, severity, status ->
-                onEvent(ClientDetailEvent.OnSubmitAlertForm(title, severity, status))
+            onSubmit = { greenhouseId, alertTypeId, severityId, message ->
+                onEvent(ClientDetailEvent.OnSubmitAlertForm(greenhouseId, alertTypeId, severityId, message))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissAlertFormDialog) }
         )
@@ -316,7 +320,7 @@ private fun ClientDetailScreenContent(
     // Alert Delete Confirmation Dialog
     if (uiState.showDeleteAlertConfirmation && uiState.alertToDelete != null) {
         DeleteConfirmationDialog(
-            clientName = uiState.alertToDelete.title,
+            clientName = uiState.alertToDelete.message,
             isDeleting = uiState.isDeletingAlert,
             error = uiState.deleteAlertError,
             onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteAlert) },
@@ -463,6 +467,8 @@ private fun ClientDetailContent(
                         onAddAlert = { onEvent(ClientDetailEvent.OnAddAlertClicked) },
                         onEditAlert = { alert -> onEvent(ClientDetailEvent.OnEditAlertClicked(alert)) },
                         onDeleteAlert = { alert -> onEvent(ClientDetailEvent.OnDeleteAlertClicked(alert)) },
+                        onResolveAlert = { alert -> onEvent(ClientDetailEvent.OnResolveAlertClicked(alert)) },
+                        onReopenAlert = { alert -> onEvent(ClientDetailEvent.OnReopenAlertClicked(alert)) },
                         onRetry = { onEvent(ClientDetailEvent.LoadAlerts) }
                     )
                 }

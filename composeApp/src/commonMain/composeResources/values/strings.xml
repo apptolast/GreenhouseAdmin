@@ -67,6 +67,10 @@
     <string name="pagination_previous">Previous page</string>
     <string name="pagination_next">Next page</string>
     <string name="settings_coming_soon">Settings - Coming Soon</string>
+    <string name="label_select">Select...</string>
+    <string name="label_none">None</string>
+    <string name="label_loading">Loading...</string>
+    <string name="label_not_assigned">Not assigned</string>
 
     <!-- New Client Dialog -->
     <string name="dialog_new_client_title">Create New Client</string>
@@ -268,6 +272,7 @@
 
     <!-- Alert Table Headers -->
     <string name="header_title">TITLE</string>
+    <string name="header_message">MESSAGE</string>
     <string name="header_severity">SEVERITY</string>
     <string name="header_date">DATE</string>
 
@@ -281,6 +286,12 @@
     <string name="alert_status_unread">Unread</string>
     <string name="alert_status_read">Read</string>
     <string name="alert_status_dismissed">Dismissed</string>
+    <string name="alert_resolved">Resolved</string>
+    <string name="alert_active">Active</string>
+
+    <!-- Alert Actions -->
+    <string name="action_resolve">Resolve</string>
+    <string name="action_reopen">Reopen</string>
 
     <!-- Alert Dialogs -->
     <string name="dialog_new_alert_title">Add New Alert</string>
@@ -289,15 +300,21 @@
     <string name="dialog_edit_alert_title">Edit Alert</string>
     <string name="dialog_edit_alert_subtitle">Update alert information</string>
     <string name="field_title">Title</string>
+    <string name="field_message">Message</string>
     <string name="field_severity">Severity</string>
+    <string name="field_alert_type">Alert Type</string>
 
     <!-- Alert Validation Errors -->
     <string name="error_title_required">Title is required</string>
+    <string name="error_message_required">Message is required</string>
+    <string name="error_message_min_length">Message must be at least 5 characters</string>
 
     <!-- Alert Errors -->
     <string name="error_create_alert_failed">Failed to create alert. Please try again.</string>
     <string name="error_update_alert_failed">Failed to update alert. Please try again.</string>
     <string name="error_delete_alert_failed">Failed to delete alert. Please try again.</string>
+    <string name="error_resolve_alert_failed">Failed to resolve alert. Please try again.</string>
+    <string name="error_reopen_alert_failed">Failed to reopen alert. Please try again.</string>
 
     <!-- Delete Alert Confirmation -->
     <string name="dialog_delete_alert_title">Delete Alert?</string>

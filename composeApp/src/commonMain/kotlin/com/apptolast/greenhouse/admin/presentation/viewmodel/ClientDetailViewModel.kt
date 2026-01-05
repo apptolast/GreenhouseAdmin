@@ -3,8 +3,8 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptolast.greenhouse.admin.data.model.Alert
-import com.apptolast.greenhouse.admin.data.model.AlertSeverity
-import com.apptolast.greenhouse.admin.data.model.AlertStatus
+import com.apptolast.greenhouse.admin.data.model.AlertCreateRequest
+import com.apptolast.greenhouse.admin.data.model.AlertUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.Device
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
@@ -27,7 +27,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
 
 /**
  * ViewModel for the Client Detail screen following MVVM+MVI pattern.
@@ -171,7 +170,15 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnConfirmDeleteAlert -> confirmDeleteAlert()
             is ClientDetailEvent.OnCancelDeleteAlert -> cancelDeleteAlert()
             is ClientDetailEvent.OnDismissAlertFormDialog -> dismissAlertFormDialog()
-            is ClientDetailEvent.OnSubmitAlertForm -> submitAlertForm(event.title, event.severity, event.status)
+            is ClientDetailEvent.OnSubmitAlertForm -> submitAlertForm(
+                event.greenhouseId,
+                event.alertTypeId,
+                event.severityId,
+                event.message
+            )
+
+            is ClientDetailEvent.OnResolveAlertClicked -> resolveAlert(event.alert)
+            is ClientDetailEvent.OnReopenAlertClicked -> reopenAlert(event.alert)
 
             // Settings events
             is ClientDetailEvent.LoadSettings -> loadSettings()
@@ -249,6 +256,10 @@ class ClientDetailViewModel(
             ClientDetailTab.ALERTS -> {
                 if (_uiState.value.alerts.isEmpty() && !_uiState.value.isLoadingAlerts) {
                     loadAlerts()
+                }
+                // Also load greenhouses for the dropdown if not already loaded
+                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
+                    loadGreenhouses()
                 }
             }
 
@@ -1025,7 +1036,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingAlerts = true, alertsError = null) }
 
-            alertsRepository.getAlertsByClientId(clientId)
+            alertsRepository.getAlertsByTenantId(clientId)
                 .onSuccess { alerts ->
                     _uiState.update {
                         it.copy(
@@ -1053,6 +1064,8 @@ class ClientDetailViewModel(
                 submitAlertError = null
             )
         }
+        // Load catalog data when opening the dialog
+        loadAlertCatalog()
     }
 
     private fun dismissAlertFormDialog() {
@@ -1065,7 +1078,12 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitAlertForm(title: String, severity: AlertSeverity, status: AlertStatus) {
+    private fun submitAlertForm(
+        greenhouseId: String,
+        alertTypeId: Short?,
+        severityId: Short?,
+        message: String
+    ) {
         val mode = _uiState.value.alertFormMode
 
         viewModelScope.launch {
@@ -1073,24 +1091,22 @@ class ClientDetailViewModel(
 
             val result = when (mode) {
                 is AlertFormMode.Create -> {
-                    val newAlert = Alert(
-                        id = "",
-                        title = title.trim(),
-                        severity = severity,
-                        status = status,
-                        createdAt = Clock.System.now().toEpochMilliseconds(),
-                        clientId = clientId
+                    val request = AlertCreateRequest(
+                        greenhouseId = greenhouseId,
+                        alertTypeId = alertTypeId,
+                        severityId = severityId,
+                        message = message.trim()
                     )
-                    alertsRepository.createAlert(newAlert)
+                    alertsRepository.createAlert(clientId, request)
                 }
 
                 is AlertFormMode.Edit -> {
-                    val updatedAlert = mode.alert.copy(
-                        title = title.trim(),
-                        severity = severity,
-                        status = status
+                    val request = AlertUpdateRequest(
+                        alertTypeId = alertTypeId,
+                        severityId = severityId,
+                        message = message.trim()
                     )
-                    alertsRepository.updateAlert(updatedAlert)
+                    alertsRepository.updateAlert(clientId, mode.alert.id, request)
                 }
             }
 
@@ -1141,7 +1157,7 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingAlert = true, deleteAlertError = null) }
 
-            alertsRepository.deleteAlert(alert.id)
+            alertsRepository.deleteAlert(clientId, alert.id)
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(
@@ -1158,6 +1174,72 @@ class ClientDetailViewModel(
                             isDeletingAlert = false,
                             deleteAlertError = error.message
                         )
+                    }
+                }
+        }
+    }
+
+    /**
+     * Loads alert catalog data (types and severities).
+     */
+    private fun loadAlertCatalog() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingAlertCatalog = true) }
+
+            val typesResult = alertsRepository.getAlertTypes()
+            val severitiesResult = alertsRepository.getAlertSeverities()
+
+            _uiState.update { state ->
+                state.copy(
+                    alertTypes = typesResult.getOrDefault(emptyList()),
+                    alertSeverities = severitiesResult.getOrDefault(emptyList()),
+                    isLoadingAlertCatalog = false
+                )
+            }
+        }
+    }
+
+    /**
+     * Resolves an alert.
+     */
+    private fun resolveAlert(alert: Alert) {
+        viewModelScope.launch {
+            alertsRepository.resolveAlert(clientId, alert.id)
+                .onSuccess { updatedAlert ->
+                    _uiState.update { state ->
+                        state.copy(
+                            alerts = state.alerts.map {
+                                if (it.id == alert.id) updatedAlert else it
+                            }
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(alertsError = error.message)
+                    }
+                }
+        }
+    }
+
+    /**
+     * Reopens a resolved alert.
+     */
+    private fun reopenAlert(alert: Alert) {
+        viewModelScope.launch {
+            alertsRepository.reopenAlert(clientId, alert.id)
+                .onSuccess { updatedAlert ->
+                    _uiState.update { state ->
+                        state.copy(
+                            alerts = state.alerts.map {
+                                if (it.id == alert.id) updatedAlert else it
+                            }
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(alertsError = error.message)
                     }
                 }
         }

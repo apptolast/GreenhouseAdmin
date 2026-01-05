@@ -1,8 +1,6 @@
 package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import com.apptolast.greenhouse.admin.data.model.Alert
-import com.apptolast.greenhouse.admin.data.model.AlertSeverity
-import com.apptolast.greenhouse.admin.data.model.AlertStatus
 import com.apptolast.greenhouse.admin.data.model.ClientStatus
 import com.apptolast.greenhouse.admin.data.model.Device
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
@@ -325,10 +323,21 @@ sealed interface ClientDetailEvent {
      * User submitted the alert form (create or edit).
      */
     data class OnSubmitAlertForm(
-        val title: String,
-        val severity: AlertSeverity,
-        val status: AlertStatus
+        val greenhouseId: String,
+        val alertTypeId: Short?,
+        val severityId: Short?,
+        val message: String
     ) : ClientDetailEvent
+
+    /**
+     * User clicked resolve on a specific alert.
+     */
+    data class OnResolveAlertClicked(val alert: Alert) : ClientDetailEvent
+
+    /**
+     * User clicked reopen on a specific alert.
+     */
+    data class OnReopenAlertClicked(val alert: Alert) : ClientDetailEvent
 
     // === Settings Tab Events ===
 

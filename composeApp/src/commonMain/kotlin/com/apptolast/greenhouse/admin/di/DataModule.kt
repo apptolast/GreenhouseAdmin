@@ -1,6 +1,7 @@
 package com.apptolast.greenhouse.admin.di
 
 import com.apptolast.greenhouse.admin.data.local.TokenStorage
+import com.apptolast.greenhouse.admin.data.remote.api.AlertsApiService
 import com.apptolast.greenhouse.admin.data.remote.api.AuthApiService
 import com.apptolast.greenhouse.admin.data.remote.api.DevicesApiService
 import com.apptolast.greenhouse.admin.data.remote.api.GreenhousesApiService
@@ -48,6 +49,7 @@ val dataModule = module {
     singleOf(::GreenhousesApiService)
     singleOf(::SectorsApiService)
     singleOf(::DevicesApiService)
+    singleOf(::AlertsApiService)
 
     // Repositories
     singleOf(::AuthRepositoryImpl) bind AuthRepository::class
