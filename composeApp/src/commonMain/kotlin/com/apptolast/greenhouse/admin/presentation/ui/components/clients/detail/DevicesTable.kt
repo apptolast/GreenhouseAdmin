@@ -45,6 +45,8 @@ import greenhouseadmin.composeapp.generated.resources.header_category
 import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_name
 import greenhouseadmin.composeapp.generated.resources.header_status
+import greenhouseadmin.composeapp.generated.resources.header_type
+import greenhouseadmin.composeapp.generated.resources.header_unit
 import greenhouseadmin.composeapp.generated.resources.status_active
 import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
@@ -52,7 +54,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Table displaying list of devices with headers and rows.
- * Columns: ID | NAME | CATEGORY | STATUS | ACTIONS
+ * Columns: ID | NAME | CATEGORY | TYPE | UNIT | STATUS | ACTIONS
  */
 @Composable
 fun DevicesTable(
@@ -103,7 +105,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(1.2f)
         )
 
         // NAME column
@@ -112,7 +114,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(1.3f)
         )
 
         // CATEGORY column
@@ -122,6 +124,24 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.weight(1f)
+        )
+
+        // TYPE column
+        Text(
+            text = stringResource(Res.string.header_type),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1f)
+        )
+
+        // UNIT column
+        Text(
+            text = stringResource(Res.string.header_unit),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(0.6f)
         )
 
         // STATUS column
@@ -161,7 +181,7 @@ private fun DeviceTableRow(
     ) {
         // ID - Full UUID with monospace font, smaller size to fit, with copy button
         Row(
-            modifier = Modifier.weight(1.5f),
+            modifier = Modifier.weight(1.2f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -192,7 +212,7 @@ private fun DeviceTableRow(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             fontWeight = if (device.name != null) FontWeight.Medium else FontWeight.Normal,
-            modifier = Modifier.weight(1.5f),
+            modifier = Modifier.weight(1.3f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -203,6 +223,26 @@ private fun DeviceTableRow(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        // TYPE - Device type name
+        Text(
+            text = device.typeName ?: "-",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        // UNIT - Unit symbol
+        Text(
+            text = device.unitSymbol ?: "-",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.6f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

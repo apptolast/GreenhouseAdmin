@@ -232,6 +232,7 @@
     <string name="header_id">ID</string>
     <string name="header_type">TIPO</string>
     <string name="header_category">CATEGORÍA</string>
+    <string name="header_unit">UNIDAD</string>
 
     <!-- Device Category -->
     <string name="device_category_sensor">Sensor</string>

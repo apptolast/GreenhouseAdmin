@@ -301,11 +301,19 @@ private fun AlertSeverityFormDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = level,
-                    onValueChange = { level = it },
+                    onValueChange = { newValue ->
+                        // Only allow digits
+                        level = newValue.filter { it.isDigit() }
+                    },
                     label = { Text(stringResource(Res.string.field_level)) },
+                    placeholder = { Text("1, 2, 3...") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = level.isNotBlank() && level.toShortOrNull() == null,
+                    supportingText = if (level.isNotBlank() && level.toShortOrNull() == null) {
+                        { Text("Debe ser un número válido (0-32767)") }
+                    } else null
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
