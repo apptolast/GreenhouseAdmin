@@ -34,8 +34,8 @@ class CatalogRepositoryImpl(
         catalogApi.getDeviceCategories().map { it.toDomain() }
     }
 
-    override suspend fun createDeviceCategory(id: Short, name: String): Result<DeviceCatalogCategory> = runCatching {
-        val request = DeviceCategoryCreateRequest(id = id, name = name)
+    override suspend fun createDeviceCategory(name: String): Result<DeviceCatalogCategory> = runCatching {
+        val request = DeviceCategoryCreateRequest(name = name)
         catalogApi.createDeviceCategory(request).toDomain()
     }
 
@@ -130,11 +130,10 @@ class CatalogRepositoryImpl(
     }
 
     override suspend fun createAlertType(
-        id: Short,
         name: String,
         description: String?
     ): Result<AlertType> = runCatching {
-        val request = AlertTypeCreateRequest(id = id, name = name, description = description)
+        val request = AlertTypeCreateRequest(name = name, description = description)
         catalogApi.createAlertType(request).toDomain()
     }
 
@@ -158,7 +157,6 @@ class CatalogRepositoryImpl(
     }
 
     override suspend fun createAlertSeverity(
-        id: Short,
         name: String,
         level: Short,
         description: String?,
@@ -167,7 +165,6 @@ class CatalogRepositoryImpl(
         notificationDelayMinutes: Int
     ): Result<AlertSeverityCatalog> = runCatching {
         val request = AlertSeverityCreateRequest(
-            id = id,
             name = name,
             level = level,
             description = description,
@@ -208,8 +205,8 @@ class CatalogRepositoryImpl(
         catalogApi.getPeriods().map { it.toDomain() }
     }
 
-    override suspend fun createPeriod(id: Short, name: String): Result<Period> = runCatching {
-        val request = PeriodCreateRequest(id = id, name = name)
+    override suspend fun createPeriod(name: String): Result<Period> = runCatching {
+        val request = PeriodCreateRequest(name = name)
         catalogApi.createPeriod(request).toDomain()
     }
 

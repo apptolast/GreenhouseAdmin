@@ -49,7 +49,8 @@ fun SettingsDeviceUnitsTab(
             .fillMaxSize()
             .verticalScroll(scrollState)
             .padding(
-                horizontal = if (windowInfo.isCompact) 16.dp else 24.dp
+                horizontal = if (windowInfo.isCompact) 16.dp else 24.dp,
+                vertical = 24.dp
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

@@ -120,7 +120,10 @@ fun SettingsDeviceTypesTab(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(horizontal = if (windowInfo.isCompact) 16.dp else 24.dp),
+            .padding(
+                horizontal = if (windowInfo.isCompact) 16.dp else 24.dp,
+                vertical = 24.dp
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(modifier = Modifier.widthIn(max = 1000.dp).fillMaxWidth()) {

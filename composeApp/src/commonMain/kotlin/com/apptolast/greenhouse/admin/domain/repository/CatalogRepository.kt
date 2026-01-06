@@ -24,11 +24,10 @@ interface CatalogRepository {
 
     /**
      * Creates a new device category.
-     * @param id The ID for the new category (required by backend)
      * @param name The category name
      * @return Result containing the created DeviceCatalogCategory or error
      */
-    suspend fun createDeviceCategory(id: Short, name: String): Result<DeviceCatalogCategory>
+    suspend fun createDeviceCategory(name: String): Result<DeviceCatalogCategory>
 
     /**
      * Updates an existing device category.
@@ -146,12 +145,11 @@ interface CatalogRepository {
 
     /**
      * Creates a new alert type.
-     * @param id The ID for the new alert type (required by backend)
      * @param name The alert type name
      * @param description Optional description
      * @return Result containing the created AlertType or error
      */
-    suspend fun createAlertType(id: Short, name: String, description: String?): Result<AlertType>
+    suspend fun createAlertType(name: String, description: String?): Result<AlertType>
 
     /**
      * Updates an existing alert type.
@@ -179,7 +177,6 @@ interface CatalogRepository {
 
     /**
      * Creates a new alert severity.
-     * @param id The ID for the new severity (required by backend)
      * @param name The severity name
      * @param level The severity level (lower = less severe)
      * @param description Optional description
@@ -189,7 +186,6 @@ interface CatalogRepository {
      * @return Result containing the created AlertSeverityCatalog or error
      */
     suspend fun createAlertSeverity(
-        id: Short,
         name: String,
         level: Short,
         description: String?,
@@ -236,11 +232,10 @@ interface CatalogRepository {
 
     /**
      * Creates a new period.
-     * @param id The ID for the new period (required by backend)
      * @param name The period name
      * @return Result containing the created Period or error
      */
-    suspend fun createPeriod(id: Short, name: String): Result<Period>
+    suspend fun createPeriod(name: String): Result<Period>
 
     /**
      * Updates an existing period.

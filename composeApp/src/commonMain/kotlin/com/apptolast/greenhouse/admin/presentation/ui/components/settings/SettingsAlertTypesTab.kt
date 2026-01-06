@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -38,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -55,7 +53,6 @@ import greenhouseadmin.composeapp.generated.resources.catalog_empty_message
 import greenhouseadmin.composeapp.generated.resources.dialog_create_alert_type
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_alert_type
 import greenhouseadmin.composeapp.generated.resources.field_description
-import greenhouseadmin.composeapp.generated.resources.field_id
 import greenhouseadmin.composeapp.generated.resources.field_name
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_description
@@ -77,7 +74,7 @@ fun SettingsAlertTypesTab(
     onAddClicked: () -> Unit,
     onEditClicked: (AlertType) -> Unit,
     onDeleteClicked: (AlertType) -> Unit,
-    onSubmit: (id: Short?, name: String, description: String?) -> Unit,
+    onSubmit: (name: String, description: String?) -> Unit,
     onDismissDialog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -98,7 +95,10 @@ fun SettingsAlertTypesTab(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(horizontal = if (windowInfo.isCompact) 16.dp else 24.dp),
+            .padding(
+                horizontal = if (windowInfo.isCompact) 16.dp else 24.dp,
+                vertical = 24.dp
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(
@@ -236,13 +236,12 @@ private fun AlertTypeFormDialog(
     formMode: AlertTypeFormMode,
     isSubmitting: Boolean,
     submitError: String?,
-    onSubmit: (id: Short?, name: String, description: String?) -> Unit,
+    onSubmit: (name: String, description: String?) -> Unit,
     onDismiss: () -> Unit
 ) {
     val isEditMode = formMode is AlertTypeFormMode.Edit
     val existing = (formMode as? AlertTypeFormMode.Edit)?.alertType
 
-    var id by remember(formMode) { mutableStateOf(existing?.id?.toString() ?: "") }
     var name by remember(formMode) { mutableStateOf(existing?.name ?: "") }
     var description by remember(formMode) { mutableStateOf(existing?.description ?: "") }
 
@@ -259,17 +258,6 @@ private fun AlertTypeFormDialog(
         },
         text = {
             Column {
-                if (!isEditMode) {
-                    OutlinedTextField(
-                        value = id,
-                        onValueChange = { id = it },
-                        label = { Text(stringResource(Res.string.field_id)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
@@ -297,13 +285,8 @@ private fun AlertTypeFormDialog(
         },
         confirmButton = {
             Button(
-                onClick = {
-                    onSubmit(
-                        if (isEditMode) null else id.toShortOrNull(),
-                        name,
-                        description.ifBlank { null })
-                },
-                enabled = !isSubmitting && name.isNotBlank() && (isEditMode || id.toShortOrNull() != null)
+                onClick = { onSubmit(name, description.ifBlank { null }) },
+                enabled = !isSubmitting && name.isNotBlank()
             ) {
                 if (isSubmitting) CircularProgressIndicator(
                     modifier = Modifier.height(16.dp).width(16.dp),

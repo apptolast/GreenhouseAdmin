@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -38,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Period
@@ -53,7 +51,6 @@ import greenhouseadmin.composeapp.generated.resources.button_save
 import greenhouseadmin.composeapp.generated.resources.catalog_empty_message
 import greenhouseadmin.composeapp.generated.resources.dialog_create_period
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_period
-import greenhouseadmin.composeapp.generated.resources.field_id
 import greenhouseadmin.composeapp.generated.resources.field_name
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_id
@@ -74,7 +71,7 @@ fun SettingsPeriodsTab(
     onAddClicked: () -> Unit,
     onEditClicked: (Period) -> Unit,
     onDeleteClicked: (Period) -> Unit,
-    onSubmit: (id: Short?, name: String) -> Unit,
+    onSubmit: (name: String) -> Unit,
     onDismissDialog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -96,7 +93,8 @@ fun SettingsPeriodsTab(
             .fillMaxSize()
             .verticalScroll(scrollState)
             .padding(
-                horizontal = if (windowInfo.isCompact) 16.dp else 24.dp
+                horizontal = if (windowInfo.isCompact) 16.dp else 24.dp,
+                vertical = 24.dp
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -230,13 +228,12 @@ private fun PeriodFormDialog(
     formMode: PeriodFormMode,
     isSubmitting: Boolean,
     submitError: String?,
-    onSubmit: (id: Short?, name: String) -> Unit,
+    onSubmit: (name: String) -> Unit,
     onDismiss: () -> Unit
 ) {
     val isEditMode = formMode is PeriodFormMode.Edit
     val existingPeriod = (formMode as? PeriodFormMode.Edit)?.period
 
-    var id by remember(formMode) { mutableStateOf(existingPeriod?.id?.toString() ?: "") }
     var name by remember(formMode) { mutableStateOf(existingPeriod?.name ?: "") }
 
     AlertDialog(
@@ -252,17 +249,6 @@ private fun PeriodFormDialog(
         },
         text = {
             Column {
-                if (!isEditMode) {
-                    OutlinedTextField(
-                        value = id,
-                        onValueChange = { id = it },
-                        label = { Text(stringResource(Res.string.field_id)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
@@ -282,8 +268,8 @@ private fun PeriodFormDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onSubmit(if (isEditMode) null else id.toShortOrNull(), name) },
-                enabled = !isSubmitting && name.isNotBlank() && (isEditMode || id.toShortOrNull() != null)
+                onClick = { onSubmit(name) },
+                enabled = !isSubmitting && name.isNotBlank()
             ) {
                 if (isSubmitting) CircularProgressIndicator(
                     modifier = Modifier.height(16.dp).width(16.dp),

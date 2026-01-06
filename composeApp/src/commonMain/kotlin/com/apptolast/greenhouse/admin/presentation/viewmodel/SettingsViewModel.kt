@@ -55,7 +55,7 @@ class SettingsViewModel(
             is SettingsEvent.OnAddDeviceCategoryClicked -> showDeviceCategoryDialog(DeviceCategoryFormMode.Create)
             is SettingsEvent.OnEditDeviceCategoryClicked -> showDeviceCategoryDialog(DeviceCategoryFormMode.Edit(event.category))
             is SettingsEvent.OnDeleteDeviceCategoryClicked -> showDeleteDeviceCategoryConfirmation(event.category)
-            is SettingsEvent.OnSubmitDeviceCategory -> submitDeviceCategory(event.id, event.name)
+            is SettingsEvent.OnSubmitDeviceCategory -> submitDeviceCategory(event.name)
             is SettingsEvent.OnDismissDeviceCategoryDialog -> dismissDeviceCategoryDialog()
             is SettingsEvent.OnConfirmDeleteDeviceCategory -> confirmDeleteDeviceCategory()
             is SettingsEvent.OnCancelDeleteDeviceCategory -> cancelDeleteDeviceCategory()
@@ -75,7 +75,7 @@ class SettingsViewModel(
             is SettingsEvent.OnAddAlertTypeClicked -> showAlertTypeDialog(AlertTypeFormMode.Create)
             is SettingsEvent.OnEditAlertTypeClicked -> showAlertTypeDialog(AlertTypeFormMode.Edit(event.alertType))
             is SettingsEvent.OnDeleteAlertTypeClicked -> showDeleteAlertTypeConfirmation(event.alertType)
-            is SettingsEvent.OnSubmitAlertType -> submitAlertType(event.id, event.name, event.description)
+            is SettingsEvent.OnSubmitAlertType -> submitAlertType(event.name, event.description)
             is SettingsEvent.OnDismissAlertTypeDialog -> dismissAlertTypeDialog()
             is SettingsEvent.OnConfirmDeleteAlertType -> confirmDeleteAlertType()
             is SettingsEvent.OnCancelDeleteAlertType -> cancelDeleteAlertType()
@@ -93,7 +93,7 @@ class SettingsViewModel(
             is SettingsEvent.OnAddPeriodClicked -> showPeriodDialog(PeriodFormMode.Create)
             is SettingsEvent.OnEditPeriodClicked -> showPeriodDialog(PeriodFormMode.Edit(event.period))
             is SettingsEvent.OnDeletePeriodClicked -> showDeletePeriodConfirmation(event.period)
-            is SettingsEvent.OnSubmitPeriod -> submitPeriod(event.id, event.name)
+            is SettingsEvent.OnSubmitPeriod -> submitPeriod(event.name)
             is SettingsEvent.OnDismissPeriodDialog -> dismissPeriodDialog()
             is SettingsEvent.OnConfirmDeletePeriod -> confirmDeletePeriod()
             is SettingsEvent.OnCancelDeletePeriod -> cancelDeletePeriod()
@@ -175,12 +175,12 @@ class SettingsViewModel(
             _uiState.update { state ->
                 state.copy(
                     isCatalogsLoading = false,
-                    deviceCategories = categoriesResult.getOrDefault(emptyList()),
-                    deviceTypes = typesResult.getOrDefault(emptyList()),
-                    deviceUnits = unitsResult.getOrDefault(emptyList()),
-                    alertTypes = alertTypesResult.getOrDefault(emptyList()),
-                    alertSeverities = severitiesResult.getOrDefault(emptyList()),
-                    periods = periodsResult.getOrDefault(emptyList()),
+                    deviceCategories = categoriesResult.getOrDefault(emptyList()).sortedBy { it.id },
+                    deviceTypes = typesResult.getOrDefault(emptyList()).sortedBy { it.id },
+                    deviceUnits = unitsResult.getOrDefault(emptyList()).sortedBy { it.id },
+                    alertTypes = alertTypesResult.getOrDefault(emptyList()).sortedBy { it.id },
+                    alertSeverities = severitiesResult.getOrDefault(emptyList()).sortedBy { it.id },
+                    periods = periodsResult.getOrDefault(emptyList()).sortedBy { it.id },
                     catalogsError = if (categoriesResult.isFailure || typesResult.isFailure ||
                         unitsResult.isFailure || alertTypesResult.isFailure ||
                         severitiesResult.isFailure || periodsResult.isFailure
@@ -229,19 +229,12 @@ class SettingsViewModel(
         }
     }
 
-    private fun submitDeviceCategory(id: Short?, name: String) {
+    private fun submitDeviceCategory(name: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingDeviceCategory = true, submitDeviceCategoryError = null) }
 
             val result = when (val mode = _uiState.value.deviceCategoryFormMode) {
-                is DeviceCategoryFormMode.Create -> {
-                    if (id == null) {
-                        Result.failure(IllegalArgumentException("ID is required for creating a category"))
-                    } else {
-                        catalogRepository.createDeviceCategory(id, name)
-                    }
-                }
-
+                is DeviceCategoryFormMode.Create -> catalogRepository.createDeviceCategory(name)
                 is DeviceCategoryFormMode.Edit -> catalogRepository.updateDeviceCategory(mode.category.id, name)
             }
 
@@ -299,7 +292,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getDeviceCategories()
                 .onSuccess { categories ->
-                    _uiState.update { it.copy(deviceCategories = categories) }
+                    _uiState.update { it.copy(deviceCategories = categories.sortedBy { c -> c.id }) }
                 }
         }
     }
@@ -442,7 +435,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getDeviceTypes()
                 .onSuccess { types ->
-                    _uiState.update { it.copy(deviceTypes = types) }
+                    _uiState.update { it.copy(deviceTypes = types.sortedBy { t -> t.id }) }
                 }
         }
     }
@@ -486,19 +479,12 @@ class SettingsViewModel(
         }
     }
 
-    private fun submitAlertType(id: Short?, name: String, description: String?) {
+    private fun submitAlertType(name: String, description: String?) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingAlertType = true, submitAlertTypeError = null) }
 
             val result = when (val mode = _uiState.value.alertTypeFormMode) {
-                is AlertTypeFormMode.Create -> {
-                    if (id == null) {
-                        Result.failure(IllegalArgumentException("ID is required for creating an alert type"))
-                    } else {
-                        catalogRepository.createAlertType(id, name, description)
-                    }
-                }
-
+                is AlertTypeFormMode.Create -> catalogRepository.createAlertType(name, description)
                 is AlertTypeFormMode.Edit -> catalogRepository.updateAlertType(mode.alertType.id, name, description)
             }
 
@@ -556,7 +542,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getAlertTypes()
                 .onSuccess { types ->
-                    _uiState.update { it.copy(alertTypes = types) }
+                    _uiState.update { it.copy(alertTypes = types.sortedBy { t -> t.id }) }
                 }
         }
     }
@@ -605,21 +591,14 @@ class SettingsViewModel(
             _uiState.update { it.copy(isSubmittingAlertSeverity = true, submitAlertSeverityError = null) }
 
             val result = when (val mode = _uiState.value.alertSeverityFormMode) {
-                is AlertSeverityFormMode.Create -> {
-                    if (event.id == null) {
-                        Result.failure(IllegalArgumentException("ID is required for creating an alert severity"))
-                    } else {
-                        catalogRepository.createAlertSeverity(
-                            id = event.id,
-                            name = event.name,
-                            level = event.level,
-                            description = event.description,
-                            color = event.color,
-                            requiresAction = event.requiresAction,
-                            notificationDelayMinutes = event.notificationDelayMinutes
-                        )
-                    }
-                }
+                is AlertSeverityFormMode.Create -> catalogRepository.createAlertSeverity(
+                    name = event.name,
+                    level = event.level,
+                    description = event.description,
+                    color = event.color,
+                    requiresAction = event.requiresAction,
+                    notificationDelayMinutes = event.notificationDelayMinutes
+                )
 
                 is AlertSeverityFormMode.Edit -> catalogRepository.updateAlertSeverity(
                     id = mode.severity.id,
@@ -686,7 +665,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getAlertSeverities()
                 .onSuccess { severities ->
-                    _uiState.update { it.copy(alertSeverities = severities) }
+                    _uiState.update { it.copy(alertSeverities = severities.sortedBy { s -> s.id }) }
                 }
         }
     }
@@ -730,19 +709,12 @@ class SettingsViewModel(
         }
     }
 
-    private fun submitPeriod(id: Short?, name: String) {
+    private fun submitPeriod(name: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingPeriod = true, submitPeriodError = null) }
 
             val result = when (val mode = _uiState.value.periodFormMode) {
-                is PeriodFormMode.Create -> {
-                    if (id == null) {
-                        Result.failure(IllegalArgumentException("ID is required for creating a period"))
-                    } else {
-                        catalogRepository.createPeriod(id, name)
-                    }
-                }
-
+                is PeriodFormMode.Create -> catalogRepository.createPeriod(name)
                 is PeriodFormMode.Edit -> catalogRepository.updatePeriod(mode.period.id, name)
             }
 
@@ -800,7 +772,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getPeriods()
                 .onSuccess { periods ->
-                    _uiState.update { it.copy(periods = periods) }
+                    _uiState.update { it.copy(periods = periods.sortedBy { p -> p.id }) }
                 }
         }
     }
@@ -954,7 +926,7 @@ sealed interface SettingsEvent {
     data object OnAddDeviceCategoryClicked : SettingsEvent
     data class OnEditDeviceCategoryClicked(val category: DeviceCatalogCategory) : SettingsEvent
     data class OnDeleteDeviceCategoryClicked(val category: DeviceCatalogCategory) : SettingsEvent
-    data class OnSubmitDeviceCategory(val id: Short?, val name: String) : SettingsEvent
+    data class OnSubmitDeviceCategory(val name: String) : SettingsEvent
     data object OnDismissDeviceCategoryDialog : SettingsEvent
     data object OnConfirmDeleteDeviceCategory : SettingsEvent
     data object OnCancelDeleteDeviceCategory : SettingsEvent
@@ -985,7 +957,7 @@ sealed interface SettingsEvent {
     data object OnAddAlertTypeClicked : SettingsEvent
     data class OnEditAlertTypeClicked(val alertType: AlertType) : SettingsEvent
     data class OnDeleteAlertTypeClicked(val alertType: AlertType) : SettingsEvent
-    data class OnSubmitAlertType(val id: Short?, val name: String, val description: String?) : SettingsEvent
+    data class OnSubmitAlertType(val name: String, val description: String?) : SettingsEvent
     data object OnDismissAlertTypeDialog : SettingsEvent
     data object OnConfirmDeleteAlertType : SettingsEvent
     data object OnCancelDeleteAlertType : SettingsEvent
@@ -995,7 +967,6 @@ sealed interface SettingsEvent {
     data class OnEditAlertSeverityClicked(val severity: AlertSeverityCatalog) : SettingsEvent
     data class OnDeleteAlertSeverityClicked(val severity: AlertSeverityCatalog) : SettingsEvent
     data class OnSubmitAlertSeverity(
-        val id: Short?,
         val name: String,
         val level: Short,
         val description: String?,
@@ -1012,7 +983,7 @@ sealed interface SettingsEvent {
     data object OnAddPeriodClicked : SettingsEvent
     data class OnEditPeriodClicked(val period: Period) : SettingsEvent
     data class OnDeletePeriodClicked(val period: Period) : SettingsEvent
-    data class OnSubmitPeriod(val id: Short?, val name: String) : SettingsEvent
+    data class OnSubmitPeriod(val name: String) : SettingsEvent
     data object OnDismissPeriodDialog : SettingsEvent
     data object OnConfirmDeletePeriod : SettingsEvent
     data object OnCancelDeletePeriod : SettingsEvent

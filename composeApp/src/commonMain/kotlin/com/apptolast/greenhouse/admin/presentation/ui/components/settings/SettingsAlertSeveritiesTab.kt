@@ -61,7 +61,6 @@ import greenhouseadmin.composeapp.generated.resources.catalog_empty_message
 import greenhouseadmin.composeapp.generated.resources.dialog_create_alert_severity
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_alert_severity
 import greenhouseadmin.composeapp.generated.resources.field_color
-import greenhouseadmin.composeapp.generated.resources.field_id
 import greenhouseadmin.composeapp.generated.resources.field_level
 import greenhouseadmin.composeapp.generated.resources.field_name
 import greenhouseadmin.composeapp.generated.resources.field_requires_action
@@ -86,7 +85,7 @@ fun SettingsAlertSeveritiesTab(
     onAddClicked: () -> Unit,
     onEditClicked: (AlertSeverityCatalog) -> Unit,
     onDeleteClicked: (AlertSeverityCatalog) -> Unit,
-    onSubmit: (id: Short?, name: String, level: Short, description: String?, color: String?, requiresAction: Boolean, notificationDelayMinutes: Int) -> Unit,
+    onSubmit: (name: String, level: Short, description: String?, color: String?, requiresAction: Boolean, notificationDelayMinutes: Int) -> Unit,
     onDismissDialog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -107,7 +106,10 @@ fun SettingsAlertSeveritiesTab(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(horizontal = if (windowInfo.isCompact) 16.dp else 24.dp),
+            .padding(
+                horizontal = if (windowInfo.isCompact) 16.dp else 24.dp,
+                vertical = 24.dp
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(modifier = Modifier.widthIn(max = 900.dp).fillMaxWidth()) {
@@ -265,13 +267,12 @@ private fun AlertSeverityFormDialog(
     formMode: AlertSeverityFormMode,
     isSubmitting: Boolean,
     submitError: String?,
-    onSubmit: (id: Short?, name: String, level: Short, description: String?, color: String?, requiresAction: Boolean, notificationDelayMinutes: Int) -> Unit,
+    onSubmit: (name: String, level: Short, description: String?, color: String?, requiresAction: Boolean, notificationDelayMinutes: Int) -> Unit,
     onDismiss: () -> Unit
 ) {
     val isEditMode = formMode is AlertSeverityFormMode.Edit
     val existing = (formMode as? AlertSeverityFormMode.Edit)?.severity
 
-    var id by remember(formMode) { mutableStateOf(existing?.id?.toString() ?: "") }
     var name by remember(formMode) { mutableStateOf(existing?.name ?: "") }
     var level by remember(formMode) { mutableStateOf(existing?.level?.toString() ?: "") }
     var color by remember(formMode) { mutableStateOf(existing?.color ?: "") }
@@ -290,17 +291,6 @@ private fun AlertSeverityFormDialog(
         },
         text = {
             Column {
-                if (!isEditMode) {
-                    OutlinedTextField(
-                        value = id,
-                        onValueChange = { id = it },
-                        label = { Text(stringResource(Res.string.field_id)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
@@ -347,7 +337,6 @@ private fun AlertSeverityFormDialog(
                 onClick = {
                     val levelValue = level.toShortOrNull() ?: 0
                     onSubmit(
-                        if (isEditMode) null else id.toShortOrNull(),
                         name,
                         levelValue,
                         null,
@@ -356,7 +345,7 @@ private fun AlertSeverityFormDialog(
                         0
                     )
                 },
-                enabled = !isSubmitting && name.isNotBlank() && level.toShortOrNull() != null && (isEditMode || id.toShortOrNull() != null)
+                enabled = !isSubmitting && name.isNotBlank() && level.toShortOrNull() != null
             ) {
                 if (isSubmitting) CircularProgressIndicator(
                     modifier = Modifier.height(16.dp).width(16.dp),

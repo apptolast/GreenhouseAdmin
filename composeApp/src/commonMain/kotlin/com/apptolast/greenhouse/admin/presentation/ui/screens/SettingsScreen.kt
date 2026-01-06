@@ -200,7 +200,7 @@ private fun SettingsScreenContent(
                             onAddClicked = { onEvent(SettingsEvent.OnAddDeviceCategoryClicked) },
                             onEditClicked = { onEvent(SettingsEvent.OnEditDeviceCategoryClicked(it)) },
                             onDeleteClicked = { onEvent(SettingsEvent.OnDeleteDeviceCategoryClicked(it)) },
-                            onSubmit = { id, name -> onEvent(SettingsEvent.OnSubmitDeviceCategory(id, name)) },
+                            onSubmit = { name -> onEvent(SettingsEvent.OnSubmitDeviceCategory(name)) },
                             onDismissDialog = { onEvent(SettingsEvent.OnDismissDeviceCategoryDialog) }
                         )
                     }
@@ -246,7 +246,7 @@ private fun SettingsScreenContent(
                             onAddClicked = { onEvent(SettingsEvent.OnAddAlertTypeClicked) },
                             onEditClicked = { onEvent(SettingsEvent.OnEditAlertTypeClicked(it)) },
                             onDeleteClicked = { onEvent(SettingsEvent.OnDeleteAlertTypeClicked(it)) },
-                            onSubmit = { id, name, desc -> onEvent(SettingsEvent.OnSubmitAlertType(id, name, desc)) },
+                            onSubmit = { name, desc -> onEvent(SettingsEvent.OnSubmitAlertType(name, desc)) },
                             onDismissDialog = { onEvent(SettingsEvent.OnDismissAlertTypeDialog) }
                         )
                     }
@@ -261,10 +261,10 @@ private fun SettingsScreenContent(
                             onAddClicked = { onEvent(SettingsEvent.OnAddAlertSeverityClicked) },
                             onEditClicked = { onEvent(SettingsEvent.OnEditAlertSeverityClicked(it)) },
                             onDeleteClicked = { onEvent(SettingsEvent.OnDeleteAlertSeverityClicked(it)) },
-                            onSubmit = { id, name, level, desc, color, requiresAction, notifDelay ->
+                            onSubmit = { name, level, desc, color, requiresAction, notifDelay ->
                                 onEvent(
                                     SettingsEvent.OnSubmitAlertSeverity(
-                                        id, name, level, desc, color, requiresAction, notifDelay
+                                        name, level, desc, color, requiresAction, notifDelay
                                     )
                                 )
                             },
@@ -282,7 +282,7 @@ private fun SettingsScreenContent(
                             onAddClicked = { onEvent(SettingsEvent.OnAddPeriodClicked) },
                             onEditClicked = { onEvent(SettingsEvent.OnEditPeriodClicked(it)) },
                             onDeleteClicked = { onEvent(SettingsEvent.OnDeletePeriodClicked(it)) },
-                            onSubmit = { id, name -> onEvent(SettingsEvent.OnSubmitPeriod(id, name)) },
+                            onSubmit = { name -> onEvent(SettingsEvent.OnSubmitPeriod(name)) },
                             onDismissDialog = { onEvent(SettingsEvent.OnDismissPeriodDialog) }
                         )
                     }
