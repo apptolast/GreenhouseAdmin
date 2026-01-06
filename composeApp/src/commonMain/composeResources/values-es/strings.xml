@@ -373,4 +373,54 @@
     <string name="logout_confirmation_title">¿Cerrar Sesión?</string>
     <string name="logout_confirmation_message">¿Estás seguro de que quieres cerrar sesión? Tendrás que iniciar sesión de nuevo para acceder a tu cuenta.</string>
     <string name="logout_confirm_button">Cerrar Sesión</string>
+
+    <!-- Settings Tabs -->
+    <string name="settings_tab_account">Cuenta</string>
+    <string name="settings_tab_device_categories">Categorías</string>
+    <string name="settings_tab_device_types">Tipos de Dispositivo</string>
+    <string name="settings_tab_device_units">Unidades</string>
+    <string name="settings_tab_alert_types">Tipos de Alerta</string>
+    <string name="settings_tab_alert_severities">Severidades</string>
+    <string name="settings_tab_periods">Períodos</string>
+
+    <!-- Catalog Management -->
+    <string name="button_add">Añadir</string>
+    <string name="catalog_empty_message">No se encontraron elementos. Haz clic en Añadir para crear uno.</string>
+    <string name="catalog_read_only_message">Este catálogo es de solo lectura y no puede modificarse.</string>
+
+    <!-- Catalog Table Headers -->
+    <string name="header_symbol">SÍMBOLO</string>
+    <string name="header_level">NIVEL</string>
+    <string name="header_color">COLOR</string>
+    <string name="header_default_unit">UNIDAD POR DEFECTO</string>
+
+    <!-- Form Fields -->
+    <string name="field_id">ID</string>
+    <string name="field_name">Nombre</string>
+    <string name="field_category">Categoría</string>
+    <string name="field_default_unit">Unidad por Defecto</string>
+    <string name="field_is_active">Activo</string>
+    <string name="field_level">Nivel</string>
+    <string name="field_color">Color (hex)</string>
+    <string name="field_requires_action">Requiere Acción</string>
+
+    <!-- Device Category Dialogs -->
+    <string name="dialog_create_device_category">Crear Categoría de Dispositivo</string>
+    <string name="dialog_edit_device_category">Editar Categoría de Dispositivo</string>
+
+    <!-- Device Type Dialogs -->
+    <string name="dialog_create_device_type">Crear Tipo de Dispositivo</string>
+    <string name="dialog_edit_device_type">Editar Tipo de Dispositivo</string>
+
+    <!-- Alert Type Dialogs -->
+    <string name="dialog_create_alert_type">Crear Tipo de Alerta</string>
+    <string name="dialog_edit_alert_type">Editar Tipo de Alerta</string>
+
+    <!-- Alert Severity Dialogs -->
+    <string name="dialog_create_alert_severity">Crear Severidad de Alerta</string>
+    <string name="dialog_edit_alert_severity">Editar Severidad de Alerta</string>
+
+    <!-- Period Dialogs -->
+    <string name="dialog_create_period">Crear Período</string>
+    <string name="dialog_edit_period">Editar Período</string>
 </resources>

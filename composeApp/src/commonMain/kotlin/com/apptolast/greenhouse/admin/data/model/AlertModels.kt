@@ -185,3 +185,55 @@ fun AlertResponse.toDomain() = Alert(
     resolvedByUserName = resolvedByUserName,
     createdAt = createdAt
 )
+
+// ============================================
+// Catalog Request DTOs
+// ============================================
+
+/**
+ * Request DTO for creating an Alert Type.
+ * Note: Backend requires ID to be provided manually.
+ */
+@Serializable
+data class AlertTypeCreateRequest(
+    val id: Short,
+    val name: String,
+    val description: String? = null
+)
+
+/**
+ * Request DTO for updating an Alert Type.
+ */
+@Serializable
+data class AlertTypeUpdateRequest(
+    val name: String? = null,
+    val description: String? = null
+)
+
+/**
+ * Request DTO for creating an Alert Severity.
+ * Note: Backend requires ID to be provided manually.
+ */
+@Serializable
+data class AlertSeverityCreateRequest(
+    val id: Short,
+    val name: String,
+    val level: Short,
+    val description: String? = null,
+    val color: String? = null,
+    val requiresAction: Boolean = false,
+    val notificationDelayMinutes: Int = 0
+)
+
+/**
+ * Request DTO for updating an Alert Severity.
+ */
+@Serializable
+data class AlertSeverityUpdateRequest(
+    val name: String? = null,
+    val level: Short? = null,
+    val description: String? = null,
+    val color: String? = null,
+    val requiresAction: Boolean? = null,
+    val notificationDelayMinutes: Int? = null
+)

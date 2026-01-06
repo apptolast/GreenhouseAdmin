@@ -164,3 +164,23 @@ fun SettingResponse.toDomain() = Setting(
     isActive = isActive,
     createdAt = createdAt
 )
+
+// ==================== PERIOD CATALOG REQUEST DTOs ====================
+
+/**
+ * Request DTO for creating a Period.
+ * Note: Backend requires ID to be provided manually.
+ */
+@Serializable
+data class PeriodCreateRequest(
+    val id: Short,
+    val name: String
+)
+
+/**
+ * Request DTO for updating a Period.
+ */
+@Serializable
+data class PeriodUpdateRequest(
+    val name: String? = null
+)
