@@ -60,6 +60,7 @@ import greenhouseadmin.composeapp.generated.resources.button_save
 import greenhouseadmin.composeapp.generated.resources.catalog_empty_message
 import greenhouseadmin.composeapp.generated.resources.dialog_create_alert_severity
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_alert_severity
+import greenhouseadmin.composeapp.generated.resources.error_level_invalid
 import greenhouseadmin.composeapp.generated.resources.field_color
 import greenhouseadmin.composeapp.generated.resources.field_level
 import greenhouseadmin.composeapp.generated.resources.field_name
