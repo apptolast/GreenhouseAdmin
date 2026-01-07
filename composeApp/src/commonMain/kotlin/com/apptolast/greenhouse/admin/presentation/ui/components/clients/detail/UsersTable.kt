@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.User
 import com.apptolast.greenhouse.admin.data.model.UserRole
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
@@ -42,8 +43,6 @@ import greenhouseadmin.composeapp.generated.resources.header_email
 import greenhouseadmin.composeapp.generated.resources.header_role
 import greenhouseadmin.composeapp.generated.resources.header_status
 import greenhouseadmin.composeapp.generated.resources.header_username
-import greenhouseadmin.composeapp.generated.resources.status_active
-import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -177,8 +176,8 @@ private fun UserTableRow(
             overflow = TextOverflow.Ellipsis
         )
 
-        // STATUS
-        StatusBadge(
+        // STATUS - Using StatusChip
+        StatusChip(
             isActive = user.isActive,
             modifier = Modifier.weight(0.8f)
         )
@@ -210,47 +209,6 @@ private fun UserTableRow(
                     modifier = Modifier.size(18.dp)
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun StatusBadge(
-    isActive: Boolean,
-    modifier: Modifier = Modifier
-) {
-    val backgroundColor = if (isActive) {
-        Color(0xFF4CAF50).copy(alpha = 0.15f)
-    } else {
-        Color(0xFFF44336).copy(alpha = 0.15f)
-    }
-    val textColor = if (isActive) {
-        Color(0xFF4CAF50)
-    } else {
-        Color(0xFFF44336)
-    }
-    val statusText = if (isActive) {
-        stringResource(Res.string.status_active)
-    } else {
-        stringResource(Res.string.status_inactive)
-    }
-
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(4.dp))
-                .background(backgroundColor)
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-            Text(
-                text = statusText,
-                style = MaterialTheme.typography.labelSmall,
-                color = textColor,
-                fontWeight = FontWeight.Medium
-            )
         }
     }
 }

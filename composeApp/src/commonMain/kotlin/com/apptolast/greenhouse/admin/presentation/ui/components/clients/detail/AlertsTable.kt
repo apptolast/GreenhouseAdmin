@@ -34,6 +34,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Alert
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.SeverityChip
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
@@ -45,6 +48,7 @@ import greenhouseadmin.composeapp.generated.resources.alert_resolved
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_date
 import greenhouseadmin.composeapp.generated.resources.header_greenhouse
+import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_message
 import greenhouseadmin.composeapp.generated.resources.header_severity
 import greenhouseadmin.composeapp.generated.resources.header_status
@@ -55,6 +59,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Table displaying list of alerts with headers and rows.
+ * Columns: ID | MESSAGE | GREENHOUSE | TYPE | SEVERITY | STATUS | DATE | ACTIONS
  */
 @Composable
 fun AlertsTable(
@@ -63,6 +68,7 @@ fun AlertsTable(
     onDeleteAlert: (Alert) -> Unit = {},
     onResolveAlert: (Alert) -> Unit = {},
     onReopenAlert: (Alert) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -84,7 +90,8 @@ fun AlertsTable(
                     onEdit = { onEditAlert(alert) },
                     onDelete = { onDeleteAlert(alert) },
                     onResolve = { onResolveAlert(alert) },
-                    onReopen = { onReopenAlert(alert) }
+                    onReopen = { onReopenAlert(alert) },
+                    onCopyId = { onCopyId(alert.id) }
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
@@ -101,16 +108,22 @@ private fun AlertsTableHeader(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
+            text = stringResource(Res.string.header_id),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
             text = stringResource(Res.string.header_message),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(1.3f)
         )
         Text(
             text = stringResource(Res.string.header_greenhouse),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.9f)
         )
         Text(
             text = stringResource(Res.string.header_type),
@@ -153,9 +166,12 @@ private fun AlertTableRow(
     onDelete: () -> Unit,
     onResolve: () -> Unit,
     onReopen: () -> Unit,
+    onCopyId: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val notAssignedText = stringResource(Res.string.label_not_assigned)
+    val activeText = stringResource(Res.string.alert_active)
+    val resolvedText = stringResource(Res.string.alert_resolved)
 
     Row(
         modifier = modifier
@@ -163,17 +179,24 @@ private fun AlertTableRow(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // ID - Copyable
+        CopyableIdCell(
+            id = alert.id,
+            onCopyId = onCopyId,
+            modifier = Modifier.weight(1f)
+        )
+
         // MESSAGE with avatar
         Row(
-            modifier = Modifier.weight(1.5f),
+            modifier = Modifier.weight(1.3f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AlertAvatar(
                 initials = alert.initials,
                 severityLevel = alert.severityLevel,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(32.dp)
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = alert.message,
                 style = MaterialTheme.typography.bodyMedium,
@@ -189,7 +212,7 @@ private fun AlertTableRow(
             text = alert.greenhouseName ?: notAssignedText,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.9f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -204,16 +227,18 @@ private fun AlertTableRow(
             overflow = TextOverflow.Ellipsis
         )
 
-        // SEVERITY
-        AlertSeverityBadge(
-            severityName = alert.severityName,
-            severityLevel = alert.severityLevel,
+        // SEVERITY - Using new SeverityChip
+        SeverityChip(
+            name = alert.severityName,
+            level = alert.severityLevel,
             modifier = Modifier.weight(0.8f)
         )
 
-        // STATUS (Resolved/Active)
-        AlertResolvedBadge(
-            isResolved = alert.isResolved,
+        // STATUS - Using new StatusChip (inverted: resolved=active, active=inactive)
+        StatusChip(
+            isActive = !alert.isResolved,
+            activeText = activeText,
+            inactiveText = resolvedText,
             modifier = Modifier.weight(0.8f)
         )
 
@@ -323,71 +348,6 @@ fun AlertAvatar(
             style = MaterialTheme.typography.labelMedium,
             color = Color.White,
             fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-/**
- * Severity badge for alerts using API data.
- */
-@Composable
-fun AlertSeverityBadge(
-    severityName: String?,
-    severityLevel: Short?,
-    modifier: Modifier = Modifier
-) {
-    val notAssignedText = stringResource(Res.string.label_not_assigned)
-    val textColor = getSeverityColor(severityLevel)
-    val backgroundColor = textColor.copy(alpha = 0.15f)
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Text(
-            text = severityName ?: notAssignedText,
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-/**
- * Badge showing resolved/active status.
- */
-@Composable
-fun AlertResolvedBadge(
-    isResolved: Boolean,
-    modifier: Modifier = Modifier
-) {
-    val (backgroundColor, textColor, textRes) = if (isResolved) {
-        Triple(
-            Color(0xFF4CAF50).copy(alpha = 0.15f),
-            Color(0xFF4CAF50),
-            Res.string.alert_resolved
-        )
-    } else {
-        Triple(
-            Color(0xFFF44336).copy(alpha = 0.15f),
-            Color(0xFFF44336),
-            Res.string.alert_active
-        )
-    }
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Text(
-            text = stringResource(textRes),
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor,
-            fontWeight = FontWeight.Medium
         )
     }
 }

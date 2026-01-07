@@ -1,8 +1,6 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,8 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,6 +50,7 @@ import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DeviceTypeFormMode
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
@@ -76,8 +73,6 @@ import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_name
 import greenhouseadmin.composeapp.generated.resources.header_status
 import greenhouseadmin.composeapp.generated.resources.settings_tab_device_types
-import greenhouseadmin.composeapp.generated.resources.status_active
-import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -261,10 +256,10 @@ private fun DeviceTypesTable(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(0.8f)
                     )
-                    StatusBadge(
-                        isActive = true,
+                    StatusChip(
+                        isActive = true, // DeviceCatalogType doesn't have isActive in domain model
                         modifier = Modifier.weight(0.6f)
-                    ) // DeviceCatalogType doesn't have isActive in domain model
+                    )
                     Row(modifier = Modifier.width(80.dp), horizontalArrangement = Arrangement.Center) {
                         IconButton(onClick = { onEdit(type) }) {
                             Icon(
@@ -284,28 +279,6 @@ private fun DeviceTypesTable(
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
-        }
-    }
-}
-
-@Composable
-private fun StatusBadge(isActive: Boolean, modifier: Modifier = Modifier) {
-    val backgroundColor = if (isActive) Color(0xFF4CAF50).copy(alpha = 0.15f) else Color(0xFFF44336).copy(alpha = 0.15f)
-    val textColor = if (isActive) Color(0xFF4CAF50) else Color(0xFFF44336)
-    val statusText =
-        if (isActive) stringResource(Res.string.status_active) else stringResource(Res.string.status_inactive)
-
-    Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
-        Box(
-            modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(backgroundColor)
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-            Text(
-                text = statusText,
-                style = MaterialTheme.typography.labelSmall,
-                color = textColor,
-                fontWeight = FontWeight.Medium
-            )
         }
     }
 }

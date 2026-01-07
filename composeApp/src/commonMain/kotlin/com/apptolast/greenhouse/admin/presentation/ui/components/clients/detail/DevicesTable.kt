@@ -2,18 +2,14 @@ package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
@@ -26,20 +22,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.apptolast.greenhouse.admin.data.model.Device
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
-import greenhouseadmin.composeapp.generated.resources.copy_id
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_category
 import greenhouseadmin.composeapp.generated.resources.header_id
@@ -47,8 +40,6 @@ import greenhouseadmin.composeapp.generated.resources.header_name
 import greenhouseadmin.composeapp.generated.resources.header_status
 import greenhouseadmin.composeapp.generated.resources.header_type
 import greenhouseadmin.composeapp.generated.resources.header_unit
-import greenhouseadmin.composeapp.generated.resources.status_active
-import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -170,7 +161,7 @@ private fun DeviceTableRow(
     device: Device,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
-    onCopyId: () -> Unit,
+    onCopyId: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -179,32 +170,12 @@ private fun DeviceTableRow(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // ID - Full UUID with monospace font, smaller size to fit, with copy button
-        Row(
-            modifier = Modifier.weight(1.2f),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = device.id,
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                fontFamily = FontFamily.Monospace,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            IconButton(
-                onClick = onCopyId,
-                modifier = Modifier.size(24.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ContentCopy,
-                    contentDescription = stringResource(Res.string.copy_id),
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                )
-            }
-        }
+        // ID - Copyable UUID
+        CopyableIdCell(
+            id = device.id,
+            onCopyId = onCopyId,
+            modifier = Modifier.weight(1.2f)
+        )
 
         // NAME - Device name (or empty if not set)
         Text(
@@ -247,8 +218,8 @@ private fun DeviceTableRow(
             overflow = TextOverflow.Ellipsis
         )
 
-        // STATUS - Dot indicator with text
-        DeviceStatusIndicator(
+        // STATUS - Status chip
+        StatusChip(
             isActive = device.isActive,
             modifier = Modifier.weight(0.8f)
         )
@@ -281,54 +252,6 @@ private fun DeviceTableRow(
                 )
             }
         }
-    }
-}
-
-/**
- * Status indicator with colored dot and text.
- */
-@Composable
-fun DeviceStatusIndicator(
-    isActive: Boolean,
-    modifier: Modifier = Modifier
-) {
-    val dotColor = if (isActive) {
-        Color(0xFF00E676) // Green
-    } else {
-        Color(0xFFFF5252) // Red
-    }
-
-    val textRes = if (isActive) {
-        Res.string.status_active
-    } else {
-        Res.string.status_inactive
-    }
-
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
-    ) {
-        // Dot indicator
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(dotColor)
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Text(
-            text = stringResource(textRes),
-            style = MaterialTheme.typography.bodySmall,
-            color = if (isActive) {
-                Color(0xFF00E676)
-            } else {
-                MaterialTheme.colorScheme.error
-            },
-            fontWeight = FontWeight.Medium
-        )
     }
 }
 
@@ -384,14 +307,3 @@ private fun DevicesTablePreview() {
     }
 }
 
-@Preview
-@Composable
-private fun DeviceStatusIndicatorPreview() {
-    GreenhouseAdminTheme {
-        Column {
-            DeviceStatusIndicator(isActive = true)
-            Spacer(modifier = Modifier.size(8.dp))
-            DeviceStatusIndicator(isActive = false)
-        }
-    }
-}

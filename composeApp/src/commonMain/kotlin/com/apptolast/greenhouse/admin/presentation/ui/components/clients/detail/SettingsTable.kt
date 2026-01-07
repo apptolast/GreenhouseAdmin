@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,29 +33,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Setting
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
+import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_parameter
 import greenhouseadmin.composeapp.generated.resources.header_period
 import greenhouseadmin.composeapp.generated.resources.header_range
 import greenhouseadmin.composeapp.generated.resources.header_status
-import greenhouseadmin.composeapp.generated.resources.status_active
-import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Table displaying list of settings with headers and rows.
- * New structure: PARAMETER | PERIOD | RANGE | STATUS | ACTIONS
+ * Structure: ID | PARAMETER | PERIOD | RANGE | STATUS | ACTIONS
  */
 @Composable
 fun SettingsTable(
     settings: List<Setting>,
     onEditSetting: (Setting) -> Unit = {},
     onDeleteSetting: (Setting) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -74,7 +77,8 @@ fun SettingsTable(
                 SettingTableRow(
                     setting = setting,
                     onEdit = { onEditSetting(setting) },
-                    onDelete = { onDeleteSetting(setting) }
+                    onDelete = { onDeleteSetting(setting) },
+                    onCopyId = onCopyId
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
@@ -88,32 +92,38 @@ private fun SettingsTableHeader(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
         Text(
-            text = stringResource(Res.string.header_parameter),
+            text = stringResource(Res.string.header_id),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
         Text(
-            text = stringResource(Res.string.header_period),
+            text = stringResource(Res.string.header_parameter),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.8f)
         )
         Text(
+            text = stringResource(Res.string.header_period),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.6f)
+        )
+        Text(
             text = stringResource(Res.string.header_range),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.6f)
         )
         Text(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.6f),
-            textAlign = TextAlign.Center
+            modifier = Modifier.weight(1f)
         )
         Text(
             text = stringResource(Res.string.header_actions),
@@ -130,27 +140,33 @@ private fun SettingTableRow(
     setting: Setting,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    onCopyId: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val activeText = stringResource(Res.string.status_active)
-    val inactiveText = stringResource(Res.string.status_inactive)
-
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
+        // ID - Copyable
+        CopyableIdCell(
+            id = setting.id,
+            onCopyId = onCopyId,
+            modifier = Modifier.weight(1f)
+        )
+
         // PARAMETER with avatar
         Row(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.8f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SettingAvatar(
-                initials = setting.initials,
-                modifier = Modifier.size(36.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
+//            SettingAvatar(
+//                initials = setting.initials,
+//                modifier = Modifier.size(36.dp)
+//            )
+//            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = setting.displayName,
                 style = MaterialTheme.typography.bodyMedium,
@@ -162,34 +178,26 @@ private fun SettingTableRow(
         }
 
         // PERIOD badge
-        Box(
-            modifier = Modifier.weight(0.8f),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            PeriodBadge(periodName = setting.periodDisplayName)
-        }
+        PeriodBadge(
+            periodName = setting.periodDisplayName,
+            modifier = Modifier.weight(0.6f).wrapContentWidth(align = Alignment.Start),
+        )
 
         // RANGE
         Text(
             text = setting.rangeDisplay,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.6f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
 
-        // STATUS badge
-        Box(
-            modifier = Modifier.weight(0.6f),
-            contentAlignment = Alignment.Center
-        ) {
-            SettingStatusBadge(
-                isActive = setting.isActive,
-                activeText = activeText,
-                inactiveText = inactiveText
-            )
-        }
+        // STATUS - Using StatusChip
+        StatusChip(
+            isActive = setting.isActive,
+            modifier = Modifier.weight(1f).wrapContentWidth(align = Alignment.Start)
+        )
 
         // ACTIONS
         Row(
@@ -267,58 +275,14 @@ private fun PeriodBadge(
     }
 
     Box(
-        modifier = modifier
+        modifier = modifier.wrapContentWidth()
             .clip(RoundedCornerShape(4.dp))
             .background(backgroundColor)
             .padding(horizontal = 8.dp, vertical = 4.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.CenterStart
     ) {
         Text(
             text = periodName,
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-/**
- * Badge component for displaying active/inactive status.
- */
-@Composable
-private fun SettingStatusBadge(
-    isActive: Boolean,
-    activeText: String,
-    inactiveText: String,
-    modifier: Modifier = Modifier
-) {
-    val backgroundColor = if (isActive) {
-        Color(0xFF00E676).copy(alpha = 0.15f)
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
-    val textColor = if (isActive) {
-        Color(0xFF00E676)
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .clip(CircleShape)
-                .background(textColor)
-        )
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(
-            text = if (isActive) activeText else inactiveText,
             style = MaterialTheme.typography.labelSmall,
             color = textColor,
             fontWeight = FontWeight.Medium
