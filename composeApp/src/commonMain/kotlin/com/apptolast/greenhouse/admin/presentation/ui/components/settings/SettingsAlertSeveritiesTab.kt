@@ -312,7 +312,7 @@ private fun AlertSeverityFormDialog(
                     modifier = Modifier.fillMaxWidth(),
                     isError = level.isNotBlank() && level.toShortOrNull() == null,
                     supportingText = if (level.isNotBlank() && level.toShortOrNull() == null) {
-                        { Text("Debe ser un número válido (0-32767)") }
+                        { Text(stringResource(Res.string.error_level_invalid)) }
                     } else null
                 )
                 Spacer(modifier = Modifier.height(16.dp))

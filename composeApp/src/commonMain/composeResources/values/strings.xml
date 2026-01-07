@@ -424,4 +424,7 @@
     <!-- Period Dialogs -->
     <string name="dialog_create_period">Create Period</string>
     <string name="dialog_edit_period">Edit Period</string>
+
+    <!-- Validation Messages -->
+    <string name="error_level_invalid">Must be a valid number (0-32767)</string>
 </resources>

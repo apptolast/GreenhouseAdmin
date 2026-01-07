@@ -3,8 +3,10 @@ package com.apptolast.greenhouse.admin.presentation.ui.components.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -116,10 +118,11 @@ private fun TabItem(
 ) {
     val tabText = getTabText(tab)
 
-    Box(
+    Column(
         modifier = modifier
             .clickable { onClick() }
-            .padding(vertical = 8.dp)
+            .padding(vertical = 8.dp, horizontal = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = tabText,
@@ -131,11 +134,10 @@ private fun TabItem(
             }
         )
         if (isSelected) {
+            Spacer(modifier = Modifier.height(4.dp))
             Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(top = 4.dp)
-                    .width(tabText.length.dp * 8)
+                    .fillMaxWidth()
                     .height(2.dp)
                     .background(MaterialTheme.colorScheme.primary)
             )
