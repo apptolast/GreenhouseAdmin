@@ -210,12 +210,6 @@ private fun DeviceTypesTable(
                     modifier = Modifier.weight(0.8f)
                 )
                 Text(
-                    stringResource(Res.string.header_status),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(0.6f)
-                )
-                Text(
                     stringResource(Res.string.header_actions),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -261,10 +255,6 @@ private fun DeviceTypesTable(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(0.8f)
                     )
-                    StatusBadge(
-                        isActive = true,
-                        modifier = Modifier.weight(0.6f)
-                    ) // DeviceCatalogType doesn't have isActive in domain model
                     Row(modifier = Modifier.width(80.dp), horizontalArrangement = Arrangement.Center) {
                         IconButton(onClick = { onEdit(type) }) {
                             Icon(

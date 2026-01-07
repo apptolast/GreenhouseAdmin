@@ -10,6 +10,7 @@ import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
 import com.apptolast.greenhouse.admin.data.model.Period
 import com.apptolast.greenhouse.admin.domain.repository.AuthRepository
 import com.apptolast.greenhouse.admin.domain.repository.CatalogRepository
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -164,13 +165,21 @@ class SettingsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isCatalogsLoading = true, catalogsError = null) }
 
-            // Load all catalogs in parallel
-            val categoriesResult = catalogRepository.getDeviceCategories()
-            val typesResult = catalogRepository.getDeviceTypes()
-            val unitsResult = catalogRepository.getDeviceUnits()
-            val alertTypesResult = catalogRepository.getAlertTypes()
-            val severitiesResult = catalogRepository.getAlertSeverities()
-            val periodsResult = catalogRepository.getPeriods()
+            // Load all catalogs in parallel using async
+            val categoriesDeferred = async { catalogRepository.getDeviceCategories() }
+            val typesDeferred = async { catalogRepository.getDeviceTypes() }
+            val unitsDeferred = async { catalogRepository.getDeviceUnits() }
+            val alertTypesDeferred = async { catalogRepository.getAlertTypes() }
+            val severitiesDeferred = async { catalogRepository.getAlertSeverities() }
+            val periodsDeferred = async { catalogRepository.getPeriods() }
+
+            // Await all results
+            val categoriesResult = categoriesDeferred.await()
+            val typesResult = typesDeferred.await()
+            val unitsResult = unitsDeferred.await()
+            val alertTypesResult = alertTypesDeferred.await()
+            val severitiesResult = severitiesDeferred.await()
+            val periodsResult = periodsDeferred.await()
 
             _uiState.update { state ->
                 state.copy(
@@ -224,7 +233,8 @@ class SettingsViewModel(
         _uiState.update {
             it.copy(
                 showDeleteDeviceCategoryConfirmation = false,
-                deviceCategoryToDelete = null
+                deviceCategoryToDelete = null,
+                deleteDeviceCategoryError = null
             )
         }
     }
@@ -263,7 +273,7 @@ class SettingsViewModel(
         val categoryToDelete = _uiState.value.deviceCategoryToDelete ?: return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isDeletingDeviceCategory = true) }
+            _uiState.update { it.copy(isDeletingDeviceCategory = true, deleteDeviceCategoryError = null) }
 
             catalogRepository.deleteDeviceCategory(categoryToDelete.id)
                 .onSuccess {
@@ -271,17 +281,17 @@ class SettingsViewModel(
                         it.copy(
                             isDeletingDeviceCategory = false,
                             showDeleteDeviceCategoryConfirmation = false,
-                            deviceCategoryToDelete = null
+                            deviceCategoryToDelete = null,
+                            deleteDeviceCategoryError = null
                         )
                     }
                     loadDeviceCategories()
                 }
-                .onFailure {
+                .onFailure { error ->
                     _uiState.update {
                         it.copy(
                             isDeletingDeviceCategory = false,
-                            showDeleteDeviceCategoryConfirmation = false,
-                            deviceCategoryToDelete = null
+                            deleteDeviceCategoryError = error.message ?: "Failed to delete device category"
                         )
                     }
                 }
@@ -331,7 +341,8 @@ class SettingsViewModel(
         _uiState.update {
             it.copy(
                 showDeleteDeviceTypeConfirmation = false,
-                deviceTypeToDelete = null
+                deviceTypeToDelete = null,
+                deleteDeviceTypeError = null
             )
         }
     }
@@ -392,7 +403,7 @@ class SettingsViewModel(
         val typeToDelete = _uiState.value.deviceTypeToDelete ?: return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isDeletingDeviceType = true) }
+            _uiState.update { it.copy(isDeletingDeviceType = true, deleteDeviceTypeError = null) }
 
             catalogRepository.deleteDeviceType(typeToDelete.id)
                 .onSuccess {
@@ -400,17 +411,17 @@ class SettingsViewModel(
                         it.copy(
                             isDeletingDeviceType = false,
                             showDeleteDeviceTypeConfirmation = false,
-                            deviceTypeToDelete = null
+                            deviceTypeToDelete = null,
+                            deleteDeviceTypeError = null
                         )
                     }
                     loadDeviceTypes()
                 }
-                .onFailure {
+                .onFailure { error ->
                     _uiState.update {
                         it.copy(
                             isDeletingDeviceType = false,
-                            showDeleteDeviceTypeConfirmation = false,
-                            deviceTypeToDelete = null
+                            deleteDeviceTypeError = error.message ?: "Failed to delete device type"
                         )
                     }
                 }
@@ -474,7 +485,8 @@ class SettingsViewModel(
         _uiState.update {
             it.copy(
                 showDeleteAlertTypeConfirmation = false,
-                alertTypeToDelete = null
+                alertTypeToDelete = null,
+                deleteAlertTypeError = null
             )
         }
     }
@@ -513,7 +525,7 @@ class SettingsViewModel(
         val typeToDelete = _uiState.value.alertTypeToDelete ?: return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isDeletingAlertType = true) }
+            _uiState.update { it.copy(isDeletingAlertType = true, deleteAlertTypeError = null) }
 
             catalogRepository.deleteAlertType(typeToDelete.id)
                 .onSuccess {
@@ -521,17 +533,17 @@ class SettingsViewModel(
                         it.copy(
                             isDeletingAlertType = false,
                             showDeleteAlertTypeConfirmation = false,
-                            alertTypeToDelete = null
+                            alertTypeToDelete = null,
+                            deleteAlertTypeError = null
                         )
                     }
                     loadAlertTypes()
                 }
-                .onFailure {
+                .onFailure { error ->
                     _uiState.update {
                         it.copy(
                             isDeletingAlertType = false,
-                            showDeleteAlertTypeConfirmation = false,
-                            alertTypeToDelete = null
+                            deleteAlertTypeError = error.message ?: "Failed to delete alert type"
                         )
                     }
                 }
@@ -581,7 +593,8 @@ class SettingsViewModel(
         _uiState.update {
             it.copy(
                 showDeleteAlertSeverityConfirmation = false,
-                alertSeverityToDelete = null
+                alertSeverityToDelete = null,
+                deleteAlertSeverityError = null
             )
         }
     }
@@ -636,7 +649,7 @@ class SettingsViewModel(
         val severityToDelete = _uiState.value.alertSeverityToDelete ?: return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isDeletingAlertSeverity = true) }
+            _uiState.update { it.copy(isDeletingAlertSeverity = true, deleteAlertSeverityError = null) }
 
             catalogRepository.deleteAlertSeverity(severityToDelete.id)
                 .onSuccess {
@@ -644,17 +657,17 @@ class SettingsViewModel(
                         it.copy(
                             isDeletingAlertSeverity = false,
                             showDeleteAlertSeverityConfirmation = false,
-                            alertSeverityToDelete = null
+                            alertSeverityToDelete = null,
+                            deleteAlertSeverityError = null
                         )
                     }
                     loadAlertSeverities()
                 }
-                .onFailure {
+                .onFailure { error ->
                     _uiState.update {
                         it.copy(
                             isDeletingAlertSeverity = false,
-                            showDeleteAlertSeverityConfirmation = false,
-                            alertSeverityToDelete = null
+                            deleteAlertSeverityError = error.message ?: "Failed to delete alert severity"
                         )
                     }
                 }
@@ -704,7 +717,8 @@ class SettingsViewModel(
         _uiState.update {
             it.copy(
                 showDeletePeriodConfirmation = false,
-                periodToDelete = null
+                periodToDelete = null,
+                deletePeriodError = null
             )
         }
     }
@@ -743,7 +757,7 @@ class SettingsViewModel(
         val periodToDelete = _uiState.value.periodToDelete ?: return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isDeletingPeriod = true) }
+            _uiState.update { it.copy(isDeletingPeriod = true, deletePeriodError = null) }
 
             catalogRepository.deletePeriod(periodToDelete.id)
                 .onSuccess {
@@ -751,17 +765,17 @@ class SettingsViewModel(
                         it.copy(
                             isDeletingPeriod = false,
                             showDeletePeriodConfirmation = false,
-                            periodToDelete = null
+                            periodToDelete = null,
+                            deletePeriodError = null
                         )
                     }
                     loadPeriods()
                 }
-                .onFailure {
+                .onFailure { error ->
                     _uiState.update {
                         it.copy(
                             isDeletingPeriod = false,
-                            showDeletePeriodConfirmation = false,
-                            periodToDelete = null
+                            deletePeriodError = error.message ?: "Failed to delete period"
                         )
                     }
                 }
@@ -807,6 +821,7 @@ data class SettingsUiState(
     val showDeleteDeviceCategoryConfirmation: Boolean = false,
     val deviceCategoryToDelete: DeviceCatalogCategory? = null,
     val isDeletingDeviceCategory: Boolean = false,
+    val deleteDeviceCategoryError: String? = null,
 
     // Device Types state
     val deviceTypes: List<DeviceCatalogType> = emptyList(),
@@ -817,6 +832,7 @@ data class SettingsUiState(
     val showDeleteDeviceTypeConfirmation: Boolean = false,
     val deviceTypeToDelete: DeviceCatalogType? = null,
     val isDeletingDeviceType: Boolean = false,
+    val deleteDeviceTypeError: String? = null,
 
     // Device Units state (read-only)
     val deviceUnits: List<DeviceCatalogUnit> = emptyList(),
@@ -830,6 +846,7 @@ data class SettingsUiState(
     val showDeleteAlertTypeConfirmation: Boolean = false,
     val alertTypeToDelete: AlertType? = null,
     val isDeletingAlertType: Boolean = false,
+    val deleteAlertTypeError: String? = null,
 
     // Alert Severities state
     val alertSeverities: List<AlertSeverityCatalog> = emptyList(),
@@ -840,6 +857,7 @@ data class SettingsUiState(
     val showDeleteAlertSeverityConfirmation: Boolean = false,
     val alertSeverityToDelete: AlertSeverityCatalog? = null,
     val isDeletingAlertSeverity: Boolean = false,
+    val deleteAlertSeverityError: String? = null,
 
     // Periods state
     val periods: List<Period> = emptyList(),
@@ -849,7 +867,8 @@ data class SettingsUiState(
     val submitPeriodError: String? = null,
     val showDeletePeriodConfirmation: Boolean = false,
     val periodToDelete: Period? = null,
-    val isDeletingPeriod: Boolean = false
+    val isDeletingPeriod: Boolean = false,
+    val deletePeriodError: String? = null
 )
 
 // ==================== ENUMS AND SEALED INTERFACES ====================

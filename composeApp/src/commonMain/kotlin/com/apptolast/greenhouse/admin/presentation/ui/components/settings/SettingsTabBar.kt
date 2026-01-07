@@ -128,14 +128,15 @@ private fun TabItem(
                 MaterialTheme.colorScheme.primary
             } else {
                 MaterialTheme.colorScheme.onSurfaceVariant
-            }
+            },
+            modifier = Modifier.padding(horizontal = 8.dp)
         )
         if (isSelected) {
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(top = 4.dp)
-                    .width(tabText.length.dp * 8)
+                    .padding(top = 4.dp, start = 8.dp, end = 8.dp)
+                    .matchParentSize()
                     .height(2.dp)
                     .background(MaterialTheme.colorScheme.primary)
             )
