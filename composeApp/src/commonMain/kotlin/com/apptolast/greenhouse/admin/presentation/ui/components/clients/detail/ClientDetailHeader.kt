@@ -291,7 +291,7 @@ private fun ExpandedHeader(
 
 private object ClientDetailHeaderPreviewData {
     val sampleClient = Client(
-        id = "12345",
+        id = 12345L,
         name = "Elena Rodriguez",
         email = "elena@freshveg.com",
         phone = "+34 612 345 678",

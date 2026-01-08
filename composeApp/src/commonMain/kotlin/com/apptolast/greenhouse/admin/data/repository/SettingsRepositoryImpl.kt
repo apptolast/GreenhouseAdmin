@@ -23,23 +23,23 @@ class SettingsRepositoryImpl(
 
     // ==================== CRUD ====================
 
-    override suspend fun getSettingsByTenantId(tenantId: String): Result<List<Setting>> = runCatching {
+    override suspend fun getSettingsByTenantId(tenantId: Long): Result<List<Setting>> = runCatching {
         settingsApi.getSettings(tenantId).map { it.toDomain() }
     }
 
-    override suspend fun createSetting(tenantId: String, request: SettingCreateRequest): Result<Setting> = runCatching {
+    override suspend fun createSetting(tenantId: Long, request: SettingCreateRequest): Result<Setting> = runCatching {
         settingsApi.createSetting(tenantId, request).toDomain()
     }
 
     override suspend fun updateSetting(
-        tenantId: String,
-        settingId: String,
+        tenantId: Long,
+        settingId: Long,
         request: SettingUpdateRequest
     ): Result<Setting> = runCatching {
         settingsApi.updateSetting(tenantId, settingId, request).toDomain()
     }
 
-    override suspend fun deleteSetting(tenantId: String, settingId: String): Result<Unit> = runCatching {
+    override suspend fun deleteSetting(tenantId: Long, settingId: Long): Result<Unit> = runCatching {
         settingsApi.deleteSetting(tenantId, settingId)
     }
 }

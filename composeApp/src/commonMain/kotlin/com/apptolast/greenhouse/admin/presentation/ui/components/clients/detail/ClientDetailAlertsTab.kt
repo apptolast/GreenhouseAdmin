@@ -53,6 +53,7 @@ fun ClientDetailAlertsTab(
     onDeleteAlert: (Alert) -> Unit = {},
     onResolveAlert: (Alert) -> Unit = {},
     onReopenAlert: (Alert) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -125,12 +126,13 @@ fun ClientDetailAlertsTab(
             }
 
             else -> {
-                AlertsTable(
+                AlertsTableOrCards(
                     alerts = alerts,
                     onEditAlert = onEditAlert,
                     onDeleteAlert = onDeleteAlert,
                     onResolveAlert = onResolveAlert,
-                    onReopenAlert = onReopenAlert
+                    onReopenAlert = onReopenAlert,
+                    onCopyId = onCopyId
                 )
             }
         }
@@ -164,9 +166,9 @@ private fun EmptyAlertsContent(modifier: Modifier = Modifier) {
 private object ClientDetailAlertsTabPreviewData {
     val sampleAlerts = listOf(
         Alert(
-            id = "1",
-            tenantId = "t1",
-            greenhouseId = "g1",
+            id = 1L,
+            tenantId = 1L,
+            greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
             alertTypeId = 1,
             alertTypeName = "Temperature",
@@ -180,9 +182,9 @@ private object ClientDetailAlertsTabPreviewData {
             createdAt = "2024-01-15T10:30:00Z"
         ),
         Alert(
-            id = "2",
-            tenantId = "t1",
-            greenhouseId = "g1",
+            id = 2L,
+            tenantId = 1L,
+            greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
             alertTypeId = 2,
             alertTypeName = "Humidity",

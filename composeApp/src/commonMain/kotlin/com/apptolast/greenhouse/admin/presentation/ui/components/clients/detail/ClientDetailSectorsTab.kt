@@ -125,7 +125,7 @@ fun ClientDetailSectorsTab(
             }
 
             else -> {
-                SectorsTable(
+                SectorsTableOrCards(
                     sectors = sectors,
                     greenhouses = greenhouses,
                     onEditSector = onEditSector,
@@ -163,22 +163,22 @@ private fun EmptySectorsContent(modifier: Modifier = Modifier) {
 private object ClientDetailSectorsTabPreviewData {
     val sampleSectors = listOf(
         Sector(
-            id = "1",
-            greenhouseId = "gh1",
+            id = 1L,
+            greenhouseId = 1L,
             variety = "Tomate Cherry"
         ),
         Sector(
-            id = "2",
-            greenhouseId = "gh1",
+            id = 2L,
+            greenhouseId = 1L,
             variety = "Pimiento Rojo"
         )
     )
 
     val sampleGreenhouses = listOf(
         Greenhouse(
-            id = "gh1",
+            id = 1L,
             name = "Invernadero Principal",
-            tenantId = "client1",
+            tenantId = 1L,
             location = null,
             areaM2 = 1500.0,
             timezone = "Europe/Madrid",

@@ -124,7 +124,7 @@ fun ClientDetailUsersTab(
             }
 
             else -> {
-                UsersTable(
+                UsersTableOrCards(
                     users = users,
                     onEditUser = onEditUser,
                     onDeleteUser = onDeleteUser
@@ -161,19 +161,19 @@ private fun EmptyUsersContent(modifier: Modifier = Modifier) {
 private object ClientDetailUsersTabPreviewData {
     val sampleUsers = listOf(
         User(
-            id = "1",
+            id = 1L,
             username = "anamartinez",
             email = "ana@freshveg.com",
             role = UserRole.ADMIN,
-            tenantId = "client1",
+            tenantId = 1L,
             isActive = true
         ),
         User(
-            id = "2",
+            id = 2L,
             username = "carlosruiz",
             email = "carlos@freshveg.com",
             role = UserRole.OPERATOR,
-            tenantId = "client1",
+            tenantId = 1L,
             isActive = true
         )
     )

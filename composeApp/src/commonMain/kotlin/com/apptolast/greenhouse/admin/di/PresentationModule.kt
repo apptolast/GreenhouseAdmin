@@ -24,7 +24,7 @@ val presentationModule = module {
     viewModelOf(::ClientsViewModel)
 
     // Client Detail (with clientId parameter)
-    viewModel { (clientId: String) ->
+    viewModel { (clientId: Long) ->
         ClientDetailViewModel(clientId, get(), get(), get(), get(), get(), get(), get(), get())
     }
 

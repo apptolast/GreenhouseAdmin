@@ -19,24 +19,8 @@ class ClientsRepositoryImpl(
         tenantsApi.getAllTenants().map { it.toClient() }
     }
 
-    override suspend fun getClientById(id: String): Result<Client> = runCatching {
+    override suspend fun getClientById(id: Long): Result<Client> = runCatching {
         tenantsApi.getTenantById(id).toClient()
-    }
-
-    override suspend fun getProvinces(): Result<List<String>> = runCatching {
-        tenantsApi.getAllTenants()
-            .mapNotNull { it.province }
-            .filter { it.isNotBlank() }
-            .distinct()
-            .sorted()
-    }
-
-    override suspend fun getCountries(): Result<List<String>> = runCatching {
-        tenantsApi.getAllTenants()
-            .mapNotNull { it.country }
-            .filter { it.isNotBlank() }
-            .distinct()
-            .sorted()
     }
 
     override suspend fun createClient(client: Client): Result<Client> = runCatching {
@@ -49,7 +33,7 @@ class ClientsRepositoryImpl(
         tenantsApi.updateTenant(client.id, request).toClient()
     }
 
-    override suspend fun deleteClient(id: String): Result<Unit> = runCatching {
+    override suspend fun deleteClient(id: Long): Result<Unit> = runCatching {
         tenantsApi.deleteTenant(id)
     }
 }

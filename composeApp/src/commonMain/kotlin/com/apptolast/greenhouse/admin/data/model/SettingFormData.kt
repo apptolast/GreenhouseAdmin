@@ -5,7 +5,7 @@ package com.apptolast.greenhouse.admin.data.model
  * Manages form state for greenhouse parameter threshold configuration.
  */
 data class SettingFormData(
-    val greenhouseId: String = "",
+    val greenhouseId: Long? = null,
     val parameterId: Short? = null,
     val periodId: Short? = null,
     val minValue: String = "",
@@ -37,7 +37,7 @@ data class SettingFormData(
         val max = maxValue.toDoubleOrNull()
 
         return ValidationErrors(
-            greenhouseId = if (greenhouseId.isBlank()) "error_greenhouse_required" else null,
+            greenhouseId = if (greenhouseId == null) "error_greenhouse_required" else null,
             parameterId = if (parameterId == null) "error_parameter_required" else null,
             periodId = if (periodId == null) "error_period_required" else null,
             minMax = when {

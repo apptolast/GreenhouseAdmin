@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -55,10 +56,12 @@ fun StatsCard(
         StatCardIcon.GREENHOUSE -> Color(0xFF1B5E20).copy(alpha = 0.3f)
         StatCardIcon.DEVICES -> Color(0xFF1B5E20).copy(alpha = 0.3f)
         StatCardIcon.ALERT -> Color(0xFFFF6F00).copy(alpha = 0.3f)
+        StatCardIcon.USERS -> Color(0xFF0D47A1).copy(alpha = 0.3f)
     }
 
     val iconTint = when (statCard.icon) {
         StatCardIcon.ALERT -> Color(0xFFFFB74D)
+        StatCardIcon.USERS -> Color(0xFF42A5F5)
         else -> MaterialTheme.colorScheme.primary
     }
 
@@ -128,6 +131,7 @@ private fun getIconForStatCard(icon: StatCardIcon): ImageVector {
         StatCardIcon.GREENHOUSE -> Icons.Outlined.Home
         StatCardIcon.DEVICES -> Icons.Default.Settings
         StatCardIcon.ALERT -> Icons.Default.Notifications
+        StatCardIcon.USERS -> Icons.Default.Group
     }
 }
 

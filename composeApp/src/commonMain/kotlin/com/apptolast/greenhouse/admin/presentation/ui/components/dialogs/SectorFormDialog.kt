@@ -65,7 +65,7 @@ fun SectorFormDialog(
     greenhouses: List<Greenhouse>,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (greenhouseId: String, variety: String) -> Unit = { _, _ -> },
+    onSubmit: (greenhouseId: Long?, variety: String) -> Unit = { _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -328,16 +328,16 @@ private fun SectorFormTextField(
 
 private object SectorFormDialogPreviewData {
     val sampleSector = Sector(
-        id = "1",
-        greenhouseId = "gh1",
+        id = 1L,
+        greenhouseId = 1L,
         variety = "Tomate Cherry"
     )
 
     val sampleGreenhouses = listOf(
         Greenhouse(
-            id = "gh1",
+            id = 1L,
             name = "Invernadero Principal",
-            tenantId = "client1",
+            tenantId = 1L,
             location = null,
             areaM2 = 1500.0,
             timezone = "Europe/Madrid",
@@ -346,9 +346,9 @@ private object SectorFormDialogPreviewData {
             updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
-            id = "gh2",
+            id = 2L,
             name = "Invernadero Norte",
-            tenantId = "client1",
+            tenantId = 1L,
             location = null,
             areaM2 = 800.0,
             timezone = "Europe/Madrid",

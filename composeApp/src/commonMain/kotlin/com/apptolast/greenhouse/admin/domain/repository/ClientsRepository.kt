@@ -18,19 +18,7 @@ interface ClientsRepository {
      * @param id The client ID
      * @return Result containing Client or error
      */
-    suspend fun getClientById(id: String): Result<Client>
-
-    /**
-     * Fetches unique provinces from all clients.
-     * @return Result containing list of province strings or error
-     */
-    suspend fun getProvinces(): Result<List<String>>
-
-    /**
-     * Fetches unique countries from all clients.
-     * @return Result containing list of country strings or error
-     */
-    suspend fun getCountries(): Result<List<String>>
+    suspend fun getClientById(id: Long): Result<Client>
 
     /**
      * Creates a new client.
@@ -51,5 +39,5 @@ interface ClientsRepository {
      * @param id The client ID to delete
      * @return Result containing success or error
      */
-    suspend fun deleteClient(id: String): Result<Unit>
+    suspend fun deleteClient(id: Long): Result<Unit>
 }

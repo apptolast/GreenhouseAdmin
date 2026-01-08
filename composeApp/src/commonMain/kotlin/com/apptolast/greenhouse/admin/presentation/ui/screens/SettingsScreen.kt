@@ -1,35 +1,19 @@
 package com.apptolast.greenhouse.admin.presentation.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,32 +22,38 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.DeleteConfirmationDialog
+import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsAccountTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsActuatorStatesTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsAlertSeveritiesTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsAlertTypesTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsDeviceCategoriesTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsDeviceTypesTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsDeviceUnitsTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsPeriodsTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsTabBar
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.SettingsEvent
+import com.apptolast.greenhouse.admin.presentation.viewmodel.SettingsTab
 import com.apptolast.greenhouse.admin.presentation.viewmodel.SettingsUiState
 import com.apptolast.greenhouse.admin.presentation.viewmodel.SettingsViewModel
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.button_cancel
-import greenhouseadmin.composeapp.generated.resources.logout_button
 import greenhouseadmin.composeapp.generated.resources.logout_confirm_button
 import greenhouseadmin.composeapp.generated.resources.logout_confirmation_message
 import greenhouseadmin.composeapp.generated.resources.logout_confirmation_title
-import greenhouseadmin.composeapp.generated.resources.settings_account_section
-import greenhouseadmin.composeapp.generated.resources.settings_logged_in_as
-import greenhouseadmin.composeapp.generated.resources.settings_role
 import greenhouseadmin.composeapp.generated.resources.settings_screen_title
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * Settings screen with logout functionality.
+ * Settings screen with tabs for account and catalog management.
  * Responsive design for all screen sizes.
  */
 @Composable
@@ -93,7 +83,6 @@ private fun SettingsScreenContent(
     onEvent: (SettingsEvent) -> Unit = {}
 ) {
     val windowInfo = LocalAppWindowInfo.current
-    val scrollState = rememberScrollState()
 
     // Logout confirmation dialog
     if (uiState.showLogoutConfirmation) {
@@ -103,29 +92,87 @@ private fun SettingsScreenContent(
         )
     }
 
+    // Delete confirmation dialogs for each catalog type
+    if (uiState.showDeleteDeviceCategoryConfirmation) {
+        DeleteConfirmationDialog(
+            clientName = uiState.deviceCategoryToDelete?.name ?: "",
+            onConfirm = { onEvent(SettingsEvent.OnConfirmDeleteDeviceCategory) },
+            onDismiss = { onEvent(SettingsEvent.OnCancelDeleteDeviceCategory) },
+            isDeleting = uiState.isDeletingDeviceCategory
+        )
+    }
+
+    if (uiState.showDeleteDeviceTypeConfirmation) {
+        DeleteConfirmationDialog(
+            clientName = uiState.deviceTypeToDelete?.name ?: "",
+            onConfirm = { onEvent(SettingsEvent.OnConfirmDeleteDeviceType) },
+            onDismiss = { onEvent(SettingsEvent.OnCancelDeleteDeviceType) },
+            isDeleting = uiState.isDeletingDeviceType
+        )
+    }
+
+    if (uiState.showDeleteAlertTypeConfirmation) {
+        DeleteConfirmationDialog(
+            clientName = uiState.alertTypeToDelete?.name ?: "",
+            onConfirm = { onEvent(SettingsEvent.OnConfirmDeleteAlertType) },
+            onDismiss = { onEvent(SettingsEvent.OnCancelDeleteAlertType) },
+            isDeleting = uiState.isDeletingAlertType
+        )
+    }
+
+    if (uiState.showDeleteAlertSeverityConfirmation) {
+        DeleteConfirmationDialog(
+            clientName = uiState.alertSeverityToDelete?.name ?: "",
+            onConfirm = { onEvent(SettingsEvent.OnConfirmDeleteAlertSeverity) },
+            onDismiss = { onEvent(SettingsEvent.OnCancelDeleteAlertSeverity) },
+            isDeleting = uiState.isDeletingAlertSeverity
+        )
+    }
+
+    if (uiState.showDeletePeriodConfirmation) {
+        DeleteConfirmationDialog(
+            clientName = uiState.periodToDelete?.name ?: "",
+            onConfirm = { onEvent(SettingsEvent.OnConfirmDeletePeriod) },
+            onDismiss = { onEvent(SettingsEvent.OnCancelDeletePeriod) },
+            isDeleting = uiState.isDeletingPeriod
+        )
+    }
+
+    if (uiState.showDeleteDeviceUnitConfirmation) {
+        DeleteConfirmationDialog(
+            clientName = uiState.deviceUnitToDelete?.name ?: "",
+            onConfirm = { onEvent(SettingsEvent.OnConfirmDeleteDeviceUnit) },
+            onDismiss = { onEvent(SettingsEvent.OnCancelDeleteDeviceUnit) },
+            isDeleting = uiState.isDeletingDeviceUnit
+        )
+    }
+
+    if (uiState.showDeleteActuatorStateConfirmation) {
+        DeleteConfirmationDialog(
+            clientName = uiState.actuatorStateToDelete?.name ?: "",
+            onConfirm = { onEvent(SettingsEvent.OnConfirmDeleteActuatorState) },
+            onDismiss = { onEvent(SettingsEvent.OnCancelDeleteActuatorState) },
+            isDeleting = uiState.isDeletingActuatorState
+        )
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(
-                    horizontal = if (windowInfo.isCompact) 16.dp else 24.dp,
-                    vertical = 24.dp
-                ),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Content container with max width for large screens
+            // Header with title
             Column(
                 modifier = Modifier
-                    .widthIn(max = 600.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = if (windowInfo.isCompact) 16.dp else 24.dp,
+                        vertical = 24.dp
+                    )
             ) {
-                // Header
                 Text(
                     text = stringResource(Res.string.settings_screen_title),
                     style = MaterialTheme.typography.headlineMedium,
@@ -133,191 +180,166 @@ private fun SettingsScreenContent(
                     fontWeight = FontWeight.SemiBold
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Account Section Card
-                AccountSectionCard(
-                    username = uiState.username,
-                    roles = uiState.roles
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Logout Button at the bottom
-                LogoutButton(
-                    isLoading = uiState.isLoggingOut,
-                    onClick = { onEvent(SettingsEvent.OnLogoutClicked) },
-                    modifier = Modifier.padding(vertical = 24.dp)
+                // Tab bar
+                SettingsTabBar(
+                    selectedTab = uiState.selectedTab,
+                    onTabSelected = { tab -> onEvent(SettingsEvent.OnTabSelected(tab)) }
                 )
             }
-        }
-    }
-}
 
-@Composable
-private fun AccountSectionCard(
-    username: String,
-    roles: List<String>,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            // Section title
-            Text(
-                text = stringResource(Res.string.settings_account_section),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // User info row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // User avatar
+            // Content based on selected tab
+            if (uiState.isCatalogsLoading && uiState.selectedTab != SettingsTab.ACCOUNT) {
+                // Show loading only for catalog tabs
                 Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(32.dp)
-                    )
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
+            } else {
+                when (uiState.selectedTab) {
+                    SettingsTab.ACCOUNT -> {
+                        SettingsAccountTab(
+                            username = uiState.username,
+                            roles = uiState.roles,
+                            isLoggingOut = uiState.isLoggingOut,
+                            onLogoutClicked = { onEvent(SettingsEvent.OnLogoutClicked) }
+                        )
+                    }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                    SettingsTab.DEVICE_CATEGORIES -> {
+                        SettingsDeviceCategoriesTab(
+                            categories = uiState.deviceCategories,
+                            showDialog = uiState.showDeviceCategoryDialog,
+                            formMode = uiState.deviceCategoryFormMode,
+                            isSubmitting = uiState.isSubmittingDeviceCategory,
+                            submitError = uiState.submitDeviceCategoryError,
+                            onAddClicked = { onEvent(SettingsEvent.OnAddDeviceCategoryClicked) },
+                            onEditClicked = { onEvent(SettingsEvent.OnEditDeviceCategoryClicked(it)) },
+                            onDeleteClicked = { onEvent(SettingsEvent.OnDeleteDeviceCategoryClicked(it)) },
+                            onSubmit = { name -> onEvent(SettingsEvent.OnSubmitDeviceCategory(name)) },
+                            onDismissDialog = { onEvent(SettingsEvent.OnDismissDeviceCategoryDialog) }
+                        )
+                    }
 
-                Column(modifier = Modifier.weight(1f)) {
-                    // Username label
-                    Text(
-                        text = stringResource(Res.string.settings_logged_in_as),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    SettingsTab.DEVICE_TYPES -> {
+                        SettingsDeviceTypesTab(
+                            deviceTypes = uiState.deviceTypes,
+                            categories = uiState.deviceCategories,
+                            units = uiState.deviceUnits,
+                            showDialog = uiState.showDeviceTypeDialog,
+                            formMode = uiState.deviceTypeFormMode,
+                            isSubmitting = uiState.isSubmittingDeviceType,
+                            submitError = uiState.submitDeviceTypeError,
+                            onAddClicked = { onEvent(SettingsEvent.OnAddDeviceTypeClicked) },
+                            onEditClicked = { onEvent(SettingsEvent.OnEditDeviceTypeClicked(it)) },
+                            onDeleteClicked = { onEvent(SettingsEvent.OnDeleteDeviceTypeClicked(it)) },
+                            onActivateClicked = { onEvent(SettingsEvent.OnActivateDeviceType(it)) },
+                            onDeactivateClicked = { onEvent(SettingsEvent.OnDeactivateDeviceType(it)) },
+                            onSubmit = { name, desc, catId, unitId, dataType, minVal, maxVal, ctrlType, isActive ->
+                                onEvent(
+                                    SettingsEvent.OnSubmitDeviceType(
+                                        name, desc, catId, unitId, dataType, minVal, maxVal, ctrlType, isActive
+                                    )
+                                )
+                            },
+                            onDismissDialog = { onEvent(SettingsEvent.OnDismissDeviceTypeDialog) }
+                        )
+                    }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    SettingsTab.DEVICE_UNITS -> {
+                        SettingsDeviceUnitsTab(
+                            units = uiState.deviceUnits,
+                            showDialog = uiState.showDeviceUnitDialog,
+                            formMode = uiState.deviceUnitFormMode,
+                            isSubmitting = uiState.isSubmittingDeviceUnit,
+                            submitError = uiState.submitDeviceUnitError,
+                            onAddClicked = { onEvent(SettingsEvent.OnAddDeviceUnitClicked) },
+                            onEditClicked = { onEvent(SettingsEvent.OnEditDeviceUnitClicked(it)) },
+                            onDeleteClicked = { onEvent(SettingsEvent.OnDeleteDeviceUnitClicked(it)) },
+                            onSubmit = { symbol, name, desc, isActive ->
+                                onEvent(SettingsEvent.OnSubmitDeviceUnit(symbol, name, desc, isActive))
+                            },
+                            onDismissDialog = { onEvent(SettingsEvent.OnDismissDeviceUnitDialog) }
+                        )
+                    }
 
-                    // Username value
-                    Text(
-                        text = username.ifEmpty { "-" },
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Medium
-                    )
+                    SettingsTab.ALERT_TYPES -> {
+                        SettingsAlertTypesTab(
+                            alertTypes = uiState.alertTypes,
+                            showDialog = uiState.showAlertTypeDialog,
+                            formMode = uiState.alertTypeFormMode,
+                            isSubmitting = uiState.isSubmittingAlertType,
+                            submitError = uiState.submitAlertTypeError,
+                            onAddClicked = { onEvent(SettingsEvent.OnAddAlertTypeClicked) },
+                            onEditClicked = { onEvent(SettingsEvent.OnEditAlertTypeClicked(it)) },
+                            onDeleteClicked = { onEvent(SettingsEvent.OnDeleteAlertTypeClicked(it)) },
+                            onSubmit = { name, desc -> onEvent(SettingsEvent.OnSubmitAlertType(name, desc)) },
+                            onDismissDialog = { onEvent(SettingsEvent.OnDismissAlertTypeDialog) }
+                        )
+                    }
 
-                    if (roles.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(18.dp))
+                    SettingsTab.ALERT_SEVERITIES -> {
+                        SettingsAlertSeveritiesTab(
+                            severities = uiState.alertSeverities,
+                            showDialog = uiState.showAlertSeverityDialog,
+                            formMode = uiState.alertSeverityFormMode,
+                            isSubmitting = uiState.isSubmittingAlertSeverity,
+                            submitError = uiState.submitAlertSeverityError,
+                            onAddClicked = { onEvent(SettingsEvent.OnAddAlertSeverityClicked) },
+                            onEditClicked = { onEvent(SettingsEvent.OnEditAlertSeverityClicked(it)) },
+                            onDeleteClicked = { onEvent(SettingsEvent.OnDeleteAlertSeverityClicked(it)) },
+                            onSubmit = { name, level, desc, color, requiresAction, notifDelay ->
+                                onEvent(
+                                    SettingsEvent.OnSubmitAlertSeverity(
+                                        name, level, desc, color, requiresAction, notifDelay
+                                    )
+                                )
+                            },
+                            onDismissDialog = { onEvent(SettingsEvent.OnDismissAlertSeverityDialog) }
+                        )
+                    }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            // Role label
-                            Text(
-                                text = stringResource(Res.string.settings_role),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                    SettingsTab.PERIODS -> {
+                        SettingsPeriodsTab(
+                            periods = uiState.periods,
+                            showDialog = uiState.showPeriodDialog,
+                            formMode = uiState.periodFormMode,
+                            isSubmitting = uiState.isSubmittingPeriod,
+                            submitError = uiState.submitPeriodError,
+                            onAddClicked = { onEvent(SettingsEvent.OnAddPeriodClicked) },
+                            onEditClicked = { onEvent(SettingsEvent.OnEditPeriodClicked(it)) },
+                            onDeleteClicked = { onEvent(SettingsEvent.OnDeletePeriodClicked(it)) },
+                            onSubmit = { name -> onEvent(SettingsEvent.OnSubmitPeriod(name)) },
+                            onDismissDialog = { onEvent(SettingsEvent.OnDismissPeriodDialog) }
+                        )
+                    }
 
-                            Spacer(modifier = Modifier.width(14.dp))
-
-                            // Roles
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                roles.forEach { role ->
-                                    RoleChip(role = role)
-                                }
-                            }
-                        }
+                    SettingsTab.ACTUATOR_STATES -> {
+                        SettingsActuatorStatesTab(
+                            actuatorStates = uiState.actuatorStates,
+                            showDialog = uiState.showActuatorStateDialog,
+                            formMode = uiState.actuatorStateFormMode,
+                            isSubmitting = uiState.isSubmittingActuatorState,
+                            submitError = uiState.submitActuatorStateError,
+                            onAddClicked = { onEvent(SettingsEvent.OnAddActuatorStateClicked) },
+                            onEditClicked = { onEvent(SettingsEvent.OnEditActuatorStateClicked(it)) },
+                            onDeleteClicked = { onEvent(SettingsEvent.OnDeleteActuatorStateClicked(it)) },
+                            onSubmit = { name, desc, isOperational, displayOrder, color ->
+                                onEvent(
+                                    SettingsEvent.OnSubmitActuatorState(
+                                        name, desc, isOperational, displayOrder, color
+                                    )
+                                )
+                            },
+                            onDismissDialog = { onEvent(SettingsEvent.OnDismissActuatorStateDialog) }
+                        )
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun RoleChip(role: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-            .padding(horizontal = 12.dp, vertical = 6.dp)
-    ) {
-        Text(
-            text = role.removePrefix("ROLE_"),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-@Composable
-private fun LogoutButton(
-    isLoading: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val windowInfo = LocalAppWindowInfo.current
-
-    OutlinedButton(
-        onClick = onClick,
-        enabled = !isLoading,
-        modifier = modifier
-            .then(
-                if (windowInfo.isCompact) {
-                    Modifier.fillMaxWidth()
-                } else {
-                    Modifier.widthIn(min = 280.dp)
-                }
-            )
-            .height(52.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = Color(0xFFE53935) // Red color for logout
-        ),
-        border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
-            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFE53935).copy(alpha = 0.5f))
-        )
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(20.dp),
-                color = Color(0xFFE53935),
-                strokeWidth = 2.dp
-            )
-        } else {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = stringResource(Res.string.logout_button),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold
-        )
     }
 }
 
@@ -374,7 +396,8 @@ private fun SettingsScreenPreview() {
             SettingsScreenContent(
                 uiState = SettingsUiState(
                     username = "admin@greenhouse.com",
-                    roles = listOf("ROLE_ADMIN")
+                    roles = listOf("ROLE_ADMIN"),
+                    isCatalogsLoading = false
                 )
             )
         }
@@ -383,14 +406,15 @@ private fun SettingsScreenPreview() {
 
 @Preview
 @Composable
-private fun SettingsScreenLoadingPreview() {
+private fun SettingsScreenCatalogsTabPreview() {
     GreenhouseAdminTheme {
         ProvideAppWindowInfo {
             SettingsScreenContent(
                 uiState = SettingsUiState(
                     username = "admin@greenhouse.com",
                     roles = listOf("ROLE_ADMIN"),
-                    isLoggingOut = true
+                    selectedTab = SettingsTab.DEVICE_CATEGORIES,
+                    isCatalogsLoading = false
                 )
             )
         }

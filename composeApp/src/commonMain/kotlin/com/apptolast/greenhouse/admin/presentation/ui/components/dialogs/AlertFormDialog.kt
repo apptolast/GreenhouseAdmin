@@ -81,7 +81,7 @@ fun AlertFormDialog(
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (greenhouseId: String, alertTypeId: Short?, severityId: Short?, message: String) -> Unit = { _, _, _, _ -> },
+    onSubmit: (greenhouseId: Long?, alertTypeId: Short?, severityId: Short?, message: String) -> Unit = { _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -519,8 +519,8 @@ private fun AlertFormDialogCreatePreview() {
         AlertFormDialog(
             mode = AlertFormMode.Create,
             greenhouses = listOf(
-                Greenhouse(id = "1", tenantId = "t1", name = "Greenhouse A"),
-                Greenhouse(id = "2", tenantId = "t1", name = "Greenhouse B")
+                Greenhouse(id = 1L, tenantId = 1L, name = "Greenhouse A"),
+                Greenhouse(id = 2L, tenantId = 1L, name = "Greenhouse B")
             ),
             alertTypes = listOf(
                 AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),
@@ -563,9 +563,9 @@ private fun AlertFormDialogEditPreview() {
         AlertFormDialog(
             mode = AlertFormMode.Edit(
                 Alert(
-                    id = "1",
-                    tenantId = "t1",
-                    greenhouseId = "1",
+                    id = 1L,
+                    tenantId = 1L,
+                    greenhouseId = 1L,
                     greenhouseName = "Greenhouse A",
                     alertTypeId = 1,
                     alertTypeName = "Temperature",
@@ -580,8 +580,8 @@ private fun AlertFormDialogEditPreview() {
                 )
             ),
             greenhouses = listOf(
-                Greenhouse(id = "1", tenantId = "t1", name = "Greenhouse A"),
-                Greenhouse(id = "2", tenantId = "t1", name = "Greenhouse B")
+                Greenhouse(id = 1L, tenantId = 1L, name = "Greenhouse A"),
+                Greenhouse(id = 2L, tenantId = 1L, name = "Greenhouse B")
             ),
             alertTypes = listOf(
                 AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),

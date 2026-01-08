@@ -24,21 +24,21 @@ class DevicesApiService(private val httpClient: HttpClient) {
     /**
      * Get all devices for a specific tenant.
      */
-    suspend fun getDevicesByTenantId(tenantId: String): List<DeviceResponse> {
+    suspend fun getDevicesByTenantId(tenantId: Long): List<DeviceResponse> {
         return httpClient.get("tenants/$tenantId/devices").body()
     }
 
     /**
      * Get a specific device by ID within a tenant.
      */
-    suspend fun getDeviceById(tenantId: String, deviceId: String): DeviceResponse {
+    suspend fun getDeviceById(tenantId: Long, deviceId: Long): DeviceResponse {
         return httpClient.get("tenants/$tenantId/devices/$deviceId").body()
     }
 
     /**
      * Create a new device for a tenant.
      */
-    suspend fun createDevice(tenantId: String, request: DeviceCreateRequest): DeviceResponse {
+    suspend fun createDevice(tenantId: Long, request: DeviceCreateRequest): DeviceResponse {
         return httpClient.post("tenants/$tenantId/devices") {
             setBody(request)
         }.body()
@@ -47,7 +47,7 @@ class DevicesApiService(private val httpClient: HttpClient) {
     /**
      * Update an existing device within a tenant.
      */
-    suspend fun updateDevice(tenantId: String, deviceId: String, request: DeviceUpdateRequest): DeviceResponse {
+    suspend fun updateDevice(tenantId: Long, deviceId: Long, request: DeviceUpdateRequest): DeviceResponse {
         return httpClient.put("tenants/$tenantId/devices/$deviceId") {
             setBody(request)
         }.body()
@@ -56,7 +56,7 @@ class DevicesApiService(private val httpClient: HttpClient) {
     /**
      * Delete a device from a tenant.
      */
-    suspend fun deleteDevice(tenantId: String, deviceId: String) {
+    suspend fun deleteDevice(tenantId: Long, deviceId: Long) {
         httpClient.delete("tenants/$tenantId/devices/$deviceId")
     }
 

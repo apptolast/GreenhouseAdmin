@@ -18,13 +18,13 @@ class DevicesRepositoryImpl(
     private val devicesApi: DevicesApiService
 ) : DevicesRepository {
 
-    override suspend fun getDevicesByTenantId(tenantId: String): Result<List<Device>> = runCatching {
+    override suspend fun getDevicesByTenantId(tenantId: Long): Result<List<Device>> = runCatching {
         devicesApi.getDevicesByTenantId(tenantId).map { it.toDevice() }
     }
 
     override suspend fun createDevice(
-        tenantId: String,
-        greenhouseId: String,
+        tenantId: Long,
+        greenhouseId: Long,
         name: String?,
         categoryId: Short?,
         typeId: Short?,
@@ -43,8 +43,8 @@ class DevicesRepositoryImpl(
     }
 
     override suspend fun updateDevice(
-        tenantId: String,
-        deviceId: String,
+        tenantId: Long,
+        deviceId: Long,
         name: String?,
         categoryId: Short?,
         typeId: Short?,
@@ -61,7 +61,7 @@ class DevicesRepositoryImpl(
         devicesApi.updateDevice(tenantId, deviceId, request).toDevice()
     }
 
-    override suspend fun deleteDevice(tenantId: String, deviceId: String): Result<Unit> = runCatching {
+    override suspend fun deleteDevice(tenantId: Long, deviceId: Long): Result<Unit> = runCatching {
         devicesApi.deleteDevice(tenantId, deviceId)
     }
 

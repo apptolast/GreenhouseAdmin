@@ -124,7 +124,7 @@ fun ClientDetailDevicesTab(
             }
 
             else -> {
-                DevicesTable(
+                DevicesTableOrCards(
                     devices = devices,
                     onEditDevice = onEditDevice,
                     onDeleteDevice = onDeleteDevice,
@@ -162,9 +162,9 @@ private fun EmptyDevicesContent(modifier: Modifier = Modifier) {
 private object ClientDetailDevicesTabPreviewData {
     val sampleDevices = listOf(
         Device(
-            id = "1",
-            tenantId = "tenant1",
-            greenhouseId = "gh1",
+            id = 1L,
+            tenantId = 1L,
+            greenhouseId = 1L,
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "Sensor",
             typeId = 1,
@@ -174,9 +174,9 @@ private object ClientDetailDevicesTabPreviewData {
             isActive = true
         ),
         Device(
-            id = "2",
-            tenantId = "tenant1",
-            greenhouseId = "gh1",
+            id = 2L,
+            tenantId = 1L,
+            greenhouseId = 1L,
             categoryId = Device.CATEGORY_ACTUATOR,
             categoryName = "Actuator",
             typeId = 2,

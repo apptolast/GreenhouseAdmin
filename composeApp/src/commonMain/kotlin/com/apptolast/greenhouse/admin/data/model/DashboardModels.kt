@@ -28,7 +28,8 @@ enum class StatCardIcon {
     PEOPLE,
     GREENHOUSE,
     DEVICES,
-    ALERT
+    ALERT,
+    USERS
 }
 
 /**
@@ -49,3 +50,57 @@ enum class MenuIcon {
     CLIENTS,
     SETTINGS
 }
+
+// ============================================
+// Dashboard Statistics Models
+// ============================================
+
+/**
+ * Aggregated dashboard statistics from all tenants.
+ */
+data class DashboardStats(
+    val totalClients: Int,
+    val activeClients: Int,
+    val totalGreenhouses: Int,
+    val activeGreenhouses: Int,
+    val totalDevices: Int,
+    val sensorCount: Int,
+    val actuatorCount: Int,
+    val activeAlerts: Int,
+    val criticalAlerts: Int,
+    val totalUsers: Int
+)
+
+/**
+ * Breakdown of devices by category.
+ */
+data class DeviceBreakdown(
+    val sensors: Int = 0,
+    val actuators: Int = 0
+) {
+    val total: Int get() = sensors + actuators
+}
+
+/**
+ * Represents a recent alert for dashboard display.
+ */
+data class RecentAlert(
+    val id: Long,
+    val tenantId: Long,
+    val tenantName: String,
+    val greenhouseName: String?,
+    val message: String,
+    val severityName: String?,
+    val severityLevel: Short?,
+    val createdAt: String
+)
+
+/**
+ * Represents a recent client for dashboard display.
+ */
+data class RecentClient(
+    val id: Long,
+    val name: String,
+    val province: String?,
+    val isActive: Boolean
+)

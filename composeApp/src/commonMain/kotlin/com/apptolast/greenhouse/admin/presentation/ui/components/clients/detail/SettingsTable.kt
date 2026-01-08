@@ -7,22 +7,32 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,29 +42,64 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Setting
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
+import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_parameter
 import greenhouseadmin.composeapp.generated.resources.header_period
 import greenhouseadmin.composeapp.generated.resources.header_range
 import greenhouseadmin.composeapp.generated.resources.header_status
-import greenhouseadmin.composeapp.generated.resources.status_active
-import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
+ * Adaptive component that shows a table on larger screens and cards on compact screens.
+ */
+@Composable
+fun SettingsTableOrCards(
+    settings: List<Setting>,
+    onEditSetting: (Setting) -> Unit = {},
+    onDeleteSetting: (Setting) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    val windowInfo = LocalAppWindowInfo.current
+
+    if (windowInfo.isCompact) {
+        SettingsCardList(
+            settings = settings,
+            onEditSetting = onEditSetting,
+            onDeleteSetting = onDeleteSetting,
+            onCopyId = onCopyId,
+            modifier = modifier
+        )
+    } else {
+        SettingsTable(
+            settings = settings,
+            onEditSetting = onEditSetting,
+            onDeleteSetting = onDeleteSetting,
+            onCopyId = onCopyId,
+            modifier = modifier
+        )
+    }
+}
+
+/**
  * Table displaying list of settings with headers and rows.
- * New structure: PARAMETER | PERIOD | RANGE | STATUS | ACTIONS
+ * Structure: ID | PARAMETER | PERIOD | RANGE | STATUS | ACTIONS
  */
 @Composable
 fun SettingsTable(
     settings: List<Setting>,
     onEditSetting: (Setting) -> Unit = {},
     onDeleteSetting: (Setting) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -74,7 +119,8 @@ fun SettingsTable(
                 SettingTableRow(
                     setting = setting,
                     onEdit = { onEditSetting(setting) },
-                    onDelete = { onDeleteSetting(setting) }
+                    onDelete = { onDeleteSetting(setting) },
+                    onCopyId = onCopyId
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
@@ -88,32 +134,38 @@ private fun SettingsTableHeader(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
         Text(
-            text = stringResource(Res.string.header_parameter),
+            text = stringResource(Res.string.header_id),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
         Text(
-            text = stringResource(Res.string.header_period),
+            text = stringResource(Res.string.header_parameter),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.8f)
         )
         Text(
+            text = stringResource(Res.string.header_period),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.6f)
+        )
+        Text(
             text = stringResource(Res.string.header_range),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.6f)
         )
         Text(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.6f),
-            textAlign = TextAlign.Center
+            modifier = Modifier.weight(1f)
         )
         Text(
             text = stringResource(Res.string.header_actions),
@@ -130,27 +182,28 @@ private fun SettingTableRow(
     setting: Setting,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    onCopyId: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val activeText = stringResource(Res.string.status_active)
-    val inactiveText = stringResource(Res.string.status_inactive)
-
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
+        // ID - Copyable
+        CopyableIdCell(
+            id = setting.id.toString(),
+            onCopyId = onCopyId,
+            modifier = Modifier.weight(1f)
+        )
+
         // PARAMETER with avatar
         Row(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.8f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SettingAvatar(
-                initials = setting.initials,
-                modifier = Modifier.size(36.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = setting.displayName,
                 style = MaterialTheme.typography.bodyMedium,
@@ -162,34 +215,26 @@ private fun SettingTableRow(
         }
 
         // PERIOD badge
-        Box(
-            modifier = Modifier.weight(0.8f),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            PeriodBadge(periodName = setting.periodDisplayName)
-        }
+        PeriodBadge(
+            periodName = setting.periodDisplayName,
+            modifier = Modifier.weight(0.6f).wrapContentWidth(align = Alignment.Start),
+        )
 
         // RANGE
         Text(
             text = setting.rangeDisplay,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.6f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
 
-        // STATUS badge
-        Box(
-            modifier = Modifier.weight(0.6f),
-            contentAlignment = Alignment.Center
-        ) {
-            SettingStatusBadge(
-                isActive = setting.isActive,
-                activeText = activeText,
-                inactiveText = inactiveText
-            )
-        }
+        // STATUS - Using StatusChip
+        StatusChip(
+            isActive = setting.isActive,
+            modifier = Modifier.weight(1f).wrapContentWidth(align = Alignment.Start)
+        )
 
         // ACTIONS
         Row(
@@ -267,11 +312,11 @@ private fun PeriodBadge(
     }
 
     Box(
-        modifier = modifier
+        modifier = modifier.wrapContentWidth()
             .clip(RoundedCornerShape(4.dp))
             .background(backgroundColor)
             .padding(horizontal = 8.dp, vertical = 4.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.CenterStart
     ) {
         Text(
             text = periodName,
@@ -283,56 +328,153 @@ private fun PeriodBadge(
 }
 
 /**
- * Badge component for displaying active/inactive status.
+ * Card list for displaying settings on compact screens.
  */
 @Composable
-private fun SettingStatusBadge(
-    isActive: Boolean,
-    activeText: String,
-    inactiveText: String,
+private fun SettingsCardList(
+    settings: List<Setting>,
+    onEditSetting: (Setting) -> Unit,
+    onDeleteSetting: (Setting) -> Unit,
+    onCopyId: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = if (isActive) {
-        Color(0xFF00E676).copy(alpha = 0.15f)
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
-    val textColor = if (isActive) {
-        Color(0xFF00E676)
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .clip(CircleShape)
-                .background(textColor)
-        )
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(
-            text = if (isActive) activeText else inactiveText,
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor,
-            fontWeight = FontWeight.Medium
-        )
+        settings.forEach { setting ->
+            SettingCard(
+                setting = setting,
+                onEdit = { onEditSetting(setting) },
+                onDelete = { onDeleteSetting(setting) },
+                onCopyId = { onCopyId(setting.id.toString()) }
+            )
+        }
+    }
+}
+
+/**
+ * Individual setting card for compact screens with dropdown menu for actions.
+ */
+@Composable
+private fun SettingCard(
+    setting: Setting,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onCopyId: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Header row: Icon, Parameter name, Menu
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(40.dp)
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = setting.displayName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = setting.rangeDisplay,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Box {
+                    IconButton(
+                        onClick = { showMenu = true },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(Res.string.header_actions),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(Res.string.action_edit)) },
+                            onClick = {
+                                showMenu = false
+                                onEdit()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(Res.string.action_delete)) },
+                            onClick = {
+                                showMenu = false
+                                onDelete()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Info row: Period badge | Status chip
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PeriodBadge(periodName = setting.periodDisplayName)
+                StatusChip(isActive = setting.isActive)
+            }
+        }
     }
 }
 
 private object SettingsTablePreviewData {
     val sampleSettings = listOf(
         Setting(
-            id = "1",
-            greenhouseId = "gh1",
+            id = 1L,
+            greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
-            tenantId = "t1",
+            tenantId = 1L,
             parameterId = 1,
             parameterName = "Temperature",
             periodId = 1,
@@ -343,10 +485,10 @@ private object SettingsTablePreviewData {
             createdAt = "2024-01-15T10:30:00Z"
         ),
         Setting(
-            id = "2",
-            greenhouseId = "gh1",
+            id = 2L,
+            greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
-            tenantId = "t1",
+            tenantId = 1L,
             parameterId = 2,
             parameterName = "Humidity",
             periodId = 2,
@@ -357,10 +499,10 @@ private object SettingsTablePreviewData {
             createdAt = "2024-01-15T10:30:00Z"
         ),
         Setting(
-            id = "3",
-            greenhouseId = "gh1",
+            id = 3L,
+            greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
-            tenantId = "t1",
+            tenantId = 1L,
             parameterId = 1,
             parameterName = "Temperature",
             periodId = 3,

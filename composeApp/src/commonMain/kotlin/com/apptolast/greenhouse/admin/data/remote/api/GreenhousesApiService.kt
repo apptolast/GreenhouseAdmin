@@ -21,21 +21,21 @@ class GreenhousesApiService(private val httpClient: HttpClient) {
     /**
      * Get all greenhouses for a specific tenant.
      */
-    suspend fun getGreenhousesByTenantId(tenantId: String): List<GreenhouseResponse> {
+    suspend fun getGreenhousesByTenantId(tenantId: Long): List<GreenhouseResponse> {
         return httpClient.get("tenants/$tenantId/greenhouses").body()
     }
 
     /**
      * Get a specific greenhouse by ID within a tenant.
      */
-    suspend fun getGreenhouseById(tenantId: String, greenhouseId: String): GreenhouseResponse {
+    suspend fun getGreenhouseById(tenantId: Long, greenhouseId: Long): GreenhouseResponse {
         return httpClient.get("tenants/$tenantId/greenhouses/$greenhouseId").body()
     }
 
     /**
      * Create a new greenhouse for a tenant.
      */
-    suspend fun createGreenhouse(tenantId: String, request: GreenhouseCreateRequest): GreenhouseResponse {
+    suspend fun createGreenhouse(tenantId: Long, request: GreenhouseCreateRequest): GreenhouseResponse {
         return httpClient.post("tenants/$tenantId/greenhouses") {
             setBody(request)
         }.body()
@@ -45,8 +45,8 @@ class GreenhousesApiService(private val httpClient: HttpClient) {
      * Update an existing greenhouse within a tenant.
      */
     suspend fun updateGreenhouse(
-        tenantId: String,
-        greenhouseId: String,
+        tenantId: Long,
+        greenhouseId: Long,
         request: GreenhouseUpdateRequest
     ): GreenhouseResponse {
         return httpClient.put("tenants/$tenantId/greenhouses/$greenhouseId") {
@@ -57,7 +57,7 @@ class GreenhousesApiService(private val httpClient: HttpClient) {
     /**
      * Delete a greenhouse from a tenant.
      */
-    suspend fun deleteGreenhouse(tenantId: String, greenhouseId: String) {
+    suspend fun deleteGreenhouse(tenantId: Long, greenhouseId: Long) {
         httpClient.delete("tenants/$tenantId/greenhouses/$greenhouseId")
     }
 }

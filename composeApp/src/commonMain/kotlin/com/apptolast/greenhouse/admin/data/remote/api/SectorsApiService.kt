@@ -21,21 +21,21 @@ class SectorsApiService(private val httpClient: HttpClient) {
     /**
      * Get all sectors for a specific tenant.
      */
-    suspend fun getSectorsByTenantId(tenantId: String): List<SectorResponse> {
+    suspend fun getSectorsByTenantId(tenantId: Long): List<SectorResponse> {
         return httpClient.get("tenants/$tenantId/sectors").body()
     }
 
     /**
      * Get a specific sector by ID within a tenant.
      */
-    suspend fun getSectorById(tenantId: String, sectorId: String): SectorResponse {
+    suspend fun getSectorById(tenantId: Long, sectorId: Long): SectorResponse {
         return httpClient.get("tenants/$tenantId/sectors/$sectorId").body()
     }
 
     /**
      * Create a new sector for a tenant.
      */
-    suspend fun createSector(tenantId: String, request: SectorCreateRequest): SectorResponse {
+    suspend fun createSector(tenantId: Long, request: SectorCreateRequest): SectorResponse {
         return httpClient.post("tenants/$tenantId/sectors") {
             setBody(request)
         }.body()
@@ -44,7 +44,7 @@ class SectorsApiService(private val httpClient: HttpClient) {
     /**
      * Update an existing sector within a tenant.
      */
-    suspend fun updateSector(tenantId: String, sectorId: String, request: SectorUpdateRequest): SectorResponse {
+    suspend fun updateSector(tenantId: Long, sectorId: Long, request: SectorUpdateRequest): SectorResponse {
         return httpClient.put("tenants/$tenantId/sectors/$sectorId") {
             setBody(request)
         }.body()
@@ -53,7 +53,7 @@ class SectorsApiService(private val httpClient: HttpClient) {
     /**
      * Delete a sector from a tenant.
      */
-    suspend fun deleteSector(tenantId: String, sectorId: String) {
+    suspend fun deleteSector(tenantId: Long, sectorId: Long) {
         httpClient.delete("tenants/$tenantId/sectors/$sectorId")
     }
 }

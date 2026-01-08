@@ -83,7 +83,7 @@ fun DeviceFormDialog(
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (greenhouseId: String, name: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
+    onSubmit: (greenhouseId: Long?, name: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -631,9 +631,9 @@ fun DeviceFormDialog(
 private object DeviceFormDialogPreviewData {
     val sampleGreenhouses = listOf(
         Greenhouse(
-            id = "gh1",
+            id = 1L,
             name = "Main Greenhouse",
-            tenantId = "tenant1",
+            tenantId = 1L,
             location = null,
             areaM2 = 1500.0,
             timezone = "Europe/Madrid",
@@ -642,9 +642,9 @@ private object DeviceFormDialogPreviewData {
             updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
-            id = "gh2",
+            id = 2L,
             name = "North Greenhouse",
-            tenantId = "tenant1",
+            tenantId = 1L,
             location = null,
             areaM2 = 800.0,
             timezone = "Europe/Madrid",
@@ -671,9 +671,9 @@ private object DeviceFormDialogPreviewData {
     )
 
     val sampleDevice = Device(
-        id = "1",
-        tenantId = "tenant1",
-        greenhouseId = "gh1",
+        id = 1L,
+        tenantId = 1L,
+        greenhouseId = 1L,
         name = "Sensor Temperatura Norte",
         categoryId = Device.CATEGORY_SENSOR,
         categoryName = "SENSOR",

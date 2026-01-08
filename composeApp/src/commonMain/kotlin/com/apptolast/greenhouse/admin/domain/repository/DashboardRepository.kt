@@ -1,6 +1,9 @@
 package com.apptolast.greenhouse.admin.domain.repository
 
+import com.apptolast.greenhouse.admin.data.model.DashboardStats
 import com.apptolast.greenhouse.admin.data.model.MenuItem
+import com.apptolast.greenhouse.admin.data.model.RecentAlert
+import com.apptolast.greenhouse.admin.data.model.RecentClient
 import com.apptolast.greenhouse.admin.data.model.StatCard
 
 /**
@@ -25,4 +28,24 @@ interface DashboardRepository {
      * @return Result containing alert count or error
      */
     suspend fun getAlertCount(): Result<Int>
+
+    /**
+     * Fetches aggregated dashboard statistics from all tenants.
+     * @return Result containing DashboardStats or error
+     */
+    suspend fun getDashboardStats(): Result<DashboardStats>
+
+    /**
+     * Fetches recent unresolved alerts across all tenants.
+     * @param limit Maximum number of alerts to return
+     * @return Result containing list of RecentAlert or error
+     */
+    suspend fun getRecentAlerts(limit: Int = 5): Result<List<RecentAlert>>
+
+    /**
+     * Fetches recent clients.
+     * @param limit Maximum number of clients to return
+     * @return Result containing list of RecentClient or error
+     */
+    suspend fun getRecentClients(limit: Int = 5): Result<List<RecentClient>>
 }

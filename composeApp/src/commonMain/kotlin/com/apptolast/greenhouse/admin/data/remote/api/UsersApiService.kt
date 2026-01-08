@@ -21,21 +21,21 @@ class UsersApiService(private val httpClient: HttpClient) {
     /**
      * Get all users for a specific tenant.
      */
-    suspend fun getUsersByTenantId(tenantId: String): List<UserResponse> {
+    suspend fun getUsersByTenantId(tenantId: Long): List<UserResponse> {
         return httpClient.get("tenants/$tenantId/users").body()
     }
 
     /**
      * Get a specific user by ID within a tenant.
      */
-    suspend fun getUserById(tenantId: String, userId: String): UserResponse {
+    suspend fun getUserById(tenantId: Long, userId: Long): UserResponse {
         return httpClient.get("tenants/$tenantId/users/$userId").body()
     }
 
     /**
      * Create a new user for a tenant.
      */
-    suspend fun createUser(tenantId: String, request: UserCreateRequest): UserResponse {
+    suspend fun createUser(tenantId: Long, request: UserCreateRequest): UserResponse {
         return httpClient.post("tenants/$tenantId/users") {
             setBody(request)
         }.body()
@@ -44,7 +44,7 @@ class UsersApiService(private val httpClient: HttpClient) {
     /**
      * Update an existing user within a tenant.
      */
-    suspend fun updateUser(tenantId: String, userId: String, request: UserUpdateRequest): UserResponse {
+    suspend fun updateUser(tenantId: Long, userId: Long, request: UserUpdateRequest): UserResponse {
         return httpClient.put("tenants/$tenantId/users/$userId") {
             setBody(request)
         }.body()
@@ -53,7 +53,7 @@ class UsersApiService(private val httpClient: HttpClient) {
     /**
      * Delete a user from a tenant.
      */
-    suspend fun deleteUser(tenantId: String, userId: String) {
+    suspend fun deleteUser(tenantId: Long, userId: Long) {
         httpClient.delete("tenants/$tenantId/users/$userId")
     }
 }

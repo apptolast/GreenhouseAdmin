@@ -13,7 +13,7 @@ interface UsersRepository {
      * @param tenantId The tenant ID to filter users by
      * @return Result containing list of User or error
      */
-    suspend fun getUsersByTenantId(tenantId: String): Result<List<User>>
+    suspend fun getUsersByTenantId(tenantId: Long): Result<List<User>>
 
     /**
      * Creates a new user for a tenant.
@@ -26,7 +26,7 @@ interface UsersRepository {
      * @return Result containing the created User or error
      */
     suspend fun createUser(
-        tenantId: String,
+        tenantId: Long,
         username: String,
         email: String,
         password: String,
@@ -47,8 +47,8 @@ interface UsersRepository {
      * @return Result containing the updated User or error
      */
     suspend fun updateUser(
-        tenantId: String,
-        userId: String,
+        tenantId: Long,
+        userId: Long,
         username: String? = null,
         email: String? = null,
         password: String? = null,
@@ -62,5 +62,5 @@ interface UsersRepository {
      * @param userId The user ID to delete
      * @return Result containing success or error
      */
-    suspend fun deleteUser(tenantId: String, userId: String): Result<Unit>
+    suspend fun deleteUser(tenantId: Long, userId: Long): Result<Unit>
 }

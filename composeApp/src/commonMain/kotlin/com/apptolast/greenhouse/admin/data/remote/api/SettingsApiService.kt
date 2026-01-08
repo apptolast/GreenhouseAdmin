@@ -34,21 +34,21 @@ class SettingsApiService(private val httpClient: HttpClient) {
     /**
      * Get all settings for a specific tenant.
      */
-    suspend fun getSettings(tenantId: String): List<SettingResponse> {
+    suspend fun getSettings(tenantId: Long): List<SettingResponse> {
         return httpClient.get("tenants/$tenantId/settings").body()
     }
 
     /**
      * Get a specific setting by ID within a tenant.
      */
-    suspend fun getSetting(tenantId: String, settingId: String): SettingResponse {
+    suspend fun getSetting(tenantId: Long, settingId: Long): SettingResponse {
         return httpClient.get("tenants/$tenantId/settings/$settingId").body()
     }
 
     /**
      * Create a new setting for a tenant.
      */
-    suspend fun createSetting(tenantId: String, request: SettingCreateRequest): SettingResponse {
+    suspend fun createSetting(tenantId: Long, request: SettingCreateRequest): SettingResponse {
         return httpClient.post("tenants/$tenantId/settings") {
             setBody(request)
         }.body()
@@ -57,7 +57,7 @@ class SettingsApiService(private val httpClient: HttpClient) {
     /**
      * Update an existing setting within a tenant.
      */
-    suspend fun updateSetting(tenantId: String, settingId: String, request: SettingUpdateRequest): SettingResponse {
+    suspend fun updateSetting(tenantId: Long, settingId: Long, request: SettingUpdateRequest): SettingResponse {
         return httpClient.put("tenants/$tenantId/settings/$settingId") {
             setBody(request)
         }.body()
@@ -66,7 +66,7 @@ class SettingsApiService(private val httpClient: HttpClient) {
     /**
      * Delete a setting from a tenant.
      */
-    suspend fun deleteSetting(tenantId: String, settingId: String) {
+    suspend fun deleteSetting(tenantId: Long, settingId: Long) {
         httpClient.delete("tenants/$tenantId/settings/$settingId")
     }
 
@@ -75,14 +75,14 @@ class SettingsApiService(private val httpClient: HttpClient) {
     /**
      * Get settings for a specific greenhouse.
      */
-    suspend fun getSettingsByGreenhouse(tenantId: String, greenhouseId: String): List<SettingResponse> {
+    suspend fun getSettingsByGreenhouse(tenantId: Long, greenhouseId: Long): List<SettingResponse> {
         return httpClient.get("tenants/$tenantId/settings/greenhouse/$greenhouseId").body()
     }
 
     /**
      * Get active settings for a specific greenhouse.
      */
-    suspend fun getActiveSettingsByGreenhouse(tenantId: String, greenhouseId: String): List<SettingResponse> {
+    suspend fun getActiveSettingsByGreenhouse(tenantId: Long, greenhouseId: Long): List<SettingResponse> {
         return httpClient.get("tenants/$tenantId/settings/greenhouse/$greenhouseId/active").body()
     }
 
@@ -90,8 +90,8 @@ class SettingsApiService(private val httpClient: HttpClient) {
      * Get settings for a specific greenhouse and parameter.
      */
     suspend fun getSettingsByGreenhouseAndParameter(
-        tenantId: String,
-        greenhouseId: String,
+        tenantId: Long,
+        greenhouseId: Long,
         parameterId: Short
     ): List<SettingResponse> {
         return httpClient.get("tenants/$tenantId/settings/greenhouse/$greenhouseId/parameter/$parameterId").body()
@@ -101,8 +101,8 @@ class SettingsApiService(private val httpClient: HttpClient) {
      * Get settings for a specific greenhouse and period.
      */
     suspend fun getSettingsByGreenhouseAndPeriod(
-        tenantId: String,
-        greenhouseId: String,
+        tenantId: Long,
+        greenhouseId: Long,
         periodId: Short
     ): List<SettingResponse> {
         return httpClient.get("tenants/$tenantId/settings/greenhouse/$greenhouseId/period/$periodId").body()
@@ -112,8 +112,8 @@ class SettingsApiService(private val httpClient: HttpClient) {
      * Get a specific setting by greenhouse, parameter, and period combination.
      */
     suspend fun getSettingByGreenhouseParameterPeriod(
-        tenantId: String,
-        greenhouseId: String,
+        tenantId: Long,
+        greenhouseId: Long,
         parameterId: Short,
         periodId: Short
     ): SettingResponse {

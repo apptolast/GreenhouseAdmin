@@ -83,7 +83,7 @@ fun ClientFormDialog(
     isSubmitting: Boolean = false,
     error: String? = null,
     onSubmit: (
-        id: String?,
+        id: Long?,
         name: String,
         email: String,
         phone: String,
@@ -533,7 +533,7 @@ private fun StatusDropdown(
 
 private object ClientFormDialogPreviewData {
     val sampleClient = Client(
-        id = "1",
+        id = 1L,
         name = "Elena Rodriguez",
         email = "elena@freshveg.com",
         phone = "+34 612 345 678",

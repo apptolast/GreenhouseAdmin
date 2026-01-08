@@ -92,7 +92,7 @@ sealed interface ClientsEvent {
      * User submitted the edit client form.
      */
     data class OnSubmitEditClient(
-        val id: String,
+        val id: Long,
         val name: String,
         val email: String,
         val phone: String,

@@ -27,7 +27,7 @@ interface SettingsRepository {
      * @param tenantId The ID of the tenant
      * @return Result containing list of settings or error
      */
-    suspend fun getSettingsByTenantId(tenantId: String): Result<List<Setting>>
+    suspend fun getSettingsByTenantId(tenantId: Long): Result<List<Setting>>
 
     /**
      * Creates a new setting for a tenant.
@@ -35,7 +35,7 @@ interface SettingsRepository {
      * @param request The setting creation request
      * @return Result containing the created setting or error
      */
-    suspend fun createSetting(tenantId: String, request: SettingCreateRequest): Result<Setting>
+    suspend fun createSetting(tenantId: Long, request: SettingCreateRequest): Result<Setting>
 
     /**
      * Updates an existing setting.
@@ -44,7 +44,7 @@ interface SettingsRepository {
      * @param request The setting update request
      * @return Result containing the updated setting or error
      */
-    suspend fun updateSetting(tenantId: String, settingId: String, request: SettingUpdateRequest): Result<Setting>
+    suspend fun updateSetting(tenantId: Long, settingId: Long, request: SettingUpdateRequest): Result<Setting>
 
     /**
      * Deletes a setting by ID.
@@ -52,5 +52,5 @@ interface SettingsRepository {
      * @param settingId The ID of the setting to delete
      * @return Result indicating success or failure
      */
-    suspend fun deleteSetting(tenantId: String, settingId: String): Result<Unit>
+    suspend fun deleteSetting(tenantId: Long, settingId: Long): Result<Unit>
 }

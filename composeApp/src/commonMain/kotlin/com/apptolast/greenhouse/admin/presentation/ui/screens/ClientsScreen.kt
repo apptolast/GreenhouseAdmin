@@ -22,10 +22,9 @@ import com.apptolast.greenhouse.admin.data.model.PaginationInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
-import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientsCards
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientsFilters
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientsPagination
-import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientsTable
+import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientsTableOrCards
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.DashboardTopBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.LoadingContent
@@ -243,27 +242,15 @@ private fun ClientsContent(
 
             else -> {
                 // Adaptive list view: Cards for compact, Table for larger screens
-                if (windowInfo.isCompact) {
-                    ClientsCards(
-                        clients = uiState.paginatedClients,
-                        onClientClicked = { client ->
-                            onNavigate("client_detail/${client.id}")
-                        },
-                        onEditClient = { onEvent(ClientsEvent.OnEditClientClicked(it)) },
-                        onDeleteClient = { onEvent(ClientsEvent.OnDeleteClientClicked(it)) },
-                        modifier = Modifier.weight(1f)
-                    )
-                } else {
-                    ClientsTable(
-                        clients = uiState.paginatedClients,
-                        onClientClicked = { client ->
-                            onNavigate("client_detail/${client.id}")
-                        },
-                        onEditClient = { onEvent(ClientsEvent.OnEditClientClicked(it)) },
-                        onDeleteClient = { onEvent(ClientsEvent.OnDeleteClientClicked(it)) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                ClientsTableOrCards(
+                    clients = uiState.paginatedClients,
+                    onClientClicked = { client ->
+                        onNavigate("client_detail/${client.id}")
+                    },
+                    onEditClient = { onEvent(ClientsEvent.OnEditClientClicked(it)) },
+                    onDeleteClient = { onEvent(ClientsEvent.OnDeleteClientClicked(it)) },
+                    modifier = Modifier.weight(1f)
+                )
 
                 // Pagination
                 ClientsPagination(
@@ -279,7 +266,7 @@ private fun ClientsContent(
 private object ClientsScreenPreviewData {
     val sampleClients = listOf(
         Client(
-            id = "1",
+            id = 1L,
             name = "Fresh Vegetables Co.",
             email = "contact@freshveg.com",
             phone = "+34 612 345 678",
@@ -288,7 +275,7 @@ private object ClientsScreenPreviewData {
             status = ClientStatus.ACTIVE
         ),
         Client(
-            id = "2",
+            id = 2L,
             name = "Green Gardens Ltd.",
             email = "info@greengardens.com",
             phone = "+34 623 456 789",
@@ -297,7 +284,7 @@ private object ClientsScreenPreviewData {
             status = ClientStatus.ACTIVE
         ),
         Client(
-            id = "3",
+            id = 3L,
             name = "Bio Farms Andalucia",
             email = "hello@biofarms.es",
             phone = "+34 634 567 890",
