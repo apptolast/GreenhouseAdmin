@@ -125,7 +125,7 @@ fun ClientDetailSectorsTab(
             }
 
             else -> {
-                SectorsTable(
+                SectorsTableOrCards(
                     sectors = sectors,
                     greenhouses = greenhouses,
                     onEditSector = onEditSector,

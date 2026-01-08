@@ -124,7 +124,7 @@ fun ClientDetailSettingsTab(
             }
 
             else -> {
-                SettingsTable(
+                SettingsTableOrCards(
                     settings = settings,
                     onEditSetting = onEditSetting,
                     onDeleteSetting = onDeleteSetting,

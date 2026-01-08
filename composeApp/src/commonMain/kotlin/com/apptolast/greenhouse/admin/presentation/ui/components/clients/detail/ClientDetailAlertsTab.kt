@@ -126,7 +126,7 @@ fun ClientDetailAlertsTab(
             }
 
             else -> {
-                AlertsTable(
+                AlertsTableOrCards(
                     alerts = alerts,
                     onEditAlert = onEditAlert,
                     onDeleteAlert = onDeleteAlert,

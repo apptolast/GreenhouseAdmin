@@ -124,7 +124,7 @@ fun ClientDetailGreenhousesTab(
             }
 
             else -> {
-                GreenhousesTable(
+                GreenhousesTableOrCards(
                     greenhouses = greenhouses,
                     onEditGreenhouse = onEditGreenhouse,
                     onDeleteGreenhouse = onDeleteGreenhouse

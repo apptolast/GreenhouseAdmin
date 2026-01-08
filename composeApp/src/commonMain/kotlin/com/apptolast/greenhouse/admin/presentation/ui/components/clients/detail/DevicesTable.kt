@@ -1,9 +1,12 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -12,14 +15,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Device
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
@@ -42,6 +54,38 @@ import greenhouseadmin.composeapp.generated.resources.header_type
 import greenhouseadmin.composeapp.generated.resources.header_unit
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+
+/**
+ * Adaptive component that shows a table on larger screens and cards on compact screens.
+ */
+@Composable
+fun DevicesTableOrCards(
+    devices: List<Device>,
+    onEditDevice: (Device) -> Unit = {},
+    onDeleteDevice: (Device) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    val windowInfo = LocalAppWindowInfo.current
+
+    if (windowInfo.isCompact) {
+        DevicesCardList(
+            devices = devices,
+            onEditDevice = onEditDevice,
+            onDeleteDevice = onDeleteDevice,
+            onCopyId = onCopyId,
+            modifier = modifier
+        )
+    } else {
+        DevicesTable(
+            devices = devices,
+            onEditDevice = onEditDevice,
+            onDeleteDevice = onDeleteDevice,
+            onCopyId = onCopyId,
+            modifier = modifier
+        )
+    }
+}
 
 /**
  * Table displaying list of devices with headers and rows.
@@ -249,6 +293,188 @@ private fun DeviceTableRow(
     }
 }
 
+/**
+ * Card list for displaying devices on compact screens.
+ */
+@Composable
+private fun DevicesCardList(
+    devices: List<Device>,
+    modifier: Modifier = Modifier,
+    onEditDevice: (Device) -> Unit = {},
+    onDeleteDevice: (Device) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        devices.forEach { device ->
+            DeviceCard(
+                device = device,
+                onEdit = { onEditDevice(device) },
+                onDelete = { onDeleteDevice(device) },
+                onCopyId = { onCopyId(device.id) }
+            )
+        }
+    }
+}
+
+/**
+ * Individual device card for compact screens with dropdown menu for actions.
+ */
+@Composable
+private fun DeviceCard(
+    device: Device,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onCopyId: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Header row: Icon, Name/ID, Menu
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Sensors,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(40.dp)
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = device.name ?: "Device",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = device.id,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Box {
+                    IconButton(
+                        onClick = { showMenu = true },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(Res.string.header_actions),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(Res.string.action_edit)) },
+                            onClick = {
+                                showMenu = false
+                                onEdit()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(Res.string.action_delete)) },
+                            onClick = {
+                                showMenu = false
+                                onDelete()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Info row: Category | Type | Unit
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(Res.string.header_category),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = device.categoryName ?: device.categoryDisplayName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Column {
+                    Text(
+                        text = stringResource(Res.string.header_type),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = device.typeName ?: "-",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                if (device.unitSymbol != null) {
+                    Column {
+                        Text(
+                            text = stringResource(Res.string.header_unit),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = device.unitSymbol,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Status chip
+            StatusChip(isActive = device.isActive)
+        }
+    }
+}
+
 private object DevicesTablePreviewData {
     val sampleDevices = listOf(
         Device(
@@ -298,6 +524,15 @@ private object DevicesTablePreviewData {
 private fun DevicesTablePreview() {
     GreenhouseAdminTheme {
         DevicesTable(devices = DevicesTablePreviewData.sampleDevices)
+    }
+}
+
+
+@Preview
+@Composable
+private fun DevicesCardListPreview() {
+    GreenhouseAdminTheme {
+        DevicesCardList(devices = DevicesTablePreviewData.sampleDevices)
     }
 }
 

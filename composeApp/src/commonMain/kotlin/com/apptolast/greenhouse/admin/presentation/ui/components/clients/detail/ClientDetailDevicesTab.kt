@@ -124,7 +124,7 @@ fun ClientDetailDevicesTab(
             }
 
             else -> {
-                DevicesTable(
+                DevicesTableOrCards(
                     devices = devices,
                     onEditDevice = onEditDevice,
                     onDeleteDevice = onDeleteDevice,

@@ -124,7 +124,7 @@ fun ClientDetailUsersTab(
             }
 
             else -> {
-                UsersTable(
+                UsersTableOrCards(
                     users = users,
                     onEditUser = onEditUser,
                     onDeleteUser = onDeleteUser

@@ -43,6 +43,7 @@ import com.apptolast.greenhouse.admin.data.model.StatCard
 import com.apptolast.greenhouse.admin.data.model.StatCardIcon
 import com.apptolast.greenhouse.admin.data.model.StatCardSubtitleColor
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
+import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.DashboardTopBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
@@ -130,12 +131,14 @@ private fun DashboardContent(
 
 /**
  * Main dashboard body with all sections.
+ * Adapts layout based on screen size - stacks elements vertically on compact screens.
  */
 @Composable
 private fun DashboardContentBody(
     uiState: DashboardUiState,
     modifier: Modifier = Modifier
 ) {
+    val windowInfo = LocalAppWindowInfo.current
     val contentPadding = AdaptiveDimens.contentPadding()
     val spacing = AdaptiveDimens.verticalSpacing()
 
@@ -144,11 +147,12 @@ private fun DashboardContentBody(
         contentPadding = PaddingValues(contentPadding),
         verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
-        // Main KPIs Grid
+        // Main KPIs Grid - adapts columns based on screen size
         item {
+            val gridHeight = if (windowInfo.isCompact) 420.dp else 200.dp
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 220.dp),
-                modifier = Modifier.fillMaxWidth().height(200.dp),
+                modifier = Modifier.fillMaxWidth().height(gridHeight),
                 horizontalArrangement = Arrangement.spacedBy(spacing),
                 verticalArrangement = Arrangement.spacedBy(spacing)
             ) {
@@ -164,58 +168,120 @@ private fun DashboardContentBody(
             }
         }
 
-        // Secondary KPIs Row
+        // Secondary KPIs - Row on desktop, Column on compact
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing)
-            ) {
-                // Total Users Card
-                StatsCard(
-                    statCard = StatCard(
-                        id = "users",
-                        title = "Total Users",
-                        value = uiState.totalUsers.toString(),
-                        subtitle = "Registered users",
-                        subtitleColor = StatCardSubtitleColor.DEFAULT,
-                        icon = StatCardIcon.USERS
-                    ),
-                    modifier = Modifier.weight(1f)
-                )
-
-                // Device Breakdown Card
-                StatsCard(
-                    statCard = StatCard(
-                        id = "device_breakdown",
-                        title = "Device Breakdown",
-                        value = "${uiState.deviceBreakdown.sensors}/${uiState.deviceBreakdown.actuators}",
-                        subtitle = "Sensors / Actuators",
-                        subtitleColor = StatCardSubtitleColor.DEFAULT,
-                        icon = StatCardIcon.DEVICES
-                    ),
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            SecondaryKpisSection(
+                uiState = uiState,
+                isCompact = windowInfo.isCompact,
+                spacing = spacing
+            )
         }
 
-        // Recent sections in a row on desktop, stacked on mobile
+        // Recent sections - Row on desktop, Column on compact
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing)
-            ) {
-                // Recent Alerts Card
-                RecentAlertsCard(
-                    alerts = uiState.recentAlerts,
-                    modifier = Modifier.weight(1f)
-                )
+            RecentSectionsLayout(
+                alerts = uiState.recentAlerts,
+                clients = uiState.recentClients,
+                isCompact = windowInfo.isCompact,
+                spacing = spacing
+            )
+        }
+    }
+}
 
-                // Recent Clients Card
-                RecentClientsCard(
-                    clients = uiState.recentClients,
-                    modifier = Modifier.weight(1f)
-                )
-            }
+/**
+ * Secondary KPIs section that adapts to screen size.
+ */
+@Composable
+private fun SecondaryKpisSection(
+    uiState: DashboardUiState,
+    isCompact: Boolean,
+    spacing: androidx.compose.ui.unit.Dp
+) {
+    val usersCard = @Composable { modifier: Modifier ->
+        StatsCard(
+            statCard = StatCard(
+                id = "users",
+                title = "Total Users",
+                value = uiState.totalUsers.toString(),
+                subtitle = "Registered users",
+                subtitleColor = StatCardSubtitleColor.DEFAULT,
+                icon = StatCardIcon.USERS
+            ),
+            modifier = modifier
+        )
+    }
+
+    val deviceBreakdownCard = @Composable { modifier: Modifier ->
+        StatsCard(
+            statCard = StatCard(
+                id = "device_breakdown",
+                title = "Device Breakdown",
+                value = "${uiState.deviceBreakdown.sensors}/${uiState.deviceBreakdown.actuators}",
+                subtitle = "Sensors / Actuators",
+                subtitleColor = StatCardSubtitleColor.DEFAULT,
+                icon = StatCardIcon.DEVICES
+            ),
+            modifier = modifier
+        )
+    }
+
+    if (isCompact) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(spacing)
+        ) {
+            usersCard(Modifier.fillMaxWidth())
+            deviceBreakdownCard(Modifier.fillMaxWidth())
+        }
+    } else {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing)
+        ) {
+            usersCard(Modifier.weight(1f))
+            deviceBreakdownCard(Modifier.weight(1f))
+        }
+    }
+}
+
+/**
+ * Recent sections layout that adapts to screen size.
+ */
+@Composable
+private fun RecentSectionsLayout(
+    alerts: List<RecentAlert>,
+    clients: List<RecentClient>,
+    isCompact: Boolean,
+    spacing: androidx.compose.ui.unit.Dp
+) {
+    if (isCompact) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(spacing)
+        ) {
+            RecentAlertsCard(
+                alerts = alerts,
+                modifier = Modifier.fillMaxWidth()
+            )
+            RecentClientsCard(
+                clients = clients,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    } else {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing)
+        ) {
+            RecentAlertsCard(
+                alerts = alerts,
+                modifier = Modifier.weight(1f)
+            )
+            RecentClientsCard(
+                clients = clients,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
