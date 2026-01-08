@@ -1,6 +1,10 @@
 package com.apptolast.greenhouse.admin.presentation.viewmodel
 
+import com.apptolast.greenhouse.admin.data.model.DashboardStats
+import com.apptolast.greenhouse.admin.data.model.DeviceBreakdown
 import com.apptolast.greenhouse.admin.data.model.MenuItem
+import com.apptolast.greenhouse.admin.data.model.RecentAlert
+import com.apptolast.greenhouse.admin.data.model.RecentClient
 import com.apptolast.greenhouse.admin.data.model.StatCard
 
 /**
@@ -20,6 +24,12 @@ data class DashboardUiState(
     val menuItems: List<MenuItem> = emptyList(),
     val alertCount: Int = 0,
 
+    // Additional dashboard data
+    val dashboardStats: DashboardStats? = null,
+    val recentAlerts: List<RecentAlert> = emptyList(),
+    val recentClients: List<RecentClient> = emptyList(),
+    val deviceBreakdown: DeviceBreakdown = DeviceBreakdown(),
+
     // Search state
     val searchQuery: String = "",
 
@@ -37,4 +47,16 @@ data class DashboardUiState(
      */
     val isError: Boolean
         get() = error != null && !hasContent
+
+    /**
+     * Returns the total users count from stats.
+     */
+    val totalUsers: Int
+        get() = dashboardStats?.totalUsers ?: 0
+
+    /**
+     * Returns the count of critical alerts.
+     */
+    val criticalAlerts: Int
+        get() = dashboardStats?.criticalAlerts ?: 0
 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,9 +33,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.GreenhouseStatus
 import com.apptolast.greenhouse.admin.data.model.Location
-import com.apptolast.greenhouse.admin.data.model.status
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
@@ -44,8 +44,6 @@ import greenhouseadmin.composeapp.generated.resources.header_area
 import greenhouseadmin.composeapp.generated.resources.header_location
 import greenhouseadmin.composeapp.generated.resources.header_name
 import greenhouseadmin.composeapp.generated.resources.header_status
-import greenhouseadmin.composeapp.generated.resources.status_active
-import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -90,7 +88,8 @@ private fun GreenhousesTableHeader(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
         Text(
             text = stringResource(Res.string.header_name),
@@ -137,7 +136,8 @@ private fun GreenhouseTableRow(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
         // NAME with avatar
         Row(
@@ -179,10 +179,10 @@ private fun GreenhouseTableRow(
             overflow = TextOverflow.Ellipsis
         )
 
-        // STATUS
-        GreenhouseStatusBadge(
-            status = greenhouse.status,
-            modifier = Modifier.weight(1f)
+        // STATUS - Using StatusChip with wrapContentWidth
+        StatusChip(
+            isActive = greenhouse.isActive,
+            modifier = Modifier.weight(1f).wrapContentWidth(align = Alignment.Start)
         )
 
         // ACTIONS
@@ -239,43 +239,6 @@ fun GreenhouseAvatar(
     }
 }
 
-/**
- * Status badge for greenhouses.
- */
-@Composable
-fun GreenhouseStatusBadge(
-    status: GreenhouseStatus,
-    modifier: Modifier = Modifier
-) {
-    val (backgroundColor, textColor, textRes) = when (status) {
-        GreenhouseStatus.ACTIVE -> Triple(
-            Color(0xFF00E676).copy(alpha = 0.15f),
-            Color(0xFF00E676),
-            Res.string.status_active
-        )
-
-        GreenhouseStatus.INACTIVE -> Triple(
-            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
-            MaterialTheme.colorScheme.onSurfaceVariant,
-            Res.string.status_inactive
-        )
-    }
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Text(
-            text = stringResource(textRes),
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
 private object GreenhousesTablePreviewData {
     val sampleGreenhouses = listOf(
         Greenhouse(
@@ -319,13 +282,5 @@ private object GreenhousesTablePreviewData {
 private fun GreenhousesTablePreview() {
     GreenhouseAdminTheme {
         GreenhousesTable(greenhouses = GreenhousesTablePreviewData.sampleGreenhouses)
-    }
-}
-
-@Preview
-@Composable
-private fun GreenhouseAvatarPreview() {
-    GreenhouseAdminTheme {
-        GreenhouseAvatar(initial = "I")
     }
 }
