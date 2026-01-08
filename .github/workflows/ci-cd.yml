@@ -51,6 +51,11 @@ jobs:
           fi
           echo "local.properties created with API_BASE_URL"
 
+      - name: Upgrade Yarn Lock files
+        run: |
+          ./gradlew kotlinUpgradeYarnLock --no-daemon
+          ./gradlew kotlinWasmUpgradeYarnLock --no-daemon
+
       - name: Build WASM Distribution
         run: ./gradlew :composeApp:wasmJsBrowserDistribution --no-daemon --stacktrace
 

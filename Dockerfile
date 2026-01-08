@@ -37,6 +37,9 @@ RUN chmod +x gradlew
 RUN echo "API_BASE_URL=${API_BASE_URL}" > local.properties && \
     echo "Created local.properties with API_BASE_URL"
 
+# Upgrade Yarn lock files (required after dependency changes)
+RUN ./gradlew kotlinUpgradeYarnLock kotlinWasmUpgradeYarnLock --no-daemon
+
 # Build the WASM distribution
 RUN ./gradlew :composeApp:wasmJsBrowserDistribution --no-daemon --stacktrace
 
