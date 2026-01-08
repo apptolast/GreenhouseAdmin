@@ -115,22 +115,39 @@ class ClientsViewModel(
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             val clientsResult = repository.getClients()
-            val provincesResult = repository.getProvinces()
-            val countriesResult = repository.getCountries()
 
             _uiState.update { currentState ->
                 val clients = clientsResult.getOrDefault(emptyList())
+                // Extract provinces and countries from loaded clients (single API call optimization)
+                val provinces = clients.extractProvinces()
+                val countries = clients.extractCountries()
                 currentState.copy(
                     isLoading = false,
                     clients = clients,
-                    provinces = provincesResult.getOrDefault(emptyList()),
-                    countries = countriesResult.getOrDefault(emptyList()),
+                    provinces = provinces,
+                    countries = countries,
                     pagination = currentState.pagination.copy(totalItems = clients.size),
                     error = clientsResult.exceptionOrNull()?.message
                 )
             }
         }
     }
+
+    /**
+     * Extracts distinct sorted provinces from a list of clients.
+     */
+    private fun List<Client>.extractProvinces(): List<String> =
+        mapNotNull { it.province.takeIf { p -> p.isNotBlank() } }
+            .distinct()
+            .sorted()
+
+    /**
+     * Extracts distinct sorted countries from a list of clients.
+     */
+    private fun List<Client>.extractCountries(): List<String> =
+        mapNotNull { it.country.takeIf { c -> c.isNotBlank() } }
+            .distinct()
+            .sorted()
 
     private fun refreshClients() {
         viewModelScope.launch {
@@ -141,6 +158,8 @@ class ClientsViewModel(
                     _uiState.update {
                         it.copy(
                             clients = clients,
+                            provinces = clients.extractProvinces(),
+                            countries = clients.extractCountries(),
                             isRefreshing = false,
                             error = null,
                             pagination = it.pagination.copy(totalItems = clients.size)

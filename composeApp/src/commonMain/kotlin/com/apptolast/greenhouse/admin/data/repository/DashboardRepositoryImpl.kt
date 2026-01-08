@@ -1,5 +1,6 @@
 package com.apptolast.greenhouse.admin.data.repository
 
+import com.apptolast.greenhouse.admin.data.model.AlertResponse
 import com.apptolast.greenhouse.admin.data.model.DashboardStats
 import com.apptolast.greenhouse.admin.data.model.MenuIcon
 import com.apptolast.greenhouse.admin.data.model.MenuItem
@@ -17,6 +18,7 @@ import com.apptolast.greenhouse.admin.domain.repository.DashboardRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.supervisorScope
+import kotlin.time.TimeSource
 
 /**
  * Implementation of DashboardRepository that fetches real data from APIs.
@@ -35,7 +37,13 @@ class DashboardRepositoryImpl(
         const val SENSOR_CATEGORY_ID: Short = 1
         const val ACTUATOR_CATEGORY_ID: Short = 2
         const val CRITICAL_SEVERITY_THRESHOLD: Short = 3 // Levels >= 3 are critical
+        const val CACHE_TTL_MS = 30_000L // 30 seconds cache
     }
+
+    // Cache for DashboardStats to avoid redundant API calls
+    private var cachedStats: DashboardStats? = null
+    private var cachedTenantAlerts: Map<Long, List<AlertResponse>> = emptyMap()
+    private var cacheTimeMark: TimeSource.Monotonic.ValueTimeMark? = null
 
     override suspend fun getStatCards(): Result<List<StatCard>> = runCatching {
         val stats = getDashboardStats().getOrThrow()
@@ -112,6 +120,15 @@ class DashboardRepositoryImpl(
     }
 
     override suspend fun getDashboardStats(): Result<DashboardStats> = runCatching {
+        // Return cached result if still valid
+        cacheTimeMark?.let { mark ->
+            cachedStats?.let { cached ->
+                if (mark.elapsedNow().inWholeMilliseconds < CACHE_TTL_MS) {
+                    return@runCatching cached
+                }
+            }
+        }
+
         // Get all tenants first
         val tenants = tenantsApi.getAllTenants()
 
@@ -124,6 +141,9 @@ class DashboardRepositoryImpl(
         var activeAlerts = 0
         var criticalAlerts = 0
         var totalUsers = 0
+
+        // Collect alerts for caching (used by getRecentAlerts)
+        val collectedAlerts = mutableMapOf<Long, List<AlertResponse>>()
 
         // Count active tenants
         val activeClients = tenants.count { it.isActive == true }
@@ -140,39 +160,48 @@ class DashboardRepositoryImpl(
                         val alerts = alertsApi.getAlerts(tenant.id)
                         val users = usersApi.getUsersByTenantId(tenant.id)
 
-                        TenantData(
-                            greenhouseCount = greenhouses.size,
-                            activeGreenhouseCount = greenhouses.count { it.isActive },
-                            deviceCount = devices.size,
-                            sensors = devices.count { it.categoryId == SENSOR_CATEGORY_ID },
-                            actuators = devices.count { it.categoryId == ACTUATOR_CATEGORY_ID },
-                            unresolvedAlerts = alerts.count { !it.isResolved },
-                            criticalAlerts = alerts.count {
-                                !it.isResolved && (it.severityLevel ?: 0) >= CRITICAL_SEVERITY_THRESHOLD
-                            },
-                            userCount = users.size
+                        TenantFetchResult(
+                            tenantId = tenant.id,
+                            alerts = alerts,
+                            data = TenantData(
+                                greenhouseCount = greenhouses.size,
+                                activeGreenhouseCount = greenhouses.count { it.isActive },
+                                deviceCount = devices.size,
+                                sensors = devices.count { it.categoryId == SENSOR_CATEGORY_ID },
+                                actuators = devices.count { it.categoryId == ACTUATOR_CATEGORY_ID },
+                                unresolvedAlerts = alerts.count { !it.isResolved },
+                                criticalAlerts = alerts.count {
+                                    !it.isResolved && (it.severityLevel ?: 0) >= CRITICAL_SEVERITY_THRESHOLD
+                                },
+                                userCount = users.size
+                            )
                         )
                     } catch (e: Exception) {
                         // If one tenant fails, return zeros and continue
-                        TenantData()
+                        TenantFetchResult(
+                            tenantId = tenant.id,
+                            alerts = emptyList(),
+                            data = TenantData()
+                        )
                     }
                 }
             }
 
             // Aggregate results
-            jobs.awaitAll().forEach { data ->
-                totalGreenhouses += data.greenhouseCount
-                activeGreenhouses += data.activeGreenhouseCount
-                totalDevices += data.deviceCount
-                sensorCount += data.sensors
-                actuatorCount += data.actuators
-                activeAlerts += data.unresolvedAlerts
-                criticalAlerts += data.criticalAlerts
-                totalUsers += data.userCount
+            jobs.awaitAll().forEach { result ->
+                collectedAlerts[result.tenantId] = result.alerts
+                totalGreenhouses += result.data.greenhouseCount
+                activeGreenhouses += result.data.activeGreenhouseCount
+                totalDevices += result.data.deviceCount
+                sensorCount += result.data.sensors
+                actuatorCount += result.data.actuators
+                activeAlerts += result.data.unresolvedAlerts
+                criticalAlerts += result.data.criticalAlerts
+                totalUsers += result.data.userCount
             }
         }
 
-        DashboardStats(
+        val stats = DashboardStats(
             totalClients = tenants.size,
             activeClients = activeClients,
             totalGreenhouses = totalGreenhouses,
@@ -184,46 +213,42 @@ class DashboardRepositoryImpl(
             criticalAlerts = criticalAlerts,
             totalUsers = totalUsers
         )
+
+        // Cache the results
+        cachedStats = stats
+        cachedTenantAlerts = collectedAlerts
+        cacheTimeMark = TimeSource.Monotonic.markNow()
+
+        stats
     }
 
     override suspend fun getRecentAlerts(limit: Int): Result<List<RecentAlert>> = runCatching {
+        // Ensure cache is populated by calling getDashboardStats if needed
+        if (cachedTenantAlerts.isEmpty()) {
+            getDashboardStats()
+        }
+
         val tenants = tenantsApi.getAllTenants()
         val tenantMap = tenants.associateBy { it.id }
 
-        // Collect alerts from all tenants
-        val allAlerts = mutableListOf<RecentAlert>()
-
-        supervisorScope {
-            val jobs = tenants.map { tenant ->
-                async {
-                    try {
-                        alertsApi.getAlerts(tenant.id)
-                            .filter { !it.isResolved }
-                            .map { alert ->
-                                RecentAlert(
-                                    id = alert.id,
-                                    tenantId = alert.tenantId,
-                                    tenantName = tenantMap[alert.tenantId]?.name ?: "Unknown",
-                                    greenhouseName = alert.greenhouseName,
-                                    message = alert.message,
-                                    severityName = alert.severityName,
-                                    severityLevel = alert.severityLevel,
-                                    createdAt = alert.createdAt
-                                )
-                            }
-                    } catch (e: Exception) {
-                        emptyList()
-                    }
+        // Use cached alerts instead of making new API calls
+        cachedTenantAlerts.flatMap { entry ->
+            val tenantId = entry.key
+            val alerts = entry.value
+            alerts.filter { alertDto -> !alertDto.isResolved }
+                .map { alertDto ->
+                    RecentAlert(
+                        id = alertDto.id,
+                        tenantId = alertDto.tenantId,
+                        tenantName = tenantMap[tenantId]?.name ?: "Unknown",
+                        greenhouseName = alertDto.greenhouseName,
+                        message = alertDto.message,
+                        severityName = alertDto.severityName,
+                        severityLevel = alertDto.severityLevel,
+                        createdAt = alertDto.createdAt
+                    )
                 }
-            }
-
-            jobs.awaitAll().forEach { alerts ->
-                allAlerts.addAll(alerts)
-            }
         }
-
-        // Sort by createdAt descending and take limit
-        allAlerts
             .sortedByDescending { it.createdAt }
             .take(limit)
     }
@@ -256,5 +281,14 @@ class DashboardRepositoryImpl(
         val unresolvedAlerts: Int = 0,
         val criticalAlerts: Int = 0,
         val userCount: Int = 0
+    )
+
+    /**
+     * Internal data class to hold tenant fetch results including alerts for caching.
+     */
+    private data class TenantFetchResult(
+        val tenantId: Long,
+        val alerts: List<AlertResponse>,
+        val data: TenantData
     )
 }

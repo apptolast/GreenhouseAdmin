@@ -90,7 +90,7 @@ import org.koin.core.parameter.parametersOf
 fun ClientDetailScreen(
     clientId: String,
     onNavigateBack: () -> Unit,
-    viewModel: ClientDetailViewModel = koinViewModel { parametersOf(clientId) },
+    viewModel: ClientDetailViewModel = koinViewModel { parametersOf(clientId.toLongOrNull() ?: 0L) },
     clipboardManager: ClipboardManager = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()

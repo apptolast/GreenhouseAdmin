@@ -2,7 +2,11 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.apptolast.greenhouse.admin.data.model.DashboardStats
 import com.apptolast.greenhouse.admin.data.model.DeviceBreakdown
+import com.apptolast.greenhouse.admin.data.model.StatCard
+import com.apptolast.greenhouse.admin.data.model.StatCardIcon
+import com.apptolast.greenhouse.admin.data.model.StatCardSubtitleColor
 import com.apptolast.greenhouse.admin.domain.repository.DashboardRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,18 +52,15 @@ class DashboardViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            // Load all data in parallel
-            val statsDeferred = async { repository.getStatCards() }
+            // Call getDashboardStats() ONCE - this is the expensive call that was being called 3x before
+            val dashboardStatsResult = repository.getDashboardStats()
+
+            // These calls are cheap (static or use cache)
             val menuDeferred = async { repository.getMenuItems() }
-            val alertCountDeferred = async { repository.getAlertCount() }
-            val dashboardStatsDeferred = async { repository.getDashboardStats() }
-            val recentAlertsDeferred = async { repository.getRecentAlerts() }
+            val recentAlertsDeferred = async { repository.getRecentAlerts() } // Uses cached alerts
             val recentClientsDeferred = async { repository.getRecentClients() }
 
-            val statsResult = statsDeferred.await()
             val menuResult = menuDeferred.await()
-            val alertCountResult = alertCountDeferred.await()
-            val dashboardStatsResult = dashboardStatsDeferred.await()
             val recentAlertsResult = recentAlertsDeferred.await()
             val recentClientsResult = recentClientsDeferred.await()
 
@@ -68,9 +69,11 @@ class DashboardViewModel(
             _uiState.update { currentState ->
                 currentState.copy(
                     isLoading = false,
-                    statCards = statsResult.getOrDefault(emptyList()),
+                    // Derive statCards from dashboardStats instead of separate API call
+                    statCards = dashboardStats?.toStatCards() ?: emptyList(),
                     menuItems = menuResult.getOrDefault(emptyList()),
-                    alertCount = alertCountResult.getOrDefault(0),
+                    // Derive alertCount from dashboardStats instead of separate API call
+                    alertCount = dashboardStats?.activeAlerts ?: 0,
                     dashboardStats = dashboardStats,
                     recentAlerts = recentAlertsResult.getOrDefault(emptyList()),
                     recentClients = recentClientsResult.getOrDefault(emptyList()),
@@ -80,7 +83,7 @@ class DashboardViewModel(
                             actuators = it.actuatorCount
                         )
                     } ?: DeviceBreakdown(),
-                    error = statsResult.exceptionOrNull()?.message
+                    error = dashboardStatsResult.exceptionOrNull()?.message
                         ?: menuResult.exceptionOrNull()?.message
                 )
             }
@@ -91,16 +94,13 @@ class DashboardViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isRefreshing = true) }
 
-            // Refresh all data in parallel
-            val statsDeferred = async { repository.getStatCards() }
-            val alertCountDeferred = async { repository.getAlertCount() }
-            val dashboardStatsDeferred = async { repository.getDashboardStats() }
+            // Call getDashboardStats() ONCE - derive statCards and alertCount from it
+            val dashboardStatsResult = repository.getDashboardStats()
+
+            // These calls are cheap (use cache)
             val recentAlertsDeferred = async { repository.getRecentAlerts() }
             val recentClientsDeferred = async { repository.getRecentClients() }
 
-            val statsResult = statsDeferred.await()
-            val alertCountResult = alertCountDeferred.await()
-            val dashboardStatsResult = dashboardStatsDeferred.await()
             val recentAlertsResult = recentAlertsDeferred.await()
             val recentClientsResult = recentClientsDeferred.await()
 
@@ -109,8 +109,8 @@ class DashboardViewModel(
             _uiState.update { currentState ->
                 currentState.copy(
                     isRefreshing = false,
-                    statCards = statsResult.getOrDefault(currentState.statCards),
-                    alertCount = alertCountResult.getOrDefault(currentState.alertCount),
+                    statCards = dashboardStats?.toStatCards() ?: currentState.statCards,
+                    alertCount = dashboardStats?.activeAlerts ?: currentState.alertCount,
                     dashboardStats = dashboardStats ?: currentState.dashboardStats,
                     recentAlerts = recentAlertsResult.getOrDefault(currentState.recentAlerts),
                     recentClients = recentClientsResult.getOrDefault(currentState.recentClients),
@@ -120,7 +120,7 @@ class DashboardViewModel(
                             actuators = it.actuatorCount
                         )
                     } ?: currentState.deviceBreakdown,
-                    error = statsResult.exceptionOrNull()?.message
+                    error = dashboardStatsResult.exceptionOrNull()?.message
                 )
             }
         }
@@ -142,4 +142,50 @@ class DashboardViewModel(
     private fun dismissError() {
         _uiState.update { it.copy(error = null) }
     }
+
+    /**
+     * Converts DashboardStats to a list of StatCards for UI display.
+     * This avoids a separate API call since we already have the stats.
+     */
+    private fun DashboardStats.toStatCards(): List<StatCard> = listOf(
+        StatCard(
+            id = "clients",
+            title = "Total Clients",
+            value = totalClients.toString(),
+            subtitle = "$activeClients activos",
+            subtitleColor = StatCardSubtitleColor.SUCCESS,
+            icon = StatCardIcon.PEOPLE
+        ),
+        StatCard(
+            id = "greenhouses",
+            title = "Total Greenhouses",
+            value = totalGreenhouses.toString(),
+            subtitle = if (totalGreenhouses > 0) {
+                val percentage = (activeGreenhouses * 100) / totalGreenhouses
+                "$percentage% Active"
+            } else "0% Active",
+            subtitleColor = StatCardSubtitleColor.SUCCESS,
+            icon = StatCardIcon.GREENHOUSE
+        ),
+        StatCard(
+            id = "devices",
+            title = "Active Devices",
+            value = totalDevices.toString(),
+            subtitle = "$sensorCount sensors, $actuatorCount actuators",
+            subtitleColor = StatCardSubtitleColor.SUCCESS,
+            icon = StatCardIcon.DEVICES
+        ),
+        StatCard(
+            id = "alerts",
+            title = "Active Alerts",
+            value = activeAlerts.toString(),
+            subtitle = if (criticalAlerts > 0) {
+                "$criticalAlerts critical"
+            } else "No critical alerts",
+            subtitleColor = if (criticalAlerts > 0) {
+                StatCardSubtitleColor.WARNING
+            } else StatCardSubtitleColor.SUCCESS,
+            icon = StatCardIcon.ALERT
+        )
+    )
 }

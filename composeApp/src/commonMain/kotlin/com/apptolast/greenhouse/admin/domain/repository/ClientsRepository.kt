@@ -21,18 +21,6 @@ interface ClientsRepository {
     suspend fun getClientById(id: Long): Result<Client>
 
     /**
-     * Fetches unique provinces from all clients.
-     * @return Result containing list of province strings or error
-     */
-    suspend fun getProvinces(): Result<List<String>>
-
-    /**
-     * Fetches unique countries from all clients.
-     * @return Result containing list of country strings or error
-     */
-    suspend fun getCountries(): Result<List<String>>
-
-    /**
      * Creates a new client.
      * @param client The client data to create
      * @return Result containing the created Client or error

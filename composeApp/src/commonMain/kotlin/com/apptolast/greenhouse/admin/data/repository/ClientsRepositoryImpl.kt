@@ -23,22 +23,6 @@ class ClientsRepositoryImpl(
         tenantsApi.getTenantById(id).toClient()
     }
 
-    override suspend fun getProvinces(): Result<List<String>> = runCatching {
-        tenantsApi.getAllTenants()
-            .mapNotNull { it.province }
-            .filter { it.isNotBlank() }
-            .distinct()
-            .sorted()
-    }
-
-    override suspend fun getCountries(): Result<List<String>> = runCatching {
-        tenantsApi.getAllTenants()
-            .mapNotNull { it.country }
-            .filter { it.isNotBlank() }
-            .distinct()
-            .sorted()
-    }
-
     override suspend fun createClient(client: Client): Result<Client> = runCatching {
         val request = client.toCreateRequest()
         tenantsApi.createTenant(request).toClient()
