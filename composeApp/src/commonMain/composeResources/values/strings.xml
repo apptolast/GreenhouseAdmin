@@ -383,6 +383,7 @@
     <string name="settings_tab_alert_types">Alert Types</string>
     <string name="settings_tab_alert_severities">Severities</string>
     <string name="settings_tab_periods">Periods</string>
+    <string name="settings_tab_actuator_states">Actuator States</string>
 
     <!-- Catalog Management -->
     <string name="button_add">Add</string>
@@ -394,16 +395,25 @@
     <string name="header_level">LEVEL</string>
     <string name="header_color">COLOR</string>
     <string name="header_default_unit">DEFAULT UNIT</string>
+    <string name="header_operational">OPERATIONAL</string>
+    <string name="header_order">ORDER</string>
 
     <!-- Form Fields -->
     <string name="field_id">ID</string>
     <string name="field_name">Name</string>
+    <string name="field_symbol">Symbol</string>
     <string name="field_category">Category</string>
     <string name="field_default_unit">Default Unit</string>
     <string name="field_is_active">Active</string>
+    <string name="field_is_operational">Operational</string>
+    <string name="field_display_order">Display Order</string>
     <string name="field_level">Level</string>
     <string name="field_color">Color (hex)</string>
     <string name="field_requires_action">Requires Action</string>
+
+    <!-- Common Labels -->
+    <string name="label_yes">Yes</string>
+    <string name="label_no">No</string>
 
     <!-- Device Category Dialogs -->
     <string name="dialog_create_device_category">Create Device Category</string>
@@ -424,4 +434,12 @@
     <!-- Period Dialogs -->
     <string name="dialog_create_period">Create Period</string>
     <string name="dialog_edit_period">Edit Period</string>
+
+    <!-- Device Unit Dialogs -->
+    <string name="dialog_create_device_unit">Create Device Unit</string>
+    <string name="dialog_edit_device_unit">Edit Device Unit</string>
+
+    <!-- Actuator State Dialogs -->
+    <string name="dialog_create_actuator_state">Create Actuator State</string>
+    <string name="dialog_edit_actuator_state">Edit Actuator State</string>
 </resources>

@@ -162,11 +162,6 @@ private fun SettingTableRow(
             modifier = Modifier.weight(0.8f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-//            SettingAvatar(
-//                initials = setting.initials,
-//                modifier = Modifier.size(36.dp)
-//            )
-//            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = setting.displayName,
                 style = MaterialTheme.typography.bodyMedium,

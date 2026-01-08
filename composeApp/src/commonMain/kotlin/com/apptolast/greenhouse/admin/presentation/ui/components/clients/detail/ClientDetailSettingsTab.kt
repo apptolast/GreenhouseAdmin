@@ -51,6 +51,7 @@ fun ClientDetailSettingsTab(
     onAddSetting: () -> Unit = {},
     onEditSetting: (Setting) -> Unit = {},
     onDeleteSetting: (Setting) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -126,7 +127,8 @@ fun ClientDetailSettingsTab(
                 SettingsTable(
                     settings = settings,
                     onEditSetting = onEditSetting,
-                    onDeleteSetting = onDeleteSetting
+                    onDeleteSetting = onDeleteSetting,
+                    onCopyId = onCopyId
                 )
             }
         }

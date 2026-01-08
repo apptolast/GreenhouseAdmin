@@ -22,6 +22,7 @@ import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.SettingsTab
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.settings_tab_account
+import greenhouseadmin.composeapp.generated.resources.settings_tab_actuator_states
 import greenhouseadmin.composeapp.generated.resources.settings_tab_alert_severities
 import greenhouseadmin.composeapp.generated.resources.settings_tab_alert_types
 import greenhouseadmin.composeapp.generated.resources.settings_tab_device_categories
@@ -104,6 +105,7 @@ private fun getTabText(tab: SettingsTab): String {
         SettingsTab.ALERT_TYPES -> stringResource(Res.string.settings_tab_alert_types)
         SettingsTab.ALERT_SEVERITIES -> stringResource(Res.string.settings_tab_alert_severities)
         SettingsTab.PERIODS -> stringResource(Res.string.settings_tab_periods)
+        SettingsTab.ACTUATOR_STATES -> stringResource(Res.string.settings_tab_actuator_states)
     }
 }
 

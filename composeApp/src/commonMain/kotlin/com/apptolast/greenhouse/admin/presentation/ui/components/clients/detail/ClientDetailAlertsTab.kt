@@ -53,6 +53,7 @@ fun ClientDetailAlertsTab(
     onDeleteAlert: (Alert) -> Unit = {},
     onResolveAlert: (Alert) -> Unit = {},
     onReopenAlert: (Alert) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -130,7 +131,8 @@ fun ClientDetailAlertsTab(
                     onEditAlert = onEditAlert,
                     onDeleteAlert = onDeleteAlert,
                     onResolveAlert = onResolveAlert,
-                    onReopenAlert = onReopenAlert
+                    onReopenAlert = onReopenAlert,
+                    onCopyId = onCopyId
                 )
             }
         }

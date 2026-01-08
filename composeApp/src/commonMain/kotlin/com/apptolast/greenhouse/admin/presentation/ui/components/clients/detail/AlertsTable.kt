@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -105,7 +106,8 @@ private fun AlertsTableHeader(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
         Text(
             text = stringResource(Res.string.header_id),
@@ -117,7 +119,7 @@ private fun AlertsTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_message),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.3f)
+            modifier = Modifier.weight(1f)
         )
         Text(
             text = stringResource(Res.string.header_greenhouse),
@@ -135,13 +137,13 @@ private fun AlertsTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_severity),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.8f)
+            modifier = Modifier.weight(0.7f)
         )
         Text(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.8f)
+            modifier = Modifier.weight(0.6f)
         )
         Text(
             text = stringResource(Res.string.header_date),
@@ -177,7 +179,8 @@ private fun AlertTableRow(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
         // ID - Copyable
         CopyableIdCell(
@@ -188,15 +191,15 @@ private fun AlertTableRow(
 
         // MESSAGE with avatar
         Row(
-            modifier = Modifier.weight(1.3f),
+            modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AlertAvatar(
-                initials = alert.initials,
-                severityLevel = alert.severityLevel,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
+//            AlertAvatar(
+//                initials = alert.initials,
+//                severityLevel = alert.severityLevel,
+//                modifier = Modifier.size(32.dp)
+//            )
+//            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = alert.message,
                 style = MaterialTheme.typography.bodyMedium,
@@ -227,19 +230,19 @@ private fun AlertTableRow(
             overflow = TextOverflow.Ellipsis
         )
 
-        // SEVERITY - Using new SeverityChip
+        // SEVERITY - Using SeverityChip with wrapContentWidth
         SeverityChip(
             name = alert.severityName,
             level = alert.severityLevel,
-            modifier = Modifier.weight(0.8f)
+            modifier = Modifier.weight(0.7f).wrapContentWidth(align = Alignment.Start)
         )
 
-        // STATUS - Using new StatusChip (inverted: resolved=active, active=inactive)
+        // STATUS - Using StatusChip with wrapContentWidth
         StatusChip(
             isActive = !alert.isResolved,
             activeText = activeText,
             inactiveText = resolvedText,
-            modifier = Modifier.weight(0.8f)
+            modifier = Modifier.weight(0.6f).wrapContentWidth(align = Alignment.Start)
         )
 
         // DATE

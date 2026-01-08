@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -87,31 +88,32 @@ private fun UsersTableHeader(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
         Text(
             text = stringResource(Res.string.header_username),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(1.2f)
         )
         Text(
             text = stringResource(Res.string.header_email),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(2f)
+            modifier = Modifier.weight(1.5f)
         )
         Text(
             text = stringResource(Res.string.header_role),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.8f)
         )
         Text(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.8f)
+            modifier = Modifier.weight(0.7f)
         )
         Text(
             text = stringResource(Res.string.header_actions),
@@ -134,18 +136,19 @@ private fun UserTableRow(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
         // USERNAME with avatar
         Row(
-            modifier = Modifier.weight(1.5f),
+            modifier = Modifier.weight(1.2f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             UserAvatar(
                 initial = user.initial,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(32.dp)
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = user.username,
                 style = MaterialTheme.typography.bodyMedium,
@@ -161,7 +164,7 @@ private fun UserTableRow(
             text = user.email,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(2f),
+            modifier = Modifier.weight(1.5f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -171,15 +174,15 @@ private fun UserTableRow(
             text = user.role.displayName,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.8f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
 
-        // STATUS - Using StatusChip
+        // STATUS - Using StatusChip with wrapContentWidth
         StatusChip(
             isActive = user.isActive,
-            modifier = Modifier.weight(0.8f)
+            modifier = Modifier.weight(0.7f).wrapContentWidth(align = Alignment.Start)
         )
 
         // ACTIONS

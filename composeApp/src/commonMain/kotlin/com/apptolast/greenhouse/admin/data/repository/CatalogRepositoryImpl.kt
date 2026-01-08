@@ -1,5 +1,8 @@
 package com.apptolast.greenhouse.admin.data.repository
 
+import com.apptolast.greenhouse.admin.data.model.ActuatorState
+import com.apptolast.greenhouse.admin.data.model.ActuatorStateCreateRequest
+import com.apptolast.greenhouse.admin.data.model.ActuatorStateUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
 import com.apptolast.greenhouse.admin.data.model.AlertSeverityCreateRequest
 import com.apptolast.greenhouse.admin.data.model.AlertSeverityUpdateRequest
@@ -13,6 +16,8 @@ import com.apptolast.greenhouse.admin.data.model.DeviceCategoryCreateRequest
 import com.apptolast.greenhouse.admin.data.model.DeviceCategoryUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.DeviceTypeCreateRequest
 import com.apptolast.greenhouse.admin.data.model.DeviceTypeUpdateRequest
+import com.apptolast.greenhouse.admin.data.model.DeviceUnitCreateRequest
+import com.apptolast.greenhouse.admin.data.model.DeviceUnitUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.Period
 import com.apptolast.greenhouse.admin.data.model.PeriodCreateRequest
 import com.apptolast.greenhouse.admin.data.model.PeriodUpdateRequest
@@ -117,10 +122,53 @@ class CatalogRepositoryImpl(
         catalogApi.deactivateDeviceType(id).toDomain()
     }
 
-    // ==================== DEVICE UNITS (READ ONLY) ====================
+    // ==================== DEVICE UNITS ====================
 
     override suspend fun getDeviceUnits(): Result<List<DeviceCatalogUnit>> = runCatching {
         catalogApi.getDeviceUnits().map { it.toDomain() }
+    }
+
+    override suspend fun createDeviceUnit(
+        symbol: String,
+        name: String,
+        description: String?,
+        isActive: Boolean
+    ): Result<DeviceCatalogUnit> = runCatching {
+        val request = DeviceUnitCreateRequest(
+            symbol = symbol,
+            name = name,
+            description = description,
+            isActive = isActive
+        )
+        catalogApi.createDeviceUnit(request).toDomain()
+    }
+
+    override suspend fun updateDeviceUnit(
+        id: Short,
+        symbol: String?,
+        name: String?,
+        description: String?,
+        isActive: Boolean?
+    ): Result<DeviceCatalogUnit> = runCatching {
+        val request = DeviceUnitUpdateRequest(
+            symbol = symbol,
+            name = name,
+            description = description,
+            isActive = isActive
+        )
+        catalogApi.updateDeviceUnit(id, request).toDomain()
+    }
+
+    override suspend fun deleteDeviceUnit(id: Short): Result<Unit> = runCatching {
+        catalogApi.deleteDeviceUnit(id)
+    }
+
+    override suspend fun activateDeviceUnit(id: Short): Result<DeviceCatalogUnit> = runCatching {
+        catalogApi.activateDeviceUnit(id).toDomain()
+    }
+
+    override suspend fun deactivateDeviceUnit(id: Short): Result<DeviceCatalogUnit> = runCatching {
+        catalogApi.deactivateDeviceUnit(id).toDomain()
     }
 
     // ==================== ALERT TYPES ====================
@@ -217,5 +265,54 @@ class CatalogRepositoryImpl(
 
     override suspend fun deletePeriod(id: Short): Result<Unit> = runCatching {
         catalogApi.deletePeriod(id)
+    }
+
+    // ==================== ACTUATOR STATES ====================
+
+    override suspend fun getActuatorStates(): Result<List<ActuatorState>> = runCatching {
+        catalogApi.getActuatorStates().map { it.toDomain() }
+    }
+
+    override suspend fun getOperationalActuatorStates(): Result<List<ActuatorState>> = runCatching {
+        catalogApi.getOperationalActuatorStates().map { it.toDomain() }
+    }
+
+    override suspend fun createActuatorState(
+        name: String,
+        description: String?,
+        isOperational: Boolean,
+        displayOrder: Short,
+        color: String?
+    ): Result<ActuatorState> = runCatching {
+        val request = ActuatorStateCreateRequest(
+            name = name,
+            description = description,
+            isOperational = isOperational,
+            displayOrder = displayOrder,
+            color = color
+        )
+        catalogApi.createActuatorState(request).toDomain()
+    }
+
+    override suspend fun updateActuatorState(
+        id: Short,
+        name: String?,
+        description: String?,
+        isOperational: Boolean?,
+        displayOrder: Short?,
+        color: String?
+    ): Result<ActuatorState> = runCatching {
+        val request = ActuatorStateUpdateRequest(
+            name = name,
+            description = description,
+            isOperational = isOperational,
+            displayOrder = displayOrder,
+            color = color
+        )
+        catalogApi.updateActuatorState(id, request).toDomain()
+    }
+
+    override suspend fun deleteActuatorState(id: Short): Result<Unit> = runCatching {
+        catalogApi.deleteActuatorState(id)
     }
 }

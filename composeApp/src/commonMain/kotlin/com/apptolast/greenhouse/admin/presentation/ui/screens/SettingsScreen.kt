@@ -29,6 +29,7 @@ import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInf
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.DeleteConfirmationDialog
 import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsAccountTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsActuatorStatesTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsAlertSeveritiesTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsAlertTypesTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsDeviceCategoriesTab
@@ -137,6 +138,24 @@ private fun SettingsScreenContent(
         )
     }
 
+    if (uiState.showDeleteDeviceUnitConfirmation) {
+        DeleteConfirmationDialog(
+            clientName = uiState.deviceUnitToDelete?.name ?: "",
+            onConfirm = { onEvent(SettingsEvent.OnConfirmDeleteDeviceUnit) },
+            onDismiss = { onEvent(SettingsEvent.OnCancelDeleteDeviceUnit) },
+            isDeleting = uiState.isDeletingDeviceUnit
+        )
+    }
+
+    if (uiState.showDeleteActuatorStateConfirmation) {
+        DeleteConfirmationDialog(
+            clientName = uiState.actuatorStateToDelete?.name ?: "",
+            onConfirm = { onEvent(SettingsEvent.OnConfirmDeleteActuatorState) },
+            onDismiss = { onEvent(SettingsEvent.OnCancelDeleteActuatorState) },
+            isDeleting = uiState.isDeletingActuatorState
+        )
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -232,7 +251,18 @@ private fun SettingsScreenContent(
 
                     SettingsTab.DEVICE_UNITS -> {
                         SettingsDeviceUnitsTab(
-                            units = uiState.deviceUnits
+                            units = uiState.deviceUnits,
+                            showDialog = uiState.showDeviceUnitDialog,
+                            formMode = uiState.deviceUnitFormMode,
+                            isSubmitting = uiState.isSubmittingDeviceUnit,
+                            submitError = uiState.submitDeviceUnitError,
+                            onAddClicked = { onEvent(SettingsEvent.OnAddDeviceUnitClicked) },
+                            onEditClicked = { onEvent(SettingsEvent.OnEditDeviceUnitClicked(it)) },
+                            onDeleteClicked = { onEvent(SettingsEvent.OnDeleteDeviceUnitClicked(it)) },
+                            onSubmit = { symbol, name, desc, isActive ->
+                                onEvent(SettingsEvent.OnSubmitDeviceUnit(symbol, name, desc, isActive))
+                            },
+                            onDismissDialog = { onEvent(SettingsEvent.OnDismissDeviceUnitDialog) }
                         )
                     }
 
@@ -284,6 +314,27 @@ private fun SettingsScreenContent(
                             onDeleteClicked = { onEvent(SettingsEvent.OnDeletePeriodClicked(it)) },
                             onSubmit = { name -> onEvent(SettingsEvent.OnSubmitPeriod(name)) },
                             onDismissDialog = { onEvent(SettingsEvent.OnDismissPeriodDialog) }
+                        )
+                    }
+
+                    SettingsTab.ACTUATOR_STATES -> {
+                        SettingsActuatorStatesTab(
+                            actuatorStates = uiState.actuatorStates,
+                            showDialog = uiState.showActuatorStateDialog,
+                            formMode = uiState.actuatorStateFormMode,
+                            isSubmitting = uiState.isSubmittingActuatorState,
+                            submitError = uiState.submitActuatorStateError,
+                            onAddClicked = { onEvent(SettingsEvent.OnAddActuatorStateClicked) },
+                            onEditClicked = { onEvent(SettingsEvent.OnEditActuatorStateClicked(it)) },
+                            onDeleteClicked = { onEvent(SettingsEvent.OnDeleteActuatorStateClicked(it)) },
+                            onSubmit = { name, desc, isOperational, displayOrder, color ->
+                                onEvent(
+                                    SettingsEvent.OnSubmitActuatorState(
+                                        name, desc, isOperational, displayOrder, color
+                                    )
+                                )
+                            },
+                            onDismissDialog = { onEvent(SettingsEvent.OnDismissActuatorStateDialog) }
                         )
                     }
                 }

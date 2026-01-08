@@ -2,6 +2,7 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.apptolast.greenhouse.admin.data.model.ActuatorState
 import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
 import com.apptolast.greenhouse.admin.data.model.AlertType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
@@ -98,6 +99,26 @@ class SettingsViewModel(
             is SettingsEvent.OnConfirmDeletePeriod -> confirmDeletePeriod()
             is SettingsEvent.OnCancelDeletePeriod -> cancelDeletePeriod()
 
+            // Device Units events
+            is SettingsEvent.OnAddDeviceUnitClicked -> showDeviceUnitDialog(DeviceUnitFormMode.Create)
+            is SettingsEvent.OnEditDeviceUnitClicked -> showDeviceUnitDialog(DeviceUnitFormMode.Edit(event.deviceUnit))
+            is SettingsEvent.OnDeleteDeviceUnitClicked -> showDeleteDeviceUnitConfirmation(event.deviceUnit)
+            is SettingsEvent.OnSubmitDeviceUnit -> submitDeviceUnit(event)
+            is SettingsEvent.OnDismissDeviceUnitDialog -> dismissDeviceUnitDialog()
+            is SettingsEvent.OnConfirmDeleteDeviceUnit -> confirmDeleteDeviceUnit()
+            is SettingsEvent.OnCancelDeleteDeviceUnit -> cancelDeleteDeviceUnit()
+            is SettingsEvent.OnActivateDeviceUnit -> activateDeviceUnit(event.deviceUnit)
+            is SettingsEvent.OnDeactivateDeviceUnit -> deactivateDeviceUnit(event.deviceUnit)
+
+            // Actuator States events
+            is SettingsEvent.OnAddActuatorStateClicked -> showActuatorStateDialog(ActuatorStateFormMode.Create)
+            is SettingsEvent.OnEditActuatorStateClicked -> showActuatorStateDialog(ActuatorStateFormMode.Edit(event.actuatorState))
+            is SettingsEvent.OnDeleteActuatorStateClicked -> showDeleteActuatorStateConfirmation(event.actuatorState)
+            is SettingsEvent.OnSubmitActuatorState -> submitActuatorState(event)
+            is SettingsEvent.OnDismissActuatorStateDialog -> dismissActuatorStateDialog()
+            is SettingsEvent.OnConfirmDeleteActuatorState -> confirmDeleteActuatorState()
+            is SettingsEvent.OnCancelDeleteActuatorState -> cancelDeleteActuatorState()
+
             // Refresh events
             is SettingsEvent.OnRefreshCatalogs -> loadAllCatalogs()
         }
@@ -171,6 +192,7 @@ class SettingsViewModel(
             val alertTypesResult = catalogRepository.getAlertTypes()
             val severitiesResult = catalogRepository.getAlertSeverities()
             val periodsResult = catalogRepository.getPeriods()
+            val actuatorStatesResult = catalogRepository.getActuatorStates()
 
             _uiState.update { state ->
                 state.copy(
@@ -181,9 +203,11 @@ class SettingsViewModel(
                     alertTypes = alertTypesResult.getOrDefault(emptyList()).sortedBy { it.id },
                     alertSeverities = severitiesResult.getOrDefault(emptyList()).sortedBy { it.id },
                     periods = periodsResult.getOrDefault(emptyList()).sortedBy { it.id },
+                    actuatorStates = actuatorStatesResult.getOrDefault(emptyList()).sortedBy { it.displayOrder },
                     catalogsError = if (categoriesResult.isFailure || typesResult.isFailure ||
                         unitsResult.isFailure || alertTypesResult.isFailure ||
-                        severitiesResult.isFailure || periodsResult.isFailure
+                        severitiesResult.isFailure || periodsResult.isFailure ||
+                        actuatorStatesResult.isFailure
                     ) "Failed to load some catalogs" else null
                 )
             }
@@ -776,6 +800,260 @@ class SettingsViewModel(
                 }
         }
     }
+
+    // ==================== DEVICE UNITS CRUD ====================
+
+    private fun showDeviceUnitDialog(mode: DeviceUnitFormMode) {
+        _uiState.update {
+            it.copy(
+                showDeviceUnitDialog = true,
+                deviceUnitFormMode = mode,
+                submitDeviceUnitError = null
+            )
+        }
+    }
+
+    private fun dismissDeviceUnitDialog() {
+        _uiState.update {
+            it.copy(
+                showDeviceUnitDialog = false,
+                submitDeviceUnitError = null
+            )
+        }
+    }
+
+    private fun showDeleteDeviceUnitConfirmation(deviceUnit: DeviceCatalogUnit) {
+        _uiState.update {
+            it.copy(
+                showDeleteDeviceUnitConfirmation = true,
+                deviceUnitToDelete = deviceUnit
+            )
+        }
+    }
+
+    private fun cancelDeleteDeviceUnit() {
+        _uiState.update {
+            it.copy(
+                showDeleteDeviceUnitConfirmation = false,
+                deviceUnitToDelete = null
+            )
+        }
+    }
+
+    private fun submitDeviceUnit(event: SettingsEvent.OnSubmitDeviceUnit) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingDeviceUnit = true, submitDeviceUnitError = null) }
+
+            val result = when (val mode = _uiState.value.deviceUnitFormMode) {
+                is DeviceUnitFormMode.Create -> catalogRepository.createDeviceUnit(
+                    symbol = event.symbol,
+                    name = event.name,
+                    description = event.description,
+                    isActive = event.isActive
+                )
+
+                is DeviceUnitFormMode.Edit -> catalogRepository.updateDeviceUnit(
+                    id = mode.deviceUnit.id,
+                    symbol = event.symbol,
+                    name = event.name,
+                    description = event.description,
+                    isActive = event.isActive
+                )
+            }
+
+            result
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingDeviceUnit = false,
+                            showDeviceUnitDialog = false
+                        )
+                    }
+                    loadDeviceUnits()
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingDeviceUnit = false,
+                            submitDeviceUnitError = error.message ?: "Failed to save device unit"
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun confirmDeleteDeviceUnit() {
+        val unitToDelete = _uiState.value.deviceUnitToDelete ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingDeviceUnit = true) }
+
+            catalogRepository.deleteDeviceUnit(unitToDelete.id)
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isDeletingDeviceUnit = false,
+                            showDeleteDeviceUnitConfirmation = false,
+                            deviceUnitToDelete = null
+                        )
+                    }
+                    loadDeviceUnits()
+                }
+                .onFailure {
+                    _uiState.update {
+                        it.copy(
+                            isDeletingDeviceUnit = false,
+                            showDeleteDeviceUnitConfirmation = false,
+                            deviceUnitToDelete = null
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun activateDeviceUnit(deviceUnit: DeviceCatalogUnit) {
+        viewModelScope.launch {
+            catalogRepository.activateDeviceUnit(deviceUnit.id)
+                .onSuccess { loadDeviceUnits() }
+        }
+    }
+
+    private fun deactivateDeviceUnit(deviceUnit: DeviceCatalogUnit) {
+        viewModelScope.launch {
+            catalogRepository.deactivateDeviceUnit(deviceUnit.id)
+                .onSuccess { loadDeviceUnits() }
+        }
+    }
+
+    private fun loadDeviceUnits() {
+        viewModelScope.launch {
+            catalogRepository.getDeviceUnits()
+                .onSuccess { units ->
+                    _uiState.update { it.copy(deviceUnits = units.sortedBy { u -> u.id }) }
+                }
+        }
+    }
+
+    // ==================== ACTUATOR STATES CRUD ====================
+
+    private fun showActuatorStateDialog(mode: ActuatorStateFormMode) {
+        _uiState.update {
+            it.copy(
+                showActuatorStateDialog = true,
+                actuatorStateFormMode = mode,
+                submitActuatorStateError = null
+            )
+        }
+    }
+
+    private fun dismissActuatorStateDialog() {
+        _uiState.update {
+            it.copy(
+                showActuatorStateDialog = false,
+                submitActuatorStateError = null
+            )
+        }
+    }
+
+    private fun showDeleteActuatorStateConfirmation(actuatorState: ActuatorState) {
+        _uiState.update {
+            it.copy(
+                showDeleteActuatorStateConfirmation = true,
+                actuatorStateToDelete = actuatorState
+            )
+        }
+    }
+
+    private fun cancelDeleteActuatorState() {
+        _uiState.update {
+            it.copy(
+                showDeleteActuatorStateConfirmation = false,
+                actuatorStateToDelete = null
+            )
+        }
+    }
+
+    private fun submitActuatorState(event: SettingsEvent.OnSubmitActuatorState) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingActuatorState = true, submitActuatorStateError = null) }
+
+            val result = when (val mode = _uiState.value.actuatorStateFormMode) {
+                is ActuatorStateFormMode.Create -> catalogRepository.createActuatorState(
+                    name = event.name,
+                    description = event.description,
+                    isOperational = event.isOperational,
+                    displayOrder = event.displayOrder,
+                    color = event.color
+                )
+
+                is ActuatorStateFormMode.Edit -> catalogRepository.updateActuatorState(
+                    id = mode.actuatorState.id,
+                    name = event.name,
+                    description = event.description,
+                    isOperational = event.isOperational,
+                    displayOrder = event.displayOrder,
+                    color = event.color
+                )
+            }
+
+            result
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingActuatorState = false,
+                            showActuatorStateDialog = false
+                        )
+                    }
+                    loadActuatorStates()
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingActuatorState = false,
+                            submitActuatorStateError = error.message ?: "Failed to save actuator state"
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun confirmDeleteActuatorState() {
+        val stateToDelete = _uiState.value.actuatorStateToDelete ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingActuatorState = true) }
+
+            catalogRepository.deleteActuatorState(stateToDelete.id)
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isDeletingActuatorState = false,
+                            showDeleteActuatorStateConfirmation = false,
+                            actuatorStateToDelete = null
+                        )
+                    }
+                    loadActuatorStates()
+                }
+                .onFailure {
+                    _uiState.update {
+                        it.copy(
+                            isDeletingActuatorState = false,
+                            showDeleteActuatorStateConfirmation = false,
+                            actuatorStateToDelete = null
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun loadActuatorStates() {
+        viewModelScope.launch {
+            catalogRepository.getActuatorStates()
+                .onSuccess { states ->
+                    _uiState.update { it.copy(actuatorStates = states.sortedBy { s -> s.displayOrder }) }
+                }
+        }
+    }
 }
 
 // ==================== UI STATE ====================
@@ -818,8 +1096,15 @@ data class SettingsUiState(
     val deviceTypeToDelete: DeviceCatalogType? = null,
     val isDeletingDeviceType: Boolean = false,
 
-    // Device Units state (read-only)
+    // Device Units state
     val deviceUnits: List<DeviceCatalogUnit> = emptyList(),
+    val showDeviceUnitDialog: Boolean = false,
+    val deviceUnitFormMode: DeviceUnitFormMode = DeviceUnitFormMode.Create,
+    val isSubmittingDeviceUnit: Boolean = false,
+    val submitDeviceUnitError: String? = null,
+    val showDeleteDeviceUnitConfirmation: Boolean = false,
+    val deviceUnitToDelete: DeviceCatalogUnit? = null,
+    val isDeletingDeviceUnit: Boolean = false,
 
     // Alert Types state
     val alertTypes: List<AlertType> = emptyList(),
@@ -849,7 +1134,17 @@ data class SettingsUiState(
     val submitPeriodError: String? = null,
     val showDeletePeriodConfirmation: Boolean = false,
     val periodToDelete: Period? = null,
-    val isDeletingPeriod: Boolean = false
+    val isDeletingPeriod: Boolean = false,
+
+    // Actuator States state
+    val actuatorStates: List<ActuatorState> = emptyList(),
+    val showActuatorStateDialog: Boolean = false,
+    val actuatorStateFormMode: ActuatorStateFormMode = ActuatorStateFormMode.Create,
+    val isSubmittingActuatorState: Boolean = false,
+    val submitActuatorStateError: String? = null,
+    val showDeleteActuatorStateConfirmation: Boolean = false,
+    val actuatorStateToDelete: ActuatorState? = null,
+    val isDeletingActuatorState: Boolean = false
 )
 
 // ==================== ENUMS AND SEALED INTERFACES ====================
@@ -864,7 +1159,8 @@ enum class SettingsTab {
     DEVICE_UNITS,
     ALERT_TYPES,
     ALERT_SEVERITIES,
-    PERIODS
+    PERIODS,
+    ACTUATOR_STATES
 }
 
 /**
@@ -905,6 +1201,22 @@ sealed interface AlertSeverityFormMode {
 sealed interface PeriodFormMode {
     data object Create : PeriodFormMode
     data class Edit(val period: Period) : PeriodFormMode
+}
+
+/**
+ * Mode for the device unit form dialog.
+ */
+sealed interface DeviceUnitFormMode {
+    data object Create : DeviceUnitFormMode
+    data class Edit(val deviceUnit: DeviceCatalogUnit) : DeviceUnitFormMode
+}
+
+/**
+ * Mode for the actuator state form dialog.
+ */
+sealed interface ActuatorStateFormMode {
+    data object Create : ActuatorStateFormMode
+    data class Edit(val actuatorState: ActuatorState) : ActuatorStateFormMode
 }
 
 // ==================== EVENTS ====================
@@ -987,6 +1299,39 @@ sealed interface SettingsEvent {
     data object OnDismissPeriodDialog : SettingsEvent
     data object OnConfirmDeletePeriod : SettingsEvent
     data object OnCancelDeletePeriod : SettingsEvent
+
+    // Device Units events
+    data object OnAddDeviceUnitClicked : SettingsEvent
+    data class OnEditDeviceUnitClicked(val deviceUnit: DeviceCatalogUnit) : SettingsEvent
+    data class OnDeleteDeviceUnitClicked(val deviceUnit: DeviceCatalogUnit) : SettingsEvent
+    data class OnSubmitDeviceUnit(
+        val symbol: String,
+        val name: String,
+        val description: String?,
+        val isActive: Boolean
+    ) : SettingsEvent
+
+    data object OnDismissDeviceUnitDialog : SettingsEvent
+    data object OnConfirmDeleteDeviceUnit : SettingsEvent
+    data object OnCancelDeleteDeviceUnit : SettingsEvent
+    data class OnActivateDeviceUnit(val deviceUnit: DeviceCatalogUnit) : SettingsEvent
+    data class OnDeactivateDeviceUnit(val deviceUnit: DeviceCatalogUnit) : SettingsEvent
+
+    // Actuator States events
+    data object OnAddActuatorStateClicked : SettingsEvent
+    data class OnEditActuatorStateClicked(val actuatorState: ActuatorState) : SettingsEvent
+    data class OnDeleteActuatorStateClicked(val actuatorState: ActuatorState) : SettingsEvent
+    data class OnSubmitActuatorState(
+        val name: String,
+        val description: String?,
+        val isOperational: Boolean,
+        val displayOrder: Short,
+        val color: String?
+    ) : SettingsEvent
+
+    data object OnDismissActuatorStateDialog : SettingsEvent
+    data object OnConfirmDeleteActuatorState : SettingsEvent
+    data object OnCancelDeleteActuatorState : SettingsEvent
 
     // Refresh events
     data object OnRefreshCatalogs : SettingsEvent

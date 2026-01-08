@@ -1,6 +1,5 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -86,16 +86,15 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
         // ID column
         Text(
             text = stringResource(Res.string.header_id),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.SemiBold,
             modifier = Modifier.weight(1.2f)
         )
 
@@ -104,8 +103,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_name),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1.3f)
+            modifier = Modifier.weight(1f)
         )
 
         // CATEGORY column
@@ -113,8 +111,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_category),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.7f)
         )
 
         // TYPE column
@@ -122,8 +119,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_type),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.9f)
         )
 
         // UNIT column
@@ -131,8 +127,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_unit),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(0.6f)
+            modifier = Modifier.weight(0.5f)
         )
 
         // STATUS column
@@ -140,8 +135,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(0.8f)
+            modifier = Modifier.weight(0.7f)
         )
 
         // ACTIONS column
@@ -149,8 +143,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_actions),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.width(88.dp),
+            modifier = Modifier.width(80.dp),
             textAlign = TextAlign.Center
         )
     }
@@ -167,8 +160,9 @@ private fun DeviceTableRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
         // ID - Copyable UUID
         CopyableIdCell(
@@ -183,7 +177,7 @@ private fun DeviceTableRow(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             fontWeight = if (device.name != null) FontWeight.Medium else FontWeight.Normal,
-            modifier = Modifier.weight(1.3f),
+            modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -193,7 +187,7 @@ private fun DeviceTableRow(
             text = device.categoryName ?: device.categoryDisplayName,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.7f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -203,7 +197,7 @@ private fun DeviceTableRow(
             text = device.typeName ?: "-",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.9f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -213,41 +207,41 @@ private fun DeviceTableRow(
             text = device.unitSymbol ?: "-",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.6f),
+            modifier = Modifier.weight(0.5f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
 
-        // STATUS - Status chip
+        // STATUS - Status chip with wrapContentWidth
         StatusChip(
             isActive = device.isActive,
-            modifier = Modifier.weight(0.8f)
+            modifier = Modifier.weight(0.7f).wrapContentWidth(align = Alignment.Start)
         )
 
         // ACTIONS
         Row(
-            modifier = Modifier.width(88.dp),
+            modifier = Modifier.width(80.dp),
             horizontalArrangement = Arrangement.Center
         ) {
             IconButton(
                 onClick = onEdit,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(32.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = stringResource(Res.string.action_edit),
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(18.dp)
                 )
             }
             IconButton(
                 onClick = onDelete,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(32.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = stringResource(Res.string.action_delete),
-                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(18.dp)
                 )
             }

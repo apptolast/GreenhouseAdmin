@@ -525,6 +525,7 @@ private fun ClientDetailContent(
                         onDeleteAlert = { alert -> onEvent(ClientDetailEvent.OnDeleteAlertClicked(alert)) },
                         onResolveAlert = { alert -> onEvent(ClientDetailEvent.OnResolveAlertClicked(alert)) },
                         onReopenAlert = { alert -> onEvent(ClientDetailEvent.OnReopenAlertClicked(alert)) },
+                        onCopyId = onCopyId,
                         onRetry = { onEvent(ClientDetailEvent.LoadAlerts) }
                     )
                 }
@@ -537,6 +538,7 @@ private fun ClientDetailContent(
                         onAddSetting = { onEvent(ClientDetailEvent.OnAddSettingClicked) },
                         onEditSetting = { setting -> onEvent(ClientDetailEvent.OnEditSettingClicked(setting)) },
                         onDeleteSetting = { setting -> onEvent(ClientDetailEvent.OnDeleteSettingClicked(setting)) },
+                        onCopyId = onCopyId,
                         onRetry = { onEvent(ClientDetailEvent.LoadSettings) }
                     )
                 }
