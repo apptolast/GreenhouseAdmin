@@ -29,37 +29,37 @@ class AlertsRepositoryImpl(
 
     // ==================== CRUD METHODS ====================
 
-    override suspend fun getAlertsByTenantId(tenantId: String): Result<List<Alert>> = runCatching {
+    override suspend fun getAlertsByTenantId(tenantId: Long): Result<List<Alert>> = runCatching {
         alertsApi.getAlerts(tenantId).map { it.toDomain() }
     }
 
-    override suspend fun createAlert(tenantId: String, request: AlertCreateRequest): Result<Alert> = runCatching {
+    override suspend fun createAlert(tenantId: Long, request: AlertCreateRequest): Result<Alert> = runCatching {
         alertsApi.createAlert(tenantId, request).toDomain()
     }
 
     override suspend fun updateAlert(
-        tenantId: String,
-        alertId: String,
+        tenantId: Long,
+        alertId: Long,
         request: AlertUpdateRequest
     ): Result<Alert> = runCatching {
         alertsApi.updateAlert(tenantId, alertId, request).toDomain()
     }
 
-    override suspend fun deleteAlert(tenantId: String, alertId: String): Result<Unit> = runCatching {
+    override suspend fun deleteAlert(tenantId: Long, alertId: Long): Result<Unit> = runCatching {
         alertsApi.deleteAlert(tenantId, alertId)
     }
 
     // ==================== ACTION METHODS ====================
 
     override suspend fun resolveAlert(
-        tenantId: String,
-        alertId: String,
-        resolvedByUserId: String?
+        tenantId: Long,
+        alertId: Long,
+        resolvedByUserId: Long?
     ): Result<Alert> = runCatching {
         alertsApi.resolveAlert(tenantId, alertId, AlertResolveRequest(resolvedByUserId)).toDomain()
     }
 
-    override suspend fun reopenAlert(tenantId: String, alertId: String): Result<Alert> = runCatching {
+    override suspend fun reopenAlert(tenantId: Long, alertId: Long): Result<Alert> = runCatching {
         alertsApi.reopenAlert(tenantId, alertId).toDomain()
     }
 }

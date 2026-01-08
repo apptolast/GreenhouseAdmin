@@ -7,11 +7,11 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class UserResponse(
-    val id: String,
+    val id: Long,
     val username: String,
     val email: String,
     val role: String,
-    val tenantId: String,
+    val tenantId: Long,
     val isActive: Boolean,
     val lastLogin: String? = null,
     val createdAt: String,
@@ -48,11 +48,11 @@ data class UserUpdateRequest(
  */
 @Serializable
 data class User(
-    val id: String,
+    val id: Long,
     val username: String,
     val email: String,
     val role: UserRole,
-    val tenantId: String,
+    val tenantId: Long,
     val isActive: Boolean = true,
     val lastLogin: String? = null,
     val createdAt: String? = null,

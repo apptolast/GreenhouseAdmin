@@ -39,9 +39,9 @@ data class AlertSeverityResponse(
  */
 @Serializable
 data class AlertResponse(
-    val id: String,
-    val tenantId: String,
-    val greenhouseId: String,
+    val id: Long,
+    val tenantId: Long,
+    val greenhouseId: Long,
     val greenhouseName: String? = null,
     val alertTypeId: Short? = null,
     val alertTypeName: String? = null,
@@ -51,7 +51,7 @@ data class AlertResponse(
     val message: String,
     val isResolved: Boolean = false,
     val resolvedAt: String? = null,
-    val resolvedByUserId: String? = null,
+    val resolvedByUserId: Long? = null,
     val resolvedByUserName: String? = null,
     val createdAt: String,
     val updatedAt: String? = null
@@ -66,7 +66,7 @@ data class AlertResponse(
  */
 @Serializable
 data class AlertCreateRequest(
-    val greenhouseId: String,
+    val greenhouseId: Long,
     val alertTypeId: Short? = null,
     val severityId: Short? = null,
     val message: String
@@ -87,7 +87,7 @@ data class AlertUpdateRequest(
  */
 @Serializable
 data class AlertResolveRequest(
-    val resolvedByUserId: String? = null
+    val resolvedByUserId: Long? = null
 )
 
 // ============================================
@@ -119,9 +119,9 @@ data class AlertSeverityCatalog(
  * Domain model for an alert.
  */
 data class Alert(
-    val id: String,
-    val tenantId: String,
-    val greenhouseId: String,
+    val id: Long,
+    val tenantId: Long,
+    val greenhouseId: Long,
     val greenhouseName: String?,
     val alertTypeId: Short?,
     val alertTypeName: String?,

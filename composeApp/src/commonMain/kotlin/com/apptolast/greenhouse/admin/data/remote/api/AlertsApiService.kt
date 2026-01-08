@@ -42,21 +42,21 @@ class AlertsApiService(private val httpClient: HttpClient) {
     /**
      * Get all alerts for a specific tenant.
      */
-    suspend fun getAlerts(tenantId: String): List<AlertResponse> {
+    suspend fun getAlerts(tenantId: Long): List<AlertResponse> {
         return httpClient.get("tenants/$tenantId/alerts").body()
     }
 
     /**
      * Get a specific alert by ID within a tenant.
      */
-    suspend fun getAlert(tenantId: String, alertId: String): AlertResponse {
+    suspend fun getAlert(tenantId: Long, alertId: Long): AlertResponse {
         return httpClient.get("tenants/$tenantId/alerts/$alertId").body()
     }
 
     /**
      * Create a new alert for a tenant.
      */
-    suspend fun createAlert(tenantId: String, request: AlertCreateRequest): AlertResponse {
+    suspend fun createAlert(tenantId: Long, request: AlertCreateRequest): AlertResponse {
         return httpClient.post("tenants/$tenantId/alerts") {
             setBody(request)
         }.body()
@@ -65,7 +65,7 @@ class AlertsApiService(private val httpClient: HttpClient) {
     /**
      * Update an existing alert within a tenant.
      */
-    suspend fun updateAlert(tenantId: String, alertId: String, request: AlertUpdateRequest): AlertResponse {
+    suspend fun updateAlert(tenantId: Long, alertId: Long, request: AlertUpdateRequest): AlertResponse {
         return httpClient.put("tenants/$tenantId/alerts/$alertId") {
             setBody(request)
         }.body()
@@ -74,7 +74,7 @@ class AlertsApiService(private val httpClient: HttpClient) {
     /**
      * Delete an alert from a tenant.
      */
-    suspend fun deleteAlert(tenantId: String, alertId: String) {
+    suspend fun deleteAlert(tenantId: Long, alertId: Long) {
         httpClient.delete("tenants/$tenantId/alerts/$alertId")
     }
 
@@ -83,7 +83,7 @@ class AlertsApiService(private val httpClient: HttpClient) {
     /**
      * Resolve an alert.
      */
-    suspend fun resolveAlert(tenantId: String, alertId: String, request: AlertResolveRequest): AlertResponse {
+    suspend fun resolveAlert(tenantId: Long, alertId: Long, request: AlertResolveRequest): AlertResponse {
         return httpClient.post("tenants/$tenantId/alerts/$alertId/resolve") {
             setBody(request)
         }.body()
@@ -92,7 +92,7 @@ class AlertsApiService(private val httpClient: HttpClient) {
     /**
      * Reopen a resolved alert.
      */
-    suspend fun reopenAlert(tenantId: String, alertId: String): AlertResponse {
+    suspend fun reopenAlert(tenantId: Long, alertId: Long): AlertResponse {
         return httpClient.post("tenants/$tenantId/alerts/$alertId/reopen").body()
     }
 }

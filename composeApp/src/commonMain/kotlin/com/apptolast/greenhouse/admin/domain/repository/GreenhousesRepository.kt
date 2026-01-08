@@ -13,7 +13,7 @@ interface GreenhousesRepository {
      * @param tenantId The tenant ID to filter greenhouses by
      * @return Result containing list of Greenhouse or error
      */
-    suspend fun getGreenhousesByTenantId(tenantId: String): Result<List<Greenhouse>>
+    suspend fun getGreenhousesByTenantId(tenantId: Long): Result<List<Greenhouse>>
 
     /**
      * Creates a new greenhouse for a tenant.
@@ -26,7 +26,7 @@ interface GreenhousesRepository {
      * @return Result containing the created Greenhouse or error
      */
     suspend fun createGreenhouse(
-        tenantId: String,
+        tenantId: Long,
         name: String,
         location: Location? = null,
         areaM2: Double? = null,
@@ -47,8 +47,8 @@ interface GreenhousesRepository {
      * @return Result containing the updated Greenhouse or error
      */
     suspend fun updateGreenhouse(
-        tenantId: String,
-        greenhouseId: String,
+        tenantId: Long,
+        greenhouseId: Long,
         name: String? = null,
         location: Location? = null,
         areaM2: Double? = null,
@@ -62,5 +62,5 @@ interface GreenhousesRepository {
      * @param greenhouseId The greenhouse ID to delete
      * @return Result containing success or error
      */
-    suspend fun deleteGreenhouse(tenantId: String, greenhouseId: String): Result<Unit>
+    suspend fun deleteGreenhouse(tenantId: Long, greenhouseId: Long): Result<Unit>
 }

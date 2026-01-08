@@ -162,10 +162,10 @@ private fun EmptySettingsContent(modifier: Modifier = Modifier) {
 private object ClientDetailSettingsTabPreviewData {
     val sampleSettings = listOf(
         Setting(
-            id = "1",
-            greenhouseId = "gh1",
+            id = 1L,
+            greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
-            tenantId = "t1",
+            tenantId = 1L,
             parameterId = 1,
             parameterName = "Temperature",
             periodId = 1,
@@ -176,10 +176,10 @@ private object ClientDetailSettingsTabPreviewData {
             createdAt = "2024-01-15T10:30:00Z"
         ),
         Setting(
-            id = "2",
-            greenhouseId = "gh1",
+            id = 2L,
+            greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
-            tenantId = "t1",
+            tenantId = 1L,
             parameterId = 2,
             parameterName = "Humidity",
             periodId = 2,

@@ -15,12 +15,12 @@ class UsersRepositoryImpl(
     private val usersApi: UsersApiService
 ) : UsersRepository {
 
-    override suspend fun getUsersByTenantId(tenantId: String): Result<List<User>> = runCatching {
+    override suspend fun getUsersByTenantId(tenantId: Long): Result<List<User>> = runCatching {
         usersApi.getUsersByTenantId(tenantId).map { it.toUser() }
     }
 
     override suspend fun createUser(
-        tenantId: String,
+        tenantId: Long,
         username: String,
         email: String,
         password: String,
@@ -38,8 +38,8 @@ class UsersRepositoryImpl(
     }
 
     override suspend fun updateUser(
-        tenantId: String,
-        userId: String,
+        tenantId: Long,
+        userId: Long,
         username: String?,
         email: String?,
         password: String?,
@@ -56,7 +56,7 @@ class UsersRepositoryImpl(
         usersApi.updateUser(tenantId, userId, request).toUser()
     }
 
-    override suspend fun deleteUser(tenantId: String, userId: String): Result<Unit> = runCatching {
+    override suspend fun deleteUser(tenantId: Long, userId: Long): Result<Unit> = runCatching {
         usersApi.deleteUser(tenantId, userId)
     }
 }

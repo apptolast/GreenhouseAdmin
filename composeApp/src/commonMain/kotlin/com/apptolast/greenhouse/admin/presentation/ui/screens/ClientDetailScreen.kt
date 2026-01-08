@@ -605,7 +605,7 @@ private fun ClientDetailContent(
 
 private object ClientDetailScreenPreviewData {
     val sampleClient = Client(
-        id = "12345",
+        id = 12345L,
         name = "Fresh Vegetables Co.",
         email = "contact@freshveg.com",
         phone = "+34 612 345 678",
@@ -616,28 +616,28 @@ private object ClientDetailScreenPreviewData {
 
     val sampleUsers = listOf(
         User(
-            id = "1",
+            id = 1L,
             username = "anamartinez",
             email = "ana@freshveg.com",
             role = UserRole.ADMIN,
-            tenantId = "12345",
+            tenantId = 12345L,
             isActive = true
         ),
         User(
-            id = "2",
+            id = 2L,
             username = "carlosruiz",
             email = "carlos@freshveg.com",
             role = UserRole.OPERATOR,
-            tenantId = "12345",
+            tenantId = 12345L,
             isActive = true
         )
     )
 
     val sampleGreenhouses = listOf(
         Greenhouse(
-            id = "1",
+            id = 1L,
             name = "Invernadero Principal",
-            tenantId = "12345",
+            tenantId = 12345L,
             location = null,
             areaM2 = 1500.0,
             timezone = "Europe/Madrid",
@@ -646,9 +646,9 @@ private object ClientDetailScreenPreviewData {
             updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
-            id = "2",
+            id = 2L,
             name = "Invernadero Norte",
-            tenantId = "12345",
+            tenantId = 12345L,
             location = null,
             areaM2 = 800.0,
             timezone = "Europe/Madrid",
@@ -660,9 +660,9 @@ private object ClientDetailScreenPreviewData {
 
     val sampleDevices = listOf(
         Device(
-            id = "1",
-            tenantId = "12345",
-            greenhouseId = "gh1",
+            id = 1L,
+            tenantId = 12345L,
+            greenhouseId = 1L,
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "Sensor",
             typeId = 1,
@@ -672,9 +672,9 @@ private object ClientDetailScreenPreviewData {
             isActive = true
         ),
         Device(
-            id = "2",
-            tenantId = "12345",
-            greenhouseId = "gh1",
+            id = 2L,
+            tenantId = 12345L,
+            greenhouseId = 1L,
             categoryId = Device.CATEGORY_ACTUATOR,
             categoryName = "Actuator",
             typeId = 2,
@@ -684,9 +684,9 @@ private object ClientDetailScreenPreviewData {
             isActive = true
         ),
         Device(
-            id = "3",
-            tenantId = "12345",
-            greenhouseId = "gh1",
+            id = 3L,
+            tenantId = 12345L,
+            greenhouseId = 1L,
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "Sensor",
             typeId = 3,

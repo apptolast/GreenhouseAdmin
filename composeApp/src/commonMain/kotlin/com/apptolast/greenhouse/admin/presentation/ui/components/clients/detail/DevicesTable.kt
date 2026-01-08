@@ -117,7 +117,7 @@ fun DevicesTable(
                     device = device,
                     onEdit = { onEditDevice(device) },
                     onDelete = { onDeleteDevice(device) },
-                    onCopyId = { onCopyId(device.id) }
+                    onCopyId = { onCopyId(device.id.toString()) }
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
@@ -210,7 +210,7 @@ private fun DeviceTableRow(
     ) {
         // ID - Copyable UUID
         CopyableIdCell(
-            id = device.id,
+            id = device.id.toString(),
             onCopyId = onCopyId,
             modifier = Modifier.weight(1.2f)
         )
@@ -313,7 +313,7 @@ private fun DevicesCardList(
                 device = device,
                 onEdit = { onEditDevice(device) },
                 onDelete = { onDeleteDevice(device) },
-                onCopyId = { onCopyId(device.id) }
+                onCopyId = { onCopyId(device.id.toString()) }
             )
         }
     }
@@ -366,7 +366,7 @@ private fun DeviceCard(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = device.id,
+                        text = device.id.toString(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -478,9 +478,9 @@ private fun DeviceCard(
 private object DevicesTablePreviewData {
     val sampleDevices = listOf(
         Device(
-            id = "550e8400-e29b-41d4-a716-446655440001",
-            tenantId = "tenant1",
-            greenhouseId = "gh1",
+            id = 1L,
+            tenantId = 1L,
+            greenhouseId = 1L,
             name = "Sensor Temperatura Invernadero 1",
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "SENSOR",
@@ -491,9 +491,9 @@ private object DevicesTablePreviewData {
             isActive = true
         ),
         Device(
-            id = "042e3d10-7041-4c32-abd7-063036ce24ba",
-            tenantId = "tenant1",
-            greenhouseId = "gh1",
+            id = 2L,
+            tenantId = 1L,
+            greenhouseId = 1L,
             name = null, // Device without name
             categoryId = Device.CATEGORY_ACTUATOR,
             categoryName = "ACTUATOR",
@@ -504,9 +504,9 @@ private object DevicesTablePreviewData {
             isActive = true
         ),
         Device(
-            id = "4c5a5263-68da-4688-93c7-ddf81b5dafb2",
-            tenantId = "tenant1",
-            greenhouseId = "gh1",
+            id = 3L,
+            tenantId = 1L,
+            greenhouseId = 1L,
             name = "Sensor CO2 Norte",
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "SENSOR",

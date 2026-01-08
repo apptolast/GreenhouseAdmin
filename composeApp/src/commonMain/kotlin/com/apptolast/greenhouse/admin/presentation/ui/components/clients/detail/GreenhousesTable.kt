@@ -421,9 +421,9 @@ fun GreenhouseAvatar(
 private object GreenhousesTablePreviewData {
     val sampleGreenhouses = listOf(
         Greenhouse(
-            id = "1",
+            id = 1L,
             name = "Invernadero Principal",
-            tenantId = "client1",
+            tenantId = 1L,
             location = Location(lat = 36.8381, lon = -2.4597),
             areaM2 = 1500.0,
             timezone = "Europe/Madrid",
@@ -432,9 +432,9 @@ private object GreenhousesTablePreviewData {
             updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
-            id = "2",
+            id = 2L,
             name = "Invernadero Norte",
-            tenantId = "client1",
+            tenantId = 1L,
             location = Location(lat = 36.8400, lon = -2.4600),
             areaM2 = 800.0,
             timezone = "Europe/Madrid",
@@ -443,9 +443,9 @@ private object GreenhousesTablePreviewData {
             updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
-            id = "3",
+            id = 3L,
             name = "Invernadero Experimental",
-            tenantId = "client1",
+            tenantId = 1L,
             location = null,
             areaM2 = null,
             timezone = "Europe/Madrid",

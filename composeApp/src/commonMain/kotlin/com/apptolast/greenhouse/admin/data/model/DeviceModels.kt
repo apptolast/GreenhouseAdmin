@@ -8,9 +8,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class DeviceResponse(
-    val id: String,
-    val tenantId: String,
-    val greenhouseId: String,
+    val id: Long,
+    val tenantId: Long,
+    val greenhouseId: Long,
     val name: String? = null,
     val categoryId: Short? = null,
     val categoryName: String? = null,
@@ -28,7 +28,7 @@ data class DeviceResponse(
  */
 @Serializable
 data class DeviceCreateRequest(
-    val greenhouseId: String,
+    val greenhouseId: Long,
     val name: String? = null,
     val categoryId: Short? = null,
     val typeId: Short? = null,
@@ -54,9 +54,9 @@ data class DeviceUpdateRequest(
  */
 @Serializable
 data class Device(
-    val id: String,
-    val tenantId: String,
-    val greenhouseId: String,
+    val id: Long,
+    val tenantId: Long,
+    val greenhouseId: Long,
     val name: String? = null,
     val categoryId: Short? = null,
     val categoryName: String? = null,

@@ -451,27 +451,27 @@ fun UserAvatar(
 private object UsersTablePreviewData {
     val sampleUsers = listOf(
         User(
-            id = "1",
+            id = 1L,
             username = "anamartinez",
             email = "ana@freshveg.com",
             role = UserRole.ADMIN,
-            tenantId = "client1",
+            tenantId = 1L,
             isActive = true
         ),
         User(
-            id = "2",
+            id = 2L,
             username = "carlosruiz",
             email = "carlos@freshveg.com",
             role = UserRole.OPERATOR,
-            tenantId = "client1",
+            tenantId = 1L,
             isActive = true
         ),
         User(
-            id = "3",
+            id = 3L,
             username = "sofiafernandez",
             email = "sofia@freshveg.com",
             role = UserRole.VIEWER,
-            tenantId = "client1",
+            tenantId = 1L,
             isActive = false
         )
     )

@@ -194,7 +194,7 @@ private fun SettingTableRow(
     ) {
         // ID - Copyable
         CopyableIdCell(
-            id = setting.id,
+            id = setting.id.toString(),
             onCopyId = onCopyId,
             modifier = Modifier.weight(1f)
         )
@@ -347,7 +347,7 @@ private fun SettingsCardList(
                 setting = setting,
                 onEdit = { onEditSetting(setting) },
                 onDelete = { onDeleteSetting(setting) },
-                onCopyId = { onCopyId(setting.id) }
+                onCopyId = { onCopyId(setting.id.toString()) }
             )
         }
     }
@@ -471,10 +471,10 @@ private fun SettingCard(
 private object SettingsTablePreviewData {
     val sampleSettings = listOf(
         Setting(
-            id = "1",
-            greenhouseId = "gh1",
+            id = 1L,
+            greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
-            tenantId = "t1",
+            tenantId = 1L,
             parameterId = 1,
             parameterName = "Temperature",
             periodId = 1,
@@ -485,10 +485,10 @@ private object SettingsTablePreviewData {
             createdAt = "2024-01-15T10:30:00Z"
         ),
         Setting(
-            id = "2",
-            greenhouseId = "gh1",
+            id = 2L,
+            greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
-            tenantId = "t1",
+            tenantId = 1L,
             parameterId = 2,
             parameterName = "Humidity",
             periodId = 2,
@@ -499,10 +499,10 @@ private object SettingsTablePreviewData {
             createdAt = "2024-01-15T10:30:00Z"
         ),
         Setting(
-            id = "3",
-            greenhouseId = "gh1",
+            id = 3L,
+            greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
-            tenantId = "t1",
+            tenantId = 1L,
             parameterId = 1,
             parameterName = "Temperature",
             periodId = 3,

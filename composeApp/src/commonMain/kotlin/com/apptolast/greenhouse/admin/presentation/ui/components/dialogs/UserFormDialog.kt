@@ -486,11 +486,11 @@ private fun RoleDropdown(
 
 private object UserFormDialogPreviewData {
     val sampleUser = User(
-        id = "1",
+        id = 1L,
         username = "anamartinez",
         email = "ana@freshveg.com",
         role = UserRole.OPERATOR,
-        tenantId = "client1",
+        tenantId = 1L,
         isActive = true
     )
 }

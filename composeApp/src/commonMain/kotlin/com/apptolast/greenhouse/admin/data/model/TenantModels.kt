@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class TenantResponse(
-    val id: String,
+    val id: Long,
     val name: String,
     val email: String,
     val phone: String? = null,

@@ -15,12 +15,12 @@ class GreenhousesRepositoryImpl(
     private val greenhousesApi: GreenhousesApiService
 ) : GreenhousesRepository {
 
-    override suspend fun getGreenhousesByTenantId(tenantId: String): Result<List<Greenhouse>> = runCatching {
+    override suspend fun getGreenhousesByTenantId(tenantId: Long): Result<List<Greenhouse>> = runCatching {
         greenhousesApi.getGreenhousesByTenantId(tenantId).map { it.toGreenhouse() }
     }
 
     override suspend fun createGreenhouse(
-        tenantId: String,
+        tenantId: Long,
         name: String,
         location: Location?,
         areaM2: Double?,
@@ -38,8 +38,8 @@ class GreenhousesRepositoryImpl(
     }
 
     override suspend fun updateGreenhouse(
-        tenantId: String,
-        greenhouseId: String,
+        tenantId: Long,
+        greenhouseId: Long,
         name: String?,
         location: Location?,
         areaM2: Double?,
@@ -56,7 +56,7 @@ class GreenhousesRepositoryImpl(
         greenhousesApi.updateGreenhouse(tenantId, greenhouseId, request).toGreenhouse()
     }
 
-    override suspend fun deleteGreenhouse(tenantId: String, greenhouseId: String): Result<Unit> = runCatching {
+    override suspend fun deleteGreenhouse(tenantId: Long, greenhouseId: Long): Result<Unit> = runCatching {
         greenhousesApi.deleteGreenhouse(tenantId, greenhouseId)
     }
 }

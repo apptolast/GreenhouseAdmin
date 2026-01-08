@@ -18,7 +18,7 @@ interface ClientsRepository {
      * @param id The client ID
      * @return Result containing Client or error
      */
-    suspend fun getClientById(id: String): Result<Client>
+    suspend fun getClientById(id: Long): Result<Client>
 
     /**
      * Fetches unique provinces from all clients.
@@ -51,5 +51,5 @@ interface ClientsRepository {
      * @param id The client ID to delete
      * @return Result containing success or error
      */
-    suspend fun deleteClient(id: String): Result<Unit>
+    suspend fun deleteClient(id: Long): Result<Unit>
 }

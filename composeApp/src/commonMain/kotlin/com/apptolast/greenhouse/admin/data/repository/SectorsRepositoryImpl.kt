@@ -14,13 +14,13 @@ class SectorsRepositoryImpl(
     private val sectorsApi: SectorsApiService
 ) : SectorsRepository {
 
-    override suspend fun getSectorsByTenantId(tenantId: String): Result<List<Sector>> = runCatching {
+    override suspend fun getSectorsByTenantId(tenantId: Long): Result<List<Sector>> = runCatching {
         sectorsApi.getSectorsByTenantId(tenantId).map { it.toSector() }
     }
 
     override suspend fun createSector(
-        tenantId: String,
-        greenhouseId: String,
+        tenantId: Long,
+        greenhouseId: Long,
         variety: String?
     ): Result<Sector> = runCatching {
         val request = SectorCreateRequest(
@@ -31,8 +31,8 @@ class SectorsRepositoryImpl(
     }
 
     override suspend fun updateSector(
-        tenantId: String,
-        sectorId: String,
+        tenantId: Long,
+        sectorId: Long,
         variety: String?
     ): Result<Sector> = runCatching {
         val request = SectorUpdateRequest(
@@ -41,7 +41,7 @@ class SectorsRepositoryImpl(
         sectorsApi.updateSector(tenantId, sectorId, request).toSector()
     }
 
-    override suspend fun deleteSector(tenantId: String, sectorId: String): Result<Unit> = runCatching {
+    override suspend fun deleteSector(tenantId: Long, sectorId: Long): Result<Unit> = runCatching {
         sectorsApi.deleteSector(tenantId, sectorId)
     }
 }

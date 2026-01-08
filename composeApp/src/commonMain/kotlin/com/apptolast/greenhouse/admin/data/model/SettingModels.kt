@@ -22,9 +22,9 @@ data class PeriodResponse(
  */
 @Serializable
 data class SettingResponse(
-    val id: String,
-    val greenhouseId: String,
-    val tenantId: String,
+    val id: Long,
+    val greenhouseId: Long,
+    val tenantId: Long,
     val parameterId: Short,
     val parameterName: String? = null,
     val periodId: Short,
@@ -41,7 +41,7 @@ data class SettingResponse(
  */
 @Serializable
 data class SettingCreateRequest(
-    val greenhouseId: String,
+    val greenhouseId: Long,
     val parameterId: Short,
     val periodId: Short,
     val minValue: Double? = null,
@@ -89,10 +89,10 @@ data class Period(
  * Parameters reference device_types (e.g., TEMPERATURE, HUMIDITY).
  */
 data class Setting(
-    val id: String,
-    val greenhouseId: String,
+    val id: Long,
+    val greenhouseId: Long,
     val greenhouseName: String? = null,
-    val tenantId: String,
+    val tenantId: Long,
     val parameterId: Short,
     val parameterName: String?,
     val periodId: Short,

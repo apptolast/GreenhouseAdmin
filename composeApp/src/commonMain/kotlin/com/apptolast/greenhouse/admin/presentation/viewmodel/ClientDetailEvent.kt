@@ -225,7 +225,7 @@ sealed interface ClientDetailEvent {
      * User submitted the sector form (create or edit).
      */
     data class OnSubmitSectorForm(
-        val greenhouseId: String,
+        val greenhouseId: Long?,
         val variety: String
     ) : ClientDetailEvent
 
@@ -270,7 +270,7 @@ sealed interface ClientDetailEvent {
      * User submitted the device form (create or edit).
      */
     data class OnSubmitDeviceForm(
-        val greenhouseId: String,
+        val greenhouseId: Long?,
         val name: String,
         val categoryId: Short?,
         val typeId: Short?,
@@ -324,7 +324,7 @@ sealed interface ClientDetailEvent {
      * User submitted the alert form (create or edit).
      */
     data class OnSubmitAlertForm(
-        val greenhouseId: String,
+        val greenhouseId: Long?,
         val alertTypeId: Short?,
         val severityId: Short?,
         val message: String
@@ -381,7 +381,7 @@ sealed interface ClientDetailEvent {
      * User submitted the setting form (create or edit).
      */
     data class OnSubmitSettingForm(
-        val greenhouseId: String,
+        val greenhouseId: Long?,
         val parameterId: Short,
         val periodId: Short,
         val minValue: Double?,

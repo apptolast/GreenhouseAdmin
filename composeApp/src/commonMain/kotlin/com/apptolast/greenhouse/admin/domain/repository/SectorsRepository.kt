@@ -12,7 +12,7 @@ interface SectorsRepository {
      * @param tenantId The tenant ID to filter sectors by
      * @return Result containing list of Sector or error
      */
-    suspend fun getSectorsByTenantId(tenantId: String): Result<List<Sector>>
+    suspend fun getSectorsByTenantId(tenantId: Long): Result<List<Sector>>
 
     /**
      * Creates a new sector for a tenant.
@@ -22,8 +22,8 @@ interface SectorsRepository {
      * @return Result containing the created Sector or error
      */
     suspend fun createSector(
-        tenantId: String,
-        greenhouseId: String,
+        tenantId: Long,
+        greenhouseId: Long,
         variety: String?
     ): Result<Sector>
 
@@ -35,8 +35,8 @@ interface SectorsRepository {
      * @return Result containing the updated Sector or error
      */
     suspend fun updateSector(
-        tenantId: String,
-        sectorId: String,
+        tenantId: Long,
+        sectorId: Long,
         variety: String?
     ): Result<Sector>
 
@@ -46,5 +46,5 @@ interface SectorsRepository {
      * @param sectorId The sector ID to delete
      * @return Result containing success or error
      */
-    suspend fun deleteSector(tenantId: String, sectorId: String): Result<Unit>
+    suspend fun deleteSector(tenantId: Long, sectorId: Long): Result<Unit>
 }

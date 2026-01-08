@@ -86,7 +86,7 @@ fun SettingFormDialog(
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (greenhouseId: String, parameterId: Short, periodId: Short, minValue: Double?, maxValue: Double?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
+    onSubmit: (greenhouseId: Long?, parameterId: Short, periodId: Short, minValue: Double?, maxValue: Double?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -552,8 +552,8 @@ private fun SettingFormDialogCreatePreview() {
         SettingFormDialog(
             mode = SettingFormMode.Create,
             greenhouses = listOf(
-                Greenhouse(id = "1", tenantId = "t1", name = "Greenhouse A"),
-                Greenhouse(id = "2", tenantId = "t1", name = "Greenhouse B")
+                Greenhouse(id = 1L, tenantId = 1L, name = "Greenhouse A"),
+                Greenhouse(id = 2L, tenantId = 1L, name = "Greenhouse B")
             ),
             parameters = listOf(
                 DeviceCatalogType(
@@ -591,10 +591,10 @@ private fun SettingFormDialogEditPreview() {
         SettingFormDialog(
             mode = SettingFormMode.Edit(
                 Setting(
-                    id = "1",
-                    greenhouseId = "1",
+                    id = 1L,
+                    greenhouseId = 1L,
                     greenhouseName = "Greenhouse A",
-                    tenantId = "t1",
+                    tenantId = 1L,
                     parameterId = 1,
                     parameterName = "Temperature",
                     periodId = 1,
@@ -606,8 +606,8 @@ private fun SettingFormDialogEditPreview() {
                 )
             ),
             greenhouses = listOf(
-                Greenhouse(id = "1", tenantId = "t1", name = "Greenhouse A"),
-                Greenhouse(id = "2", tenantId = "t1", name = "Greenhouse B")
+                Greenhouse(id = 1L, tenantId = 1L, name = "Greenhouse A"),
+                Greenhouse(id = 2L, tenantId = 1L, name = "Greenhouse B")
             ),
             parameters = listOf(
                 DeviceCatalogType(

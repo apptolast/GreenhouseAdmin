@@ -266,7 +266,7 @@ private fun ClientsContent(
 private object ClientsScreenPreviewData {
     val sampleClients = listOf(
         Client(
-            id = "1",
+            id = 1L,
             name = "Fresh Vegetables Co.",
             email = "contact@freshveg.com",
             phone = "+34 612 345 678",
@@ -275,7 +275,7 @@ private object ClientsScreenPreviewData {
             status = ClientStatus.ACTIVE
         ),
         Client(
-            id = "2",
+            id = 2L,
             name = "Green Gardens Ltd.",
             email = "info@greengardens.com",
             phone = "+34 623 456 789",
@@ -284,7 +284,7 @@ private object ClientsScreenPreviewData {
             status = ClientStatus.ACTIVE
         ),
         Client(
-            id = "3",
+            id = 3L,
             name = "Bio Farms Andalucia",
             email = "hello@biofarms.es",
             phone = "+34 634 567 890",

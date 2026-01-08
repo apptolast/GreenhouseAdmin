@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
  * ViewModel for the Client Detail screen following MVVM+MVI pattern.
  */
 class ClientDetailViewModel(
-    private val clientId: String,
+    private val clientId: Long,
     private val clientsRepository: ClientsRepository,
     private val dashboardRepository: DashboardRepository,
     private val usersRepository: UsersRepository,
@@ -822,7 +822,9 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitSectorForm(greenhouseId: String, variety: String) {
+    private fun submitSectorForm(greenhouseId: Long?, variety: String) {
+        if (greenhouseId == null) return
+
         val mode = _uiState.value.sectorFormMode
 
         viewModelScope.launch {
@@ -963,13 +965,15 @@ class ClientDetailViewModel(
     }
 
     private fun submitDeviceForm(
-        greenhouseId: String,
+        greenhouseId: Long?,
         name: String,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
         isActive: Boolean
     ) {
+        if (greenhouseId == null) return
+
         val mode = _uiState.value.deviceFormMode
         val deviceName = name.ifBlank { null } // Convert empty string to null
 
@@ -1120,11 +1124,13 @@ class ClientDetailViewModel(
     }
 
     private fun submitAlertForm(
-        greenhouseId: String,
+        greenhouseId: Long?,
         alertTypeId: Short?,
         severityId: Short?,
         message: String
     ) {
+        if (greenhouseId == null) return
+
         val mode = _uiState.value.alertFormMode
 
         viewModelScope.launch {
@@ -1317,13 +1323,15 @@ class ClientDetailViewModel(
     }
 
     private fun submitSettingForm(
-        greenhouseId: String,
+        greenhouseId: Long?,
         parameterId: Short,
         periodId: Short,
         minValue: Double?,
         maxValue: Double?,
         isActive: Boolean
     ) {
+        if (greenhouseId == null) return
+
         val mode = _uiState.value.settingFormMode
 
         viewModelScope.launch {

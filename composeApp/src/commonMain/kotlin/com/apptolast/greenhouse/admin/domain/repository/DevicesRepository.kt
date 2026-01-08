@@ -15,7 +15,7 @@ interface DevicesRepository {
      * @param tenantId The tenant ID to filter devices by
      * @return Result containing list of Device or error
      */
-    suspend fun getDevicesByTenantId(tenantId: String): Result<List<Device>>
+    suspend fun getDevicesByTenantId(tenantId: Long): Result<List<Device>>
 
     /**
      * Creates a new device for a tenant.
@@ -29,8 +29,8 @@ interface DevicesRepository {
      * @return Result containing the created Device or error
      */
     suspend fun createDevice(
-        tenantId: String,
-        greenhouseId: String,
+        tenantId: Long,
+        greenhouseId: Long,
         name: String?,
         categoryId: Short?,
         typeId: Short?,
@@ -50,8 +50,8 @@ interface DevicesRepository {
      * @return Result containing the updated Device or error
      */
     suspend fun updateDevice(
-        tenantId: String,
-        deviceId: String,
+        tenantId: Long,
+        deviceId: Long,
         name: String?,
         categoryId: Short?,
         typeId: Short?,
@@ -65,7 +65,7 @@ interface DevicesRepository {
      * @param deviceId The device ID to delete
      * @return Result containing success or error
      */
-    suspend fun deleteDevice(tenantId: String, deviceId: String): Result<Unit>
+    suspend fun deleteDevice(tenantId: Long, deviceId: Long): Result<Unit>
 
     // ==================== CATALOG METHODS ====================
 

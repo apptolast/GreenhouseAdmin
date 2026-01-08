@@ -8,9 +8,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class GreenhouseResponse(
-    val id: String,
+    val id: Long,
     val name: String,
-    val tenantId: String,
+    val tenantId: Long,
     val location: Location? = null,
     val areaM2: Double? = null,
     val timezone: String? = null,
@@ -50,9 +50,9 @@ data class GreenhouseUpdateRequest(
  */
 @Serializable
 data class Greenhouse(
-    val id: String,
+    val id: Long,
     val name: String,
-    val tenantId: String,
+    val tenantId: Long,
     val location: Location? = null,
     val areaM2: Double? = null,
     val timezone: String? = "Europe/Madrid",

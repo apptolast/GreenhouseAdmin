@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
@@ -39,10 +40,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.apptolast.greenhouse.admin.data.model.Alert
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
@@ -56,6 +59,7 @@ import greenhouseadmin.composeapp.generated.resources.action_reopen
 import greenhouseadmin.composeapp.generated.resources.action_resolve
 import greenhouseadmin.composeapp.generated.resources.alert_active
 import greenhouseadmin.composeapp.generated.resources.alert_resolved
+import greenhouseadmin.composeapp.generated.resources.copy_id
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_date
 import greenhouseadmin.composeapp.generated.resources.header_greenhouse
@@ -140,7 +144,7 @@ fun AlertsTable(
                     onDelete = { onDeleteAlert(alert) },
                     onResolve = { onResolveAlert(alert) },
                     onReopen = { onReopenAlert(alert) },
-                    onCopyId = { onCopyId(alert.id) }
+                    onCopyId = { onCopyId(alert.id.toString()) }
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
@@ -232,7 +236,7 @@ private fun AlertTableRow(
     ) {
         // ID - Copyable
         CopyableIdCell(
-            id = alert.id,
+            id = alert.id.toString(),
             onCopyId = onCopyId,
             modifier = Modifier.weight(1f)
         )
@@ -441,7 +445,7 @@ private fun AlertsCardList(
                 onDelete = { onDeleteAlert(alert) },
                 onResolve = { onResolveAlert(alert) },
                 onReopen = { onReopenAlert(alert) },
-                onCopyId = { onCopyId(alert.id) }
+                onCopyId = { onCopyId(alert.id.toString()) }
             )
         }
     }
@@ -506,11 +510,31 @@ private fun AlertCard(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Text(
-                        text = formatDateString(alert.createdAt),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    // ID row with copy functionality
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = onCopyId,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                contentDescription = stringResource(Res.string.copy_id),
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = alert.id.toString(),
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
 
                 Box {
@@ -529,38 +553,6 @@ private fun AlertCard(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
-                        // Resolve/Reopen action
-                        if (alert.isResolved) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(Res.string.action_reopen)) },
-                                onClick = {
-                                    showMenu = false
-                                    onReopen()
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Refresh,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            )
-                        } else {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(Res.string.action_resolve)) },
-                                onClick = {
-                                    showMenu = false
-                                    onResolve()
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = null,
-                                        tint = Color(0xFF4CAF50)
-                                    )
-                                }
-                            )
-                        }
                         DropdownMenuItem(
                             text = { Text(stringResource(Res.string.action_edit)) },
                             onClick = {
@@ -632,18 +624,56 @@ private fun AlertCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Status row: Severity chip | Status chip
+            // Footer row: Chips + Resolve/Reopen action + Date
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                SeverityChip(
-                    name = alert.severityName,
-                    level = alert.severityLevel
-                )
-                StatusChip(
-                    isActive = !alert.isResolved,
-                    activeText = activeText,
-                    inactiveText = resolvedText
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SeverityChip(
+                        name = alert.severityName,
+                        level = alert.severityLevel
+                    )
+                    StatusChip(
+                        isActive = !alert.isResolved,
+                        activeText = activeText,
+                        inactiveText = resolvedText
+                    )
+                    // Resolve/Reopen action button
+                    if (alert.isResolved) {
+                        IconButton(
+                            onClick = onReopen,
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = stringResource(Res.string.action_reopen),
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    } else {
+                        IconButton(
+                            onClick = onResolve,
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = stringResource(Res.string.action_resolve),
+                                modifier = Modifier.size(18.dp),
+                                tint = Color(0xFF4CAF50)
+                            )
+                        }
+                    }
+                }
+                Text(
+                    text = formatDateString(alert.createdAt),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -652,9 +682,9 @@ private fun AlertCard(
 
 val mockAlerts = listOf(
     Alert(
-        id = "1",
-        tenantId = "t1",
-        greenhouseId = "g1",
+        id = 1,
+        tenantId = 1,
+        greenhouseId = 1,
         greenhouseName = "Greenhouse A",
         alertTypeId = 1,
         alertTypeName = "Temperature",
@@ -668,9 +698,9 @@ val mockAlerts = listOf(
         createdAt = "2024-01-15T10:30:00Z"
     ),
     Alert(
-        id = "2",
-        tenantId = "t1",
-        greenhouseId = "g1",
+        id = 2,
+        tenantId = 1,
+        greenhouseId = 1,
         greenhouseName = "Greenhouse A",
         alertTypeId = 2,
         alertTypeName = "Humidity",
@@ -684,9 +714,9 @@ val mockAlerts = listOf(
         createdAt = "2024-01-14T08:00:00Z"
     ),
     Alert(
-        id = "3",
-        tenantId = "t1",
-        greenhouseId = "g2",
+        id = 3,
+        tenantId = 1,
+        greenhouseId = 2,
         greenhouseName = "Greenhouse B",
         alertTypeId = null,
         alertTypeName = null,

@@ -33,7 +33,7 @@ interface AlertsRepository {
      * @param tenantId The tenant ID to filter alerts by
      * @return Result containing list of Alert or error
      */
-    suspend fun getAlertsByTenantId(tenantId: String): Result<List<Alert>>
+    suspend fun getAlertsByTenantId(tenantId: Long): Result<List<Alert>>
 
     /**
      * Creates a new alert for a tenant.
@@ -41,7 +41,7 @@ interface AlertsRepository {
      * @param request The alert data to create
      * @return Result containing the created Alert or error
      */
-    suspend fun createAlert(tenantId: String, request: AlertCreateRequest): Result<Alert>
+    suspend fun createAlert(tenantId: Long, request: AlertCreateRequest): Result<Alert>
 
     /**
      * Updates an existing alert.
@@ -50,7 +50,7 @@ interface AlertsRepository {
      * @param request The alert data to update
      * @return Result containing the updated Alert or error
      */
-    suspend fun updateAlert(tenantId: String, alertId: String, request: AlertUpdateRequest): Result<Alert>
+    suspend fun updateAlert(tenantId: Long, alertId: Long, request: AlertUpdateRequest): Result<Alert>
 
     /**
      * Deletes an alert by ID.
@@ -58,7 +58,7 @@ interface AlertsRepository {
      * @param alertId The alert ID to delete
      * @return Result containing success or error
      */
-    suspend fun deleteAlert(tenantId: String, alertId: String): Result<Unit>
+    suspend fun deleteAlert(tenantId: Long, alertId: Long): Result<Unit>
 
     // ==================== ACTION METHODS ====================
 
@@ -69,7 +69,7 @@ interface AlertsRepository {
      * @param resolvedByUserId Optional user ID who resolved the alert
      * @return Result containing the resolved Alert or error
      */
-    suspend fun resolveAlert(tenantId: String, alertId: String, resolvedByUserId: String? = null): Result<Alert>
+    suspend fun resolveAlert(tenantId: Long, alertId: Long, resolvedByUserId: Long? = null): Result<Alert>
 
     /**
      * Reopens a resolved alert.
@@ -77,5 +77,5 @@ interface AlertsRepository {
      * @param alertId The alert ID to reopen
      * @return Result containing the reopened Alert or error
      */
-    suspend fun reopenAlert(tenantId: String, alertId: String): Result<Alert>
+    suspend fun reopenAlert(tenantId: Long, alertId: Long): Result<Alert>
 }

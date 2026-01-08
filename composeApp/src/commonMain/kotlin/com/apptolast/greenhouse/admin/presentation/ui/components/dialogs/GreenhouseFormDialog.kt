@@ -374,9 +374,9 @@ private fun StatusSwitch(
 
 private object GreenhouseFormDialogPreviewData {
     val sampleGreenhouse = Greenhouse(
-        id = "1",
+        id = 1L,
         name = "Invernadero Principal",
-        tenantId = "client1",
+        tenantId = 1L,
         location = Location(lat = 36.8381, lon = -2.4597),
         areaM2 = 1500.0,
         timezone = "Europe/Madrid",

@@ -85,8 +85,8 @@ data class DeviceBreakdown(
  * Represents a recent alert for dashboard display.
  */
 data class RecentAlert(
-    val id: String,
-    val tenantId: String,
+    val id: Long,
+    val tenantId: Long,
     val tenantName: String,
     val greenhouseName: String?,
     val message: String,
@@ -99,7 +99,7 @@ data class RecentAlert(
  * Represents a recent client for dashboard display.
  */
 data class RecentClient(
-    val id: String,
+    val id: Long,
     val name: String,
     val province: String?,
     val isActive: Boolean

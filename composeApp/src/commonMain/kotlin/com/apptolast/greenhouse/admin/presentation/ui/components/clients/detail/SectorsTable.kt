@@ -189,7 +189,7 @@ private fun SectorTableRow(
 
         // GREENHOUSE
         Text(
-            text = greenhouseName ?: sector.greenhouseId,
+            text = greenhouseName ?: sector.greenhouseId.toString(),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1.5f),
@@ -301,7 +301,7 @@ private fun SectorCard(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = greenhouseName ?: sector.greenhouseId,
+                        text = greenhouseName ?: sector.greenhouseId.toString(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -386,27 +386,27 @@ fun SectorAvatar(
 private object SectorsTablePreviewData {
     val sampleSectors = listOf(
         Sector(
-            id = "1",
-            greenhouseId = "gh1",
+            id = 1L,
+            greenhouseId = 1L,
             variety = "Tomate Cherry"
         ),
         Sector(
-            id = "2",
-            greenhouseId = "gh1",
+            id = 2L,
+            greenhouseId = 1L,
             variety = "Pimiento Rojo"
         ),
         Sector(
-            id = "3",
-            greenhouseId = "gh2",
+            id = 3L,
+            greenhouseId = 2L,
             variety = "Pepino"
         )
     )
 
     val sampleGreenhouses = listOf(
         Greenhouse(
-            id = "gh1",
+            id = 1L,
             name = "Invernadero Principal",
-            tenantId = "client1",
+            tenantId = 1L,
             location = null,
             areaM2 = 1500.0,
             timezone = "Europe/Madrid",
@@ -415,9 +415,9 @@ private object SectorsTablePreviewData {
             updatedAt = "2024-01-01T00:00:00Z"
         ),
         Greenhouse(
-            id = "gh2",
+            id = 2L,
             name = "Invernadero Norte",
-            tenantId = "client1",
+            tenantId = 1L,
             location = null,
             areaM2 = 800.0,
             timezone = "Europe/Madrid",

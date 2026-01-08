@@ -207,7 +207,7 @@ private fun ClientInfoRow(
 private object ClientsCardsPreviewData {
     val sampleClients = listOf(
         Client(
-            id = "1",
+            id = 1L,
             name = "Elena Rodriguez",
             email = "elena@freshveg.com",
             phone = "+34 612 345 678",
@@ -216,7 +216,7 @@ private object ClientsCardsPreviewData {
             status = ClientStatus.ACTIVE
         ),
         Client(
-            id = "2",
+            id = 2L,
             name = "Juan Garcia",
             email = "juan@greenfields.es",
             phone = "+34 623 456 789",
@@ -225,7 +225,7 @@ private object ClientsCardsPreviewData {
             status = ClientStatus.PENDING
         ),
         Client(
-            id = "3",
+            id = 3L,
             name = "Maria Lopez",
             email = "maria@organicfarm.com",
             phone = "+34 634 567 890",

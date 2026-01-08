@@ -37,7 +37,7 @@ class TenantsApiService(private val httpClient: HttpClient) {
     /**
      * Get a tenant by ID.
      */
-    suspend fun getTenantById(id: String): TenantResponse {
+    suspend fun getTenantById(id: Long): TenantResponse {
         return httpClient.get("tenants/$id").body()
     }
 
@@ -53,7 +53,7 @@ class TenantsApiService(private val httpClient: HttpClient) {
     /**
      * Update an existing tenant.
      */
-    suspend fun updateTenant(id: String, request: UpdateTenantRequest): TenantResponse {
+    suspend fun updateTenant(id: Long, request: UpdateTenantRequest): TenantResponse {
         return httpClient.put("tenants/$id") {
             setBody(request)
         }.body()
@@ -62,7 +62,7 @@ class TenantsApiService(private val httpClient: HttpClient) {
     /**
      * Delete a tenant by ID.
      */
-    suspend fun deleteTenant(id: String) {
+    suspend fun deleteTenant(id: Long) {
         httpClient.delete("tenants/$id")
     }
 }
