@@ -37,7 +37,7 @@ class DashboardRepositoryImpl(
         const val SENSOR_CATEGORY_ID: Short = 1
         const val ACTUATOR_CATEGORY_ID: Short = 2
         const val CRITICAL_SEVERITY_THRESHOLD: Short = 3 // Levels >= 3 are critical
-        const val CACHE_TTL_MS = 30_000L // 30 seconds cache
+        const val CACHE_TTL_MS = 5 * 60 * 1_000 // 5 * 60 * 1 seconds cache
     }
 
     // Cache for DashboardStats to avoid redundant API calls

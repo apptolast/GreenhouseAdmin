@@ -24,9 +24,32 @@ class LoginViewModel(
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     init {
-        // Check if already authenticated
-        if (authRepository.isAuthenticated()) {
-            _uiState.update { it.copy(isLoginSuccessful = true) }
+        // Validate existing session with backend
+        validateSession()
+    }
+
+    /**
+     * Validates the current session with the backend.
+     * If the token exists but is expired, the user will need to log in again.
+     */
+    private fun validateSession() {
+        viewModelScope.launch {
+            // First check if there's a token at all
+            if (!authRepository.isAuthenticated()) {
+                return@launch
+            }
+
+            // Token exists, validate with backend
+            _uiState.update { it.copy(isValidatingSession = true) }
+
+            val isValid = authRepository.validateSession()
+
+            _uiState.update {
+                it.copy(
+                    isValidatingSession = false,
+                    isLoginSuccessful = isValid
+                )
+            }
         }
     }
 

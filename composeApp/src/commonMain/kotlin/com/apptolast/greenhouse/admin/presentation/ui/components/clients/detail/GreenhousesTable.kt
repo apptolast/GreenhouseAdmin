@@ -133,13 +133,13 @@ private fun GreenhousesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_name),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(2f)
         )
         Text(
             text = stringResource(Res.string.header_location),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(1f)
         )
         Text(
             text = stringResource(Res.string.header_area),
@@ -179,7 +179,7 @@ private fun GreenhouseTableRow(
     ) {
         // NAME with avatar
         Row(
-            modifier = Modifier.weight(1.5f),
+            modifier = Modifier.weight(2f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             GreenhouseAvatar(
@@ -202,7 +202,7 @@ private fun GreenhouseTableRow(
             text = greenhouse.locationDisplay,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1.5f),
+            modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

@@ -9,6 +9,7 @@ data class LoginUiState(
     val password: String = "",
     val isPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
+    val isValidatingSession: Boolean = false,
     val error: String? = null,
     val isLoginSuccessful: Boolean = false
 ) {
@@ -16,5 +17,5 @@ data class LoginUiState(
      * Whether the login button should be enabled.
      */
     val isLoginEnabled: Boolean
-        get() = username.isNotBlank() && password.isNotBlank() && !isLoading
+        get() = username.isNotBlank() && password.isNotBlank() && !isLoading && !isValidatingSession
 }

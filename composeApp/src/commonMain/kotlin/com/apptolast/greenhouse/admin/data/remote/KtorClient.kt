@@ -2,7 +2,9 @@ package com.apptolast.greenhouse.admin.data.remote
 
 import com.apptolast.greenhouse.admin.BuildKonfig
 import com.apptolast.greenhouse.admin.data.local.TokenStorage
+import com.apptolast.greenhouse.admin.domain.auth.AuthEventManager
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -11,6 +13,7 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.plugin
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
@@ -19,8 +22,12 @@ import kotlinx.serialization.json.Json
  * Creates a configured HTTP client with JSON serialization, logging, and JWT auth.
  *
  * @param tokenStorage The token storage to retrieve JWT token from.
+ * @param authEventManager The manager for emitting authentication events.
  */
-fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
+fun createHttpClient(
+    tokenStorage: TokenStorage,
+    authEventManager: AuthEventManager
+): HttpClient {
     val client = createPlatformHttpClient().config {
         // JSON serialization
         install(ContentNegotiation) {
@@ -34,6 +41,31 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
         // Request/Response logging (use LogLevel.ALL for debugging)
         install(Logging) {
             level = LogLevel.INFO
+        }
+
+        // Response validator for handling 401/403 before deserialization
+        // This MUST be installed before ContentNegotiation processes the response
+        HttpResponseValidator {
+            validateResponse { response ->
+                val statusCode = response.status
+
+                if (statusCode == HttpStatusCode.Unauthorized || statusCode == HttpStatusCode.Forbidden) {
+                    // Skip auth endpoints - they should handle their own errors
+                    val isAuthEndpoint = response.call.request.url.toString().contains("/auth/")
+
+                    if (!isAuthEndpoint) {
+                        // Clear tokens and emit session expired event
+                        tokenStorage.clearTokens()
+                        authEventManager.tryEmitSessionExpired()
+
+                        // Throw exception to prevent deserialization attempt
+                        throw when (statusCode) {
+                            HttpStatusCode.Unauthorized -> AuthenticationException.unauthorized()
+                            else -> AuthenticationException.forbidden()
+                        }
+                    }
+                }
+            }
         }
 
         // Default request configuration

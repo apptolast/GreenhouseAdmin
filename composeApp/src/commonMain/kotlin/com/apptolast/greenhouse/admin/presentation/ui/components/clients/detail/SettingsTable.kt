@@ -141,13 +141,13 @@ private fun SettingsTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_id),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.4f)
         )
         Text(
             text = stringResource(Res.string.header_parameter),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.8f)
+            modifier = Modifier.weight(1f)
         )
         Text(
             text = stringResource(Res.string.header_period),
@@ -165,7 +165,7 @@ private fun SettingsTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.6f)
         )
         Text(
             text = stringResource(Res.string.header_actions),
@@ -196,12 +196,12 @@ private fun SettingTableRow(
         CopyableIdCell(
             id = setting.id.toString(),
             onCopyId = onCopyId,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.4f)
         )
 
         // PARAMETER with avatar
         Row(
-            modifier = Modifier.weight(0.8f),
+            modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -233,7 +233,7 @@ private fun SettingTableRow(
         // STATUS - Using StatusChip
         StatusChip(
             isActive = setting.isActive,
-            modifier = Modifier.weight(1f).wrapContentWidth(align = Alignment.Start)
+            modifier = Modifier.weight(0.6f).wrapContentWidth(align = Alignment.Start)
         )
 
         // ACTIONS

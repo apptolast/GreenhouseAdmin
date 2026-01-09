@@ -21,6 +21,7 @@ import com.apptolast.greenhouse.admin.data.repository.GreenhousesRepositoryImpl
 import com.apptolast.greenhouse.admin.data.repository.SectorsRepositoryImpl
 import com.apptolast.greenhouse.admin.data.repository.SettingsRepositoryImpl
 import com.apptolast.greenhouse.admin.data.repository.UsersRepositoryImpl
+import com.apptolast.greenhouse.admin.domain.auth.AuthEventManager
 import com.apptolast.greenhouse.admin.domain.repository.AlertsRepository
 import com.apptolast.greenhouse.admin.domain.repository.AuthRepository
 import com.apptolast.greenhouse.admin.domain.repository.CatalogRepository
@@ -43,8 +44,11 @@ val dataModule = module {
     // Token Storage (platform-specific)
     singleOf(::TokenStorage)
 
-    // HTTP Client (uses TokenStorage for auth)
-    single { createHttpClient(get()) }
+    // Auth Event Manager (for session expiration events)
+    singleOf(::AuthEventManager)
+
+    // HTTP Client (uses TokenStorage for auth and AuthEventManager for session events)
+    single { createHttpClient(get(), get()) }
 
     // API Services
     singleOf(::AuthApiService)
