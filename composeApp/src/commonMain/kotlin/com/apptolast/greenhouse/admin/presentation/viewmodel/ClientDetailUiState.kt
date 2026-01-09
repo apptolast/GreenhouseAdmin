@@ -9,7 +9,6 @@ import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.MenuItem
 import com.apptolast.greenhouse.admin.data.model.Period
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
@@ -25,9 +24,7 @@ data class ClientDetailUiState(
     val error: String? = null,
 
     // Navigation/Layout states
-    val menuItems: List<MenuItem> = emptyList(),
     val selectedMenuId: String = "clients",
-    val alertCount: Int = 0,
     val topBarSearchQuery: String = "",
 
     // Catalogs state (preloaded on init for all form dropdowns)

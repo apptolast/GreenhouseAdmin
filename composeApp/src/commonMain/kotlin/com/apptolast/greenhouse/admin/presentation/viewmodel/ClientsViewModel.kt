@@ -9,7 +9,6 @@ import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.data.model.PaginationInfo
 import com.apptolast.greenhouse.admin.data.model.toIsActive
 import com.apptolast.greenhouse.admin.domain.repository.ClientsRepository
-import com.apptolast.greenhouse.admin.domain.repository.DashboardRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,8 +19,7 @@ import kotlinx.coroutines.launch
  * ViewModel for the Clients screen following MVVM+MVI pattern.
  */
 class ClientsViewModel(
-    private val repository: ClientsRepository,
-    private val dashboardRepository: DashboardRepository
+    private val repository: ClientsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ClientsUiState())
@@ -32,22 +30,7 @@ class ClientsViewModel(
     val uiState: StateFlow<ClientsUiState> = _uiState.asStateFlow()
 
     init {
-        loadLayoutData()
         onEvent(ClientsEvent.LoadClients)
-    }
-
-    private fun loadLayoutData() {
-        viewModelScope.launch {
-            val menuItemsResult = dashboardRepository.getMenuItems()
-            val alertCountResult = dashboardRepository.getAlertCount()
-
-            _uiState.update { currentState ->
-                currentState.copy(
-                    menuItems = menuItemsResult.getOrDefault(emptyList()),
-                    alertCount = alertCountResult.getOrDefault(0)
-                )
-            }
-        }
     }
 
     /**
@@ -94,7 +77,6 @@ class ClientsViewModel(
             is ClientsEvent.DismissError -> dismissError()
             is ClientsEvent.OnMenuItemSelected -> updateSelectedMenu(event.itemId)
             is ClientsEvent.OnTopBarSearchQueryChanged -> updateTopBarSearchQuery(event.query)
-            is ClientsEvent.OnAlertIconClicked -> handleAlertClick()
         }
     }
 
@@ -104,10 +86,6 @@ class ClientsViewModel(
 
     private fun updateTopBarSearchQuery(query: String) {
         _uiState.update { it.copy(topBarSearchQuery = query) }
-    }
-
-    private fun handleAlertClick() {
-        // Handle alert click - could navigate to alerts screen
     }
 
     private fun loadClients() {

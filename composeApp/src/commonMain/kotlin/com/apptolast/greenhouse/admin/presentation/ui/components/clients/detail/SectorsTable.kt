@@ -172,11 +172,11 @@ private fun SectorTableRow(
             modifier = Modifier.weight(1.5f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SectorAvatar(
-                initials = sector.initial,
-                modifier = Modifier.size(36.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
+//            SectorAvatar(
+//                initials = sector.initial,
+//                modifier = Modifier.size(36.dp)
+//            )
+//            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = sector.displayName,
                 style = MaterialTheme.typography.bodyMedium,

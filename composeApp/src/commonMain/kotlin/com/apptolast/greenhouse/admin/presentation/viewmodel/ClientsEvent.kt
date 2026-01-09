@@ -126,9 +126,4 @@ sealed interface ClientsEvent {
      * User typed in the topbar search field.
      */
     data class OnTopBarSearchQueryChanged(val query: String) : ClientsEvent
-
-    /**
-     * User clicked on alert icon.
-     */
-    data object OnAlertIconClicked : ClientsEvent
 }

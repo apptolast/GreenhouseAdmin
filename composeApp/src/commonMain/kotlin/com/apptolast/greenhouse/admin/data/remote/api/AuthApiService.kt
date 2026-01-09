@@ -4,6 +4,7 @@ import com.apptolast.greenhouse.admin.data.model.JwtResponse
 import com.apptolast.greenhouse.admin.data.model.LoginRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 
@@ -30,5 +31,19 @@ class AuthApiService(private val httpClient: HttpClient) {
      */
     suspend fun logout() {
         httpClient.post("auth/logout")
+    }
+
+    /**
+     * Validates the current token by making a lightweight authenticated request.
+     * Uses GET /tenants?page=0&size=1 as a minimal authenticated endpoint.
+     * Throws AuthenticationException if token is expired/invalid.
+     */
+    suspend fun validateToken() {
+        // Use a minimal authenticated endpoint to validate token
+        // The HttpResponseValidator will throw AuthenticationException if 401/403
+        httpClient.get("tenants") {
+            url.parameters.append("page", "0")
+            url.parameters.append("size", "1")
+        }
     }
 }

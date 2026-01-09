@@ -40,4 +40,11 @@ interface AuthRepository {
      * @return UserSession if authenticated, null otherwise
      */
     fun getCurrentSession(): UserSession?
+
+    /**
+     * Validates the current session with the backend.
+     * Makes a lightweight API call to verify the token is still valid.
+     * @return true if session is valid, false if expired or invalid
+     */
+    suspend fun validateSession(): Boolean
 }

@@ -3,6 +3,7 @@ package com.apptolast.greenhouse.admin.data.repository
 import com.apptolast.greenhouse.admin.data.local.TokenStorage
 import com.apptolast.greenhouse.admin.data.model.UserSession
 import com.apptolast.greenhouse.admin.data.model.toUserSession
+import com.apptolast.greenhouse.admin.data.remote.AuthenticationException
 import com.apptolast.greenhouse.admin.data.remote.api.AuthApiService
 import com.apptolast.greenhouse.admin.domain.repository.AuthRepository
 
@@ -57,5 +58,25 @@ class AuthRepositoryImpl(
             username = tokenStorage.getUsername() ?: "",
             roles = tokenStorage.getRoles()
         )
+    }
+
+    override suspend fun validateSession(): Boolean {
+        // If no token exists, session is invalid
+        if (!tokenStorage.isAuthenticated()) return false
+
+        return try {
+            // Make a lightweight API call to validate the token
+            // If token is expired, HttpResponseValidator will throw AuthenticationException
+            authApiService.validateToken()
+            true
+        } catch (e: AuthenticationException) {
+            // Token is expired or invalid - clear it and return false
+            tokenStorage.clearTokens()
+            false
+        } catch (e: Exception) {
+            // Network error or other issue - assume valid to avoid logout on network problems
+            // The actual request will fail later and trigger proper handling
+            true
+        }
     }
 }

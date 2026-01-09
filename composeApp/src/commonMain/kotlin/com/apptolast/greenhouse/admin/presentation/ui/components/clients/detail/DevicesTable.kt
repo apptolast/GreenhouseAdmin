@@ -139,7 +139,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_id),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.2f)
+            modifier = Modifier.weight(0.4f)
         )
 
         // NAME column
@@ -212,7 +212,7 @@ private fun DeviceTableRow(
         CopyableIdCell(
             id = device.id.toString(),
             onCopyId = onCopyId,
-            modifier = Modifier.weight(1.2f)
+            modifier = Modifier.weight(0.4f)
         )
 
         // NAME - Device name (or empty if not set)

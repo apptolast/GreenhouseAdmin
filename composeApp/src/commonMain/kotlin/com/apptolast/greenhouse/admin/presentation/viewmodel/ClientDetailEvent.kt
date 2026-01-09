@@ -79,11 +79,6 @@ sealed interface ClientDetailEvent {
     data class OnTopBarSearchQueryChanged(val query: String) : ClientDetailEvent
 
     /**
-     * User clicked on alert icon.
-     */
-    data object OnAlertIconClicked : ClientDetailEvent
-
-    /**
      * Navigation completed, reset navigation flag.
      */
     data object OnNavigationHandled : ClientDetailEvent

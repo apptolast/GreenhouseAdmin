@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,10 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -98,9 +98,7 @@ private fun DashboardContent(
             title = stringResource(Res.string.app_name),
             subtitle = stringResource(Res.string.dashboard_overview),
             searchQuery = uiState.searchQuery,
-            alertCount = uiState.alertCount,
-            onSearchQueryChange = { onEvent(DashboardEvent.OnSearchQueryChanged(it)) },
-            onAlertClick = { onEvent(DashboardEvent.OnAlertIconClicked) }
+            onSearchQueryChange = { onEvent(DashboardEvent.OnSearchQueryChanged(it)) }
         )
 
         // Content area
@@ -133,6 +131,7 @@ private fun DashboardContent(
  * Main dashboard body with all sections.
  * Adapts layout based on screen size - stacks elements vertically on compact screens.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DashboardContentBody(
     uiState: DashboardUiState,
@@ -149,20 +148,22 @@ private fun DashboardContentBody(
     ) {
         // Main KPIs Grid - adapts columns based on screen size
         item {
-            val gridHeight = if (windowInfo.isCompact) 420.dp else 200.dp
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 220.dp),
-                modifier = Modifier.fillMaxWidth().height(gridHeight),
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(spacing),
-                verticalArrangement = Arrangement.spacedBy(spacing)
+                verticalArrangement = Arrangement.spacedBy(spacing),
+                maxItemsInEachRow = when {
+                    windowInfo.isCompact -> 1   // Phones: 1 column
+                    windowInfo.isMedium -> 2    // Foldables/tablets portrait: 2 columns
+                    else -> 4                   // Desktop/tablets landscape: 4 columns (all cards in one row)
+                }
             ) {
-                items(
-                    items = uiState.statCards,
-                    key = { it.id }
-                ) { card ->
+                uiState.statCards.forEach { card ->
                     StatsCard(
                         statCard = card,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .weight(1f)
+                            .widthIn(min = 220.dp)
                     )
                 }
             }
@@ -536,8 +537,7 @@ private fun DashboardContentPreview() {
             DashboardContent(
                 uiState = DashboardUiState(
                     isLoading = false,
-                    statCards = DashboardScreenPreviewData.sampleStatCards,
-                    alertCount = 23
+                    statCards = DashboardScreenPreviewData.sampleStatCards
                 ),
                 onEvent = {}
             )

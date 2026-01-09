@@ -1,6 +1,7 @@
 package com.apptolast.greenhouse.admin.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -10,12 +11,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.apptolast.greenhouse.admin.data.model.MenuIcon
 import com.apptolast.greenhouse.admin.data.model.MenuItem
+import com.apptolast.greenhouse.admin.domain.auth.AuthEvent
+import com.apptolast.greenhouse.admin.domain.auth.AuthEventManager
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveScaffold
 import com.apptolast.greenhouse.admin.presentation.ui.screens.ClientDetailScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.ClientsScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.DashboardScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.LoginScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.SettingsScreen
+import org.koin.compose.koinInject
 
 /**
  * Static menu items for the application navigation.
@@ -44,7 +48,22 @@ private val menuItems = listOf(
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val authEventManager: AuthEventManager = koinInject()
+
     ConfigureWebNavigation(navController)
+
+    // Listen for session expiration events and redirect to login
+    LaunchedEffect(Unit) {
+        authEventManager.authEvents.collect { event ->
+            when (event) {
+                is AuthEvent.SessionExpired -> {
+                    navController.navigate(LoginRoute) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            }
+        }
+    }
 
     // Get current route for navigation selection
     val navBackStackEntry by navController.currentBackStackEntryAsState()
