@@ -18,7 +18,6 @@ import com.apptolast.greenhouse.admin.data.model.UserRole
 import com.apptolast.greenhouse.admin.data.model.toIsActive
 import com.apptolast.greenhouse.admin.domain.repository.AlertsRepository
 import com.apptolast.greenhouse.admin.domain.repository.ClientsRepository
-import com.apptolast.greenhouse.admin.domain.repository.DashboardRepository
 import com.apptolast.greenhouse.admin.domain.repository.DevicesRepository
 import com.apptolast.greenhouse.admin.domain.repository.GreenhousesRepository
 import com.apptolast.greenhouse.admin.domain.repository.SectorsRepository
@@ -38,7 +37,6 @@ import kotlinx.coroutines.launch
 class ClientDetailViewModel(
     private val clientId: Long,
     private val clientsRepository: ClientsRepository,
-    private val dashboardRepository: DashboardRepository,
     private val usersRepository: UsersRepository,
     private val greenhousesRepository: GreenhousesRepository,
     private val sectorsRepository: SectorsRepository,
@@ -55,24 +53,9 @@ class ClientDetailViewModel(
     val uiState: StateFlow<ClientDetailUiState> = _uiState.asStateFlow()
 
     init {
-        loadLayoutData()
         loadClient()
         // Preload all catalogs for form dropdowns
         loadAllCatalogs()
-    }
-
-    private fun loadLayoutData() {
-        viewModelScope.launch {
-            val menuItemsResult = dashboardRepository.getMenuItems()
-            val alertCountResult = dashboardRepository.getAlertCount()
-
-            _uiState.update { currentState ->
-                currentState.copy(
-                    menuItems = menuItemsResult.getOrDefault(emptyList()),
-                    alertCount = alertCountResult.getOrDefault(0)
-                )
-            }
-        }
     }
 
     /**
@@ -103,7 +86,6 @@ class ClientDetailViewModel(
 
             is ClientDetailEvent.OnMenuItemSelected -> updateSelectedMenu(event.itemId)
             is ClientDetailEvent.OnTopBarSearchQueryChanged -> updateTopBarSearchQuery(event.query)
-            is ClientDetailEvent.OnAlertIconClicked -> handleAlertClick()
             is ClientDetailEvent.OnNavigationHandled -> resetNavigationFlag()
 
             // Users events
@@ -472,10 +454,6 @@ class ClientDetailViewModel(
 
     private fun updateTopBarSearchQuery(query: String) {
         _uiState.update { it.copy(topBarSearchQuery = query) }
-    }
-
-    private fun handleAlertClick() {
-        // Handle alert click - could navigate to alerts screen
     }
 
     // === Users Tab Methods ===

@@ -43,7 +43,6 @@ class DashboardViewModel(
             is DashboardEvent.RefreshDashboard -> refreshDashboard()
             is DashboardEvent.OnSearchQueryChanged -> updateSearchQuery(event.query)
             is DashboardEvent.OnMenuItemSelected -> selectMenuItem(event.itemId)
-            is DashboardEvent.OnAlertIconClicked -> handleAlertClick()
             is DashboardEvent.DismissError -> dismissError()
         }
     }
@@ -72,8 +71,6 @@ class DashboardViewModel(
                     // Derive statCards from dashboardStats instead of separate API call
                     statCards = dashboardStats?.toStatCards() ?: emptyList(),
                     menuItems = menuResult.getOrDefault(emptyList()),
-                    // Derive alertCount from dashboardStats instead of separate API call
-                    alertCount = dashboardStats?.activeAlerts ?: 0,
                     dashboardStats = dashboardStats,
                     recentAlerts = recentAlertsResult.getOrDefault(emptyList()),
                     recentClients = recentClientsResult.getOrDefault(emptyList()),
@@ -110,7 +107,6 @@ class DashboardViewModel(
                 currentState.copy(
                     isRefreshing = false,
                     statCards = dashboardStats?.toStatCards() ?: currentState.statCards,
-                    alertCount = dashboardStats?.activeAlerts ?: currentState.alertCount,
                     dashboardStats = dashboardStats ?: currentState.dashboardStats,
                     recentAlerts = recentAlertsResult.getOrDefault(currentState.recentAlerts),
                     recentClients = recentClientsResult.getOrDefault(currentState.recentClients),
@@ -132,11 +128,6 @@ class DashboardViewModel(
 
     private fun selectMenuItem(itemId: String) {
         _uiState.update { it.copy(selectedMenuId = itemId) }
-    }
-
-    private fun handleAlertClick() {
-        // Navigation to alerts will be handled by observing selectedMenuId
-        // or through a separate navigation event channel if needed
     }
 
     private fun dismissError() {

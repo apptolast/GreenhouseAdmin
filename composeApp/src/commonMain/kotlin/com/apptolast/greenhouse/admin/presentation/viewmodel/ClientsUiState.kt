@@ -2,7 +2,6 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatusFilter
-import com.apptolast.greenhouse.admin.data.model.MenuItem
 import com.apptolast.greenhouse.admin.data.model.PaginationInfo
 
 /**
@@ -18,9 +17,7 @@ data class ClientsUiState(
     val error: String? = null,
 
     // Navigation/Layout states
-    val menuItems: List<MenuItem> = emptyList(),
     val selectedMenuId: String = "clients",
-    val alertCount: Int = 0,
     val topBarSearchQuery: String = "",
 
     // Data states

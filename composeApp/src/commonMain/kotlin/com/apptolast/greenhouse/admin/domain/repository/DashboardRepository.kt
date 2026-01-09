@@ -24,12 +24,6 @@ interface DashboardRepository {
     suspend fun getMenuItems(): Result<List<MenuItem>>
 
     /**
-     * Fetches current alert count for header badge.
-     * @return Result containing alert count or error
-     */
-    suspend fun getAlertCount(): Result<Int>
-
-    /**
      * Fetches aggregated dashboard statistics from all tenants.
      * @return Result containing DashboardStats or error
      */

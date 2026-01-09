@@ -22,7 +22,6 @@ data class DashboardUiState(
     // Data states
     val statCards: List<StatCard> = emptyList(),
     val menuItems: List<MenuItem> = emptyList(),
-    val alertCount: Int = 0,
 
     // Additional dashboard data
     val dashboardStats: DashboardStats? = null,

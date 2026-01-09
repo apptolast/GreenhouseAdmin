@@ -25,7 +25,7 @@ val presentationModule = module {
 
     // Client Detail (with clientId parameter)
     viewModel { (clientId: Long) ->
-        ClientDetailViewModel(clientId, get(), get(), get(), get(), get(), get(), get(), get())
+        ClientDetailViewModel(clientId, get(), get(), get(), get(), get(), get(), get())
     }
 
     // Settings

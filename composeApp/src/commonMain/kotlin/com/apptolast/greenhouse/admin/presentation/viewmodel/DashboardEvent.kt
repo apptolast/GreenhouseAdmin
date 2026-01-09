@@ -26,11 +26,6 @@ sealed interface DashboardEvent {
     data class OnMenuItemSelected(val itemId: String) : DashboardEvent
 
     /**
-     * User clicked the alert notification icon.
-     */
-    data object OnAlertIconClicked : DashboardEvent
-
-    /**
      * Dismiss current error message.
      */
     data object DismissError : DashboardEvent

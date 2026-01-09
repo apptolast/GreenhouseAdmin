@@ -156,9 +156,7 @@ private fun ClientDetailScreenContent(
             title = stringResource(Res.string.app_name),
             subtitle = breadcrumb,
             searchQuery = uiState.topBarSearchQuery,
-            alertCount = uiState.alertCount,
-            onSearchQueryChange = { onEvent(ClientDetailEvent.OnTopBarSearchQueryChanged(it)) },
-            onAlertClick = { onEvent(ClientDetailEvent.OnAlertIconClicked) }
+            onSearchQueryChange = { onEvent(ClientDetailEvent.OnTopBarSearchQueryChanged(it)) }
         )
 
         // Content area

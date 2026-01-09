@@ -98,9 +98,7 @@ private fun DashboardContent(
             title = stringResource(Res.string.app_name),
             subtitle = stringResource(Res.string.dashboard_overview),
             searchQuery = uiState.searchQuery,
-            alertCount = uiState.alertCount,
-            onSearchQueryChange = { onEvent(DashboardEvent.OnSearchQueryChanged(it)) },
-            onAlertClick = { onEvent(DashboardEvent.OnAlertIconClicked) }
+            onSearchQueryChange = { onEvent(DashboardEvent.OnSearchQueryChanged(it)) }
         )
 
         // Content area
@@ -539,8 +537,7 @@ private fun DashboardContentPreview() {
             DashboardContent(
                 uiState = DashboardUiState(
                     isLoading = false,
-                    statCards = DashboardScreenPreviewData.sampleStatCards,
-                    alertCount = 23
+                    statCards = DashboardScreenPreviewData.sampleStatCards
                 ),
                 onEvent = {}
             )

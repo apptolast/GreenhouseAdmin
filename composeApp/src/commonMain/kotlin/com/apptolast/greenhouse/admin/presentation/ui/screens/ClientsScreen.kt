@@ -83,9 +83,7 @@ private fun ClientsScreenContent(
             title = stringResource(Res.string.app_name),
             subtitle = stringResource(Res.string.breadcrumb_clients),
             searchQuery = uiState.topBarSearchQuery,
-            alertCount = uiState.alertCount,
-            onSearchQueryChange = { onEvent(ClientsEvent.OnTopBarSearchQueryChanged(it)) },
-            onAlertClick = { onEvent(ClientsEvent.OnAlertIconClicked) }
+            onSearchQueryChange = { onEvent(ClientsEvent.OnTopBarSearchQueryChanged(it)) }
         )
 
         // Clients content area

@@ -114,11 +114,6 @@ class DashboardRepositoryImpl(
         )
     }
 
-    override suspend fun getAlertCount(): Result<Int> = runCatching {
-        val stats = getDashboardStats().getOrThrow()
-        stats.activeAlerts
-    }
-
     override suspend fun getDashboardStats(): Result<DashboardStats> = runCatching {
         // Return cached result if still valid
         cacheTimeMark?.let { mark ->
