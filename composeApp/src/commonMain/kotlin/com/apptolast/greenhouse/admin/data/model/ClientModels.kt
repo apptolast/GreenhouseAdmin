@@ -31,6 +31,7 @@ data class Location(
 @Serializable
 data class Client(
     val id: Long,
+    val code: String,
     val name: String,
     val email: String,
     val phone: String = "",

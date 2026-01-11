@@ -164,11 +164,13 @@ private object ClientDetailSectorsTabPreviewData {
     val sampleSectors = listOf(
         Sector(
             id = 1L,
+            code = "SEC-00001",
             greenhouseId = 1L,
             variety = "Tomate Cherry"
         ),
         Sector(
             id = 2L,
+            code = "SEC-00002",
             greenhouseId = 1L,
             variety = "Pimiento Rojo"
         )
@@ -177,6 +179,7 @@ private object ClientDetailSectorsTabPreviewData {
     val sampleGreenhouses = listOf(
         Greenhouse(
             id = 1L,
+            code = "GRH-00001",
             name = "Invernadero Principal",
             tenantId = 1L,
             location = null,

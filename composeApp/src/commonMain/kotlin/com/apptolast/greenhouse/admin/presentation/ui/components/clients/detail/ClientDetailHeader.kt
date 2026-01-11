@@ -163,7 +163,7 @@ private fun CompactHeader(
                     ClientStatusBadge(status = client.status)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(Res.string.client_detail_id, client.id),
+                        text = stringResource(Res.string.client_detail_id, client.code),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -243,7 +243,7 @@ private fun ExpandedHeader(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = stringResource(Res.string.client_detail_id, client.id),
+                    text = stringResource(Res.string.client_detail_id, client.code),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -292,6 +292,7 @@ private fun ExpandedHeader(
 private object ClientDetailHeaderPreviewData {
     val sampleClient = Client(
         id = 12345L,
+        code = "TNT-00001",
         name = "Elena Rodriguez",
         email = "elena@freshveg.com",
         phone = "+34 612 345 678",

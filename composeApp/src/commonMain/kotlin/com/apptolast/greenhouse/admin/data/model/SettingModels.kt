@@ -23,6 +23,7 @@ data class PeriodResponse(
 @Serializable
 data class SettingResponse(
     val id: Long,
+    val code: String,
     val greenhouseId: Long,
     val tenantId: Long,
     val parameterId: Short,
@@ -90,6 +91,7 @@ data class Period(
  */
 data class Setting(
     val id: Long,
+    val code: String,
     val greenhouseId: Long,
     val greenhouseName: String? = null,
     val tenantId: Long,
@@ -152,6 +154,7 @@ fun PeriodResponse.toDomain() = Period(
  */
 fun SettingResponse.toDomain() = Setting(
     id = id,
+    code = code,
     greenhouseId = greenhouseId,
     greenhouseName = null,
     tenantId = tenantId,

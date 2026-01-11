@@ -519,8 +519,8 @@ private fun AlertFormDialogCreatePreview() {
         AlertFormDialog(
             mode = AlertFormMode.Create,
             greenhouses = listOf(
-                Greenhouse(id = 1L, tenantId = 1L, name = "Greenhouse A"),
-                Greenhouse(id = 2L, tenantId = 1L, name = "Greenhouse B")
+                Greenhouse(id = 1L, code = "GRH-00001", tenantId = 1L, name = "Greenhouse A"),
+                Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
             ),
             alertTypes = listOf(
                 AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),
@@ -564,6 +564,7 @@ private fun AlertFormDialogEditPreview() {
             mode = AlertFormMode.Edit(
                 Alert(
                     id = 1L,
+                    code = "ALT-00001",
                     tenantId = 1L,
                     greenhouseId = 1L,
                     greenhouseName = "Greenhouse A",
@@ -580,8 +581,8 @@ private fun AlertFormDialogEditPreview() {
                 )
             ),
             greenhouses = listOf(
-                Greenhouse(id = 1L, tenantId = 1L, name = "Greenhouse A"),
-                Greenhouse(id = 2L, tenantId = 1L, name = "Greenhouse B")
+                Greenhouse(id = 1L, code = "GRH-00001", tenantId = 1L, name = "Greenhouse A"),
+                Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
             ),
             alertTypes = listOf(
                 AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),

@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SectorResponse(
     val id: Long,
+    val code: String,
     val greenhouseId: Long,
     val variety: String? = null
 )
@@ -37,6 +38,7 @@ data class SectorUpdateRequest(
 @Serializable
 data class Sector(
     val id: Long,
+    val code: String,
     val greenhouseId: Long,
     val variety: String? = null
 ) {
@@ -58,6 +60,7 @@ data class Sector(
  */
 fun SectorResponse.toSector() = Sector(
     id = id,
+    code = code,
     greenhouseId = greenhouseId,
     variety = variety
 )

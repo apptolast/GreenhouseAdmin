@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UserResponse(
     val id: Long,
+    val code: String,
     val username: String,
     val email: String,
     val role: String,
@@ -49,6 +50,7 @@ data class UserUpdateRequest(
 @Serializable
 data class User(
     val id: Long,
+    val code: String,
     val username: String,
     val email: String,
     val role: UserRole,
@@ -94,6 +96,7 @@ enum class UserRole {
  */
 fun UserResponse.toUser() = User(
     id = id,
+    code = code,
     username = username,
     email = email,
     role = UserRole.fromString(role),

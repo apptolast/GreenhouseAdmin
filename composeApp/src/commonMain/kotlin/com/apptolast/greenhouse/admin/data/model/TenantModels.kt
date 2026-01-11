@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TenantResponse(
     val id: Long,
+    val code: String,
     val name: String,
     val email: String,
     val phone: String? = null,
@@ -55,6 +56,7 @@ data class UpdateTenantRequest(
  */
 fun TenantResponse.toClient(): Client = Client(
     id = id,
+    code = code,
     name = name,
     email = email,
     phone = phone ?: "",

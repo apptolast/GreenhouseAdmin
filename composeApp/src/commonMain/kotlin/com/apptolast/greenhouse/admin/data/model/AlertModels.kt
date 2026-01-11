@@ -40,6 +40,7 @@ data class AlertSeverityResponse(
 @Serializable
 data class AlertResponse(
     val id: Long,
+    val code: String,
     val tenantId: Long,
     val greenhouseId: Long,
     val greenhouseName: String? = null,
@@ -120,6 +121,7 @@ data class AlertSeverityCatalog(
  */
 data class Alert(
     val id: Long,
+    val code: String,
     val tenantId: Long,
     val greenhouseId: Long,
     val greenhouseName: String?,
@@ -171,6 +173,7 @@ fun AlertSeverityResponse.toDomain() = AlertSeverityCatalog(
  */
 fun AlertResponse.toDomain() = Alert(
     id = id,
+    code = code,
     tenantId = tenantId,
     greenhouseId = greenhouseId,
     greenhouseName = greenhouseName,

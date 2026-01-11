@@ -162,6 +162,7 @@ private object ClientDetailGreenhousesTabPreviewData {
     val sampleGreenhouses = listOf(
         Greenhouse(
             id = 1L,
+            code = "GRH-00001",
             name = "Invernadero Principal",
             tenantId = 1L,
             location = Location(lat = 36.8381, lon = -2.4597),
@@ -173,6 +174,7 @@ private object ClientDetailGreenhousesTabPreviewData {
         ),
         Greenhouse(
             id = 2L,
+            code = "GRH-00002",
             name = "Invernadero Norte",
             tenantId = 1L,
             location = Location(lat = 36.8400, lon = -2.4600),

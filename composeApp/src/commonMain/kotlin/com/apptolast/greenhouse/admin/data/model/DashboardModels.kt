@@ -86,6 +86,7 @@ data class DeviceBreakdown(
  */
 data class RecentAlert(
     val id: Long,
+    val code: String,
     val tenantId: Long,
     val tenantName: String,
     val greenhouseName: String?,
@@ -100,6 +101,7 @@ data class RecentAlert(
  */
 data class RecentClient(
     val id: Long,
+    val code: String,
     val name: String,
     val province: String?,
     val isActive: Boolean

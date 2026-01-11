@@ -632,6 +632,7 @@ private object DeviceFormDialogPreviewData {
     val sampleGreenhouses = listOf(
         Greenhouse(
             id = 1L,
+            code = "GRH-00001",
             name = "Main Greenhouse",
             tenantId = 1L,
             location = null,
@@ -643,6 +644,7 @@ private object DeviceFormDialogPreviewData {
         ),
         Greenhouse(
             id = 2L,
+            code = "GRH-00002",
             name = "North Greenhouse",
             tenantId = 1L,
             location = null,
@@ -672,6 +674,7 @@ private object DeviceFormDialogPreviewData {
 
     val sampleDevice = Device(
         id = 1L,
+        code = "DEV-00001",
         tenantId = 1L,
         greenhouseId = 1L,
         name = "Sensor Temperatura Norte",

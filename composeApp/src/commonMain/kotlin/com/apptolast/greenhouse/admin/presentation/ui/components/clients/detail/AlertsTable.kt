@@ -144,7 +144,7 @@ fun AlertsTable(
                     onDelete = { onDeleteAlert(alert) },
                     onResolve = { onResolveAlert(alert) },
                     onReopen = { onReopenAlert(alert) },
-                    onCopyId = { onCopyId(alert.id.toString()) }
+                    onCopyId = { onCopyId(alert.code) }
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
@@ -234,9 +234,9 @@ private fun AlertTableRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        // ID - Copyable
+        // ID - Copyable code
         CopyableIdCell(
-            id = alert.id.toString(),
+            id = alert.code,
             onCopyId = onCopyId,
             modifier = Modifier.weight(1f)
         )
@@ -445,7 +445,7 @@ private fun AlertsCardList(
                 onDelete = { onDeleteAlert(alert) },
                 onResolve = { onResolveAlert(alert) },
                 onReopen = { onReopenAlert(alert) },
-                onCopyId = { onCopyId(alert.id.toString()) }
+                onCopyId = { onCopyId(alert.code) }
             )
         }
     }
@@ -527,7 +527,7 @@ private fun AlertCard(
                         }
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = alert.id.toString(),
+                            text = alert.code,
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -683,6 +683,7 @@ private fun AlertCard(
 val mockAlerts = listOf(
     Alert(
         id = 1,
+        code = "ALT-00001",
         tenantId = 1,
         greenhouseId = 1,
         greenhouseName = "Greenhouse A",
@@ -699,6 +700,7 @@ val mockAlerts = listOf(
     ),
     Alert(
         id = 2,
+        code = "ALT-00002",
         tenantId = 1,
         greenhouseId = 1,
         greenhouseName = "Greenhouse A",
@@ -715,6 +717,7 @@ val mockAlerts = listOf(
     ),
     Alert(
         id = 3,
+        code = "ALT-00003",
         tenantId = 1,
         greenhouseId = 2,
         greenhouseName = "Greenhouse B",

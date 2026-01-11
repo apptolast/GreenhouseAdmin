@@ -604,6 +604,7 @@ private fun ClientDetailContent(
 private object ClientDetailScreenPreviewData {
     val sampleClient = Client(
         id = 12345L,
+        code = "TNT-00001",
         name = "Fresh Vegetables Co.",
         email = "contact@freshveg.com",
         phone = "+34 612 345 678",
@@ -615,6 +616,7 @@ private object ClientDetailScreenPreviewData {
     val sampleUsers = listOf(
         User(
             id = 1L,
+            code = "USR-00001",
             username = "anamartinez",
             email = "ana@freshveg.com",
             role = UserRole.ADMIN,
@@ -623,6 +625,7 @@ private object ClientDetailScreenPreviewData {
         ),
         User(
             id = 2L,
+            code = "USR-00002",
             username = "carlosruiz",
             email = "carlos@freshveg.com",
             role = UserRole.OPERATOR,
@@ -634,6 +637,7 @@ private object ClientDetailScreenPreviewData {
     val sampleGreenhouses = listOf(
         Greenhouse(
             id = 1L,
+            code = "GRH-00001",
             name = "Invernadero Principal",
             tenantId = 12345L,
             location = null,
@@ -645,6 +649,7 @@ private object ClientDetailScreenPreviewData {
         ),
         Greenhouse(
             id = 2L,
+            code = "GRH-00002",
             name = "Invernadero Norte",
             tenantId = 12345L,
             location = null,
@@ -659,6 +664,7 @@ private object ClientDetailScreenPreviewData {
     val sampleDevices = listOf(
         Device(
             id = 1L,
+            code = "DEV-00001",
             tenantId = 12345L,
             greenhouseId = 1L,
             categoryId = Device.CATEGORY_SENSOR,
@@ -671,6 +677,7 @@ private object ClientDetailScreenPreviewData {
         ),
         Device(
             id = 2L,
+            code = "DEV-00002",
             tenantId = 12345L,
             greenhouseId = 1L,
             categoryId = Device.CATEGORY_ACTUATOR,
@@ -683,6 +690,7 @@ private object ClientDetailScreenPreviewData {
         ),
         Device(
             id = 3L,
+            code = "DEV-00003",
             tenantId = 12345L,
             greenhouseId = 1L,
             categoryId = Device.CATEGORY_SENSOR,

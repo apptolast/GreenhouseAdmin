@@ -452,6 +452,7 @@ private object UsersTablePreviewData {
     val sampleUsers = listOf(
         User(
             id = 1L,
+            code = "USR-00001",
             username = "anamartinez",
             email = "ana@freshveg.com",
             role = UserRole.ADMIN,
@@ -460,6 +461,7 @@ private object UsersTablePreviewData {
         ),
         User(
             id = 2L,
+            code = "USR-00002",
             username = "carlosruiz",
             email = "carlos@freshveg.com",
             role = UserRole.OPERATOR,
@@ -468,6 +470,7 @@ private object UsersTablePreviewData {
         ),
         User(
             id = 3L,
+            code = "USR-00003",
             username = "sofiafernandez",
             email = "sofia@freshveg.com",
             role = UserRole.VIEWER,

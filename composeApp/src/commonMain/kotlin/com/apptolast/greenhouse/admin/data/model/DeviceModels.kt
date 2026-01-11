@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DeviceResponse(
     val id: Long,
+    val code: String,
     val tenantId: Long,
     val greenhouseId: Long,
     val name: String? = null,
@@ -55,6 +56,7 @@ data class DeviceUpdateRequest(
 @Serializable
 data class Device(
     val id: Long,
+    val code: String,
     val tenantId: Long,
     val greenhouseId: Long,
     val name: String? = null,
@@ -133,6 +135,7 @@ enum class DeviceCategory {
  */
 fun DeviceResponse.toDevice() = Device(
     id = id,
+    code = code,
     tenantId = tenantId,
     greenhouseId = greenhouseId,
     name = name,
