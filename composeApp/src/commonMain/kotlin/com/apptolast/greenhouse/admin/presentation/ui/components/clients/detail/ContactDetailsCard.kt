@@ -146,6 +146,7 @@ fun ContactDetailsCard(
 private object ContactDetailsCardPreviewData {
     val sampleClient = Client(
         id = 1L,
+        code = "TNT-00001",
         name = "Elena Rodriguez",
         email = "elena@freshveg.com",
         phone = "+34 612 345 678",

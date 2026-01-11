@@ -163,6 +163,7 @@ private object ClientDetailDevicesTabPreviewData {
     val sampleDevices = listOf(
         Device(
             id = 1L,
+            code = "DEV-00001",
             tenantId = 1L,
             greenhouseId = 1L,
             categoryId = Device.CATEGORY_SENSOR,
@@ -175,6 +176,7 @@ private object ClientDetailDevicesTabPreviewData {
         ),
         Device(
             id = 2L,
+            code = "DEV-00002",
             tenantId = 1L,
             greenhouseId = 1L,
             categoryId = Device.CATEGORY_ACTUATOR,

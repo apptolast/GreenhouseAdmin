@@ -329,6 +329,7 @@ private fun SectorFormTextField(
 private object SectorFormDialogPreviewData {
     val sampleSector = Sector(
         id = 1L,
+        code = "SEC-00001",
         greenhouseId = 1L,
         variety = "Tomate Cherry"
     )
@@ -336,6 +337,7 @@ private object SectorFormDialogPreviewData {
     val sampleGreenhouses = listOf(
         Greenhouse(
             id = 1L,
+            code = "GRH-00001",
             name = "Invernadero Principal",
             tenantId = 1L,
             location = null,
@@ -347,6 +349,7 @@ private object SectorFormDialogPreviewData {
         ),
         Greenhouse(
             id = 2L,
+            code = "GRH-00002",
             name = "Invernadero Norte",
             tenantId = 1L,
             location = null,

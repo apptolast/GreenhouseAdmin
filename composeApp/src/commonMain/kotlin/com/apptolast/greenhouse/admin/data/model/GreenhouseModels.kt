@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GreenhouseResponse(
     val id: Long,
+    val code: String,
     val name: String,
     val tenantId: Long,
     val location: Location? = null,
@@ -51,6 +52,7 @@ data class GreenhouseUpdateRequest(
 @Serializable
 data class Greenhouse(
     val id: Long,
+    val code: String,
     val name: String,
     val tenantId: Long,
     val location: Location? = null,
@@ -102,6 +104,7 @@ val Greenhouse.status: GreenhouseStatus
  */
 fun GreenhouseResponse.toGreenhouse() = Greenhouse(
     id = id,
+    code = code,
     name = name,
     tenantId = tenantId,
     location = location,

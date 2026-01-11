@@ -632,6 +632,7 @@ private object DeviceFormDialogPreviewData {
     val sampleGreenhouses = listOf(
         Greenhouse(
             id = 1L,
+            code = "GRH-00001",
             name = "Main Greenhouse",
             tenantId = 1L,
             location = null,
@@ -643,6 +644,7 @@ private object DeviceFormDialogPreviewData {
         ),
         Greenhouse(
             id = 2L,
+            code = "GRH-00002",
             name = "North Greenhouse",
             tenantId = 1L,
             location = null,
@@ -655,23 +657,24 @@ private object DeviceFormDialogPreviewData {
     )
 
     val sampleCategories = listOf(
-        DeviceCatalogCategory(1, "SENSOR"),
-        DeviceCatalogCategory(2, "ACTUATOR")
+        DeviceCatalogCategory(1, "CAT-00001", "SENSOR"),
+        DeviceCatalogCategory(2, "CAT-00002", "ACTUATOR")
     )
 
     val sampleTypes = listOf(
-        DeviceCatalogType(1, "TEMPERATURE", "Temperature sensor", 1, 1, "°C", null),
-        DeviceCatalogType(2, "HUMIDITY", "Humidity sensor", 1, 3, "%", null)
+        DeviceCatalogType(1, "TYP-00001", "TEMPERATURE", "Temperature sensor", 1, 1, "°C", null),
+        DeviceCatalogType(2, "TYP-00002", "HUMIDITY", "Humidity sensor", 1, 3, "%", null)
     )
 
     val sampleUnits = listOf(
-        DeviceCatalogUnit(1, "°C", "Celsius"),
-        DeviceCatalogUnit(2, "°F", "Fahrenheit"),
-        DeviceCatalogUnit(3, "%", "Percentage")
+        DeviceCatalogUnit(1, "UNT-00001", "°C", "Celsius"),
+        DeviceCatalogUnit(2, "UNT-00002", "°F", "Fahrenheit"),
+        DeviceCatalogUnit(3, "UNT-00003", "%", "Percentage")
     )
 
     val sampleDevice = Device(
         id = 1L,
+        code = "DEV-00001",
         tenantId = 1L,
         greenhouseId = 1L,
         name = "Sensor Temperatura Norte",

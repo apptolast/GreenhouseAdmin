@@ -552,12 +552,13 @@ private fun SettingFormDialogCreatePreview() {
         SettingFormDialog(
             mode = SettingFormMode.Create,
             greenhouses = listOf(
-                Greenhouse(id = 1L, tenantId = 1L, name = "Greenhouse A"),
-                Greenhouse(id = 2L, tenantId = 1L, name = "Greenhouse B")
+                Greenhouse(id = 1L, code = "GRH-00001", tenantId = 1L, name = "Greenhouse A"),
+                Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
             ),
             parameters = listOf(
                 DeviceCatalogType(
                     id = 1,
+                    code = "TYP-00001",
                     name = "Temperature",
                     description = "Temperature sensor",
                     categoryId = 1,
@@ -567,6 +568,7 @@ private fun SettingFormDialogCreatePreview() {
                 ),
                 DeviceCatalogType(
                     id = 2,
+                    code = "TYP-00002",
                     name = "Humidity",
                     description = "Humidity sensor",
                     categoryId = 1,
@@ -576,9 +578,9 @@ private fun SettingFormDialogCreatePreview() {
                 )
             ),
             periods = listOf(
-                Period(id = 1, name = "DAY"),
-                Period(id = 2, name = "NIGHT"),
-                Period(id = 3, name = "ALL")
+                Period(id = 1, code = "PER-00001", name = "DAY"),
+                Period(id = 2, code = "PER-00002", name = "NIGHT"),
+                Period(id = 3, code = "PER-00003", name = "ALL")
             )
         )
     }
@@ -592,6 +594,7 @@ private fun SettingFormDialogEditPreview() {
             mode = SettingFormMode.Edit(
                 Setting(
                     id = 1L,
+                    code = "SET-00001",
                     greenhouseId = 1L,
                     greenhouseName = "Greenhouse A",
                     tenantId = 1L,
@@ -606,12 +609,13 @@ private fun SettingFormDialogEditPreview() {
                 )
             ),
             greenhouses = listOf(
-                Greenhouse(id = 1L, tenantId = 1L, name = "Greenhouse A"),
-                Greenhouse(id = 2L, tenantId = 1L, name = "Greenhouse B")
+                Greenhouse(id = 1L, code = "GRH-00001", tenantId = 1L, name = "Greenhouse A"),
+                Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
             ),
             parameters = listOf(
                 DeviceCatalogType(
                     id = 1,
+                    code = "TYP-00001",
                     name = "Temperature",
                     description = "Temperature sensor",
                     categoryId = 1,
@@ -621,6 +625,7 @@ private fun SettingFormDialogEditPreview() {
                 ),
                 DeviceCatalogType(
                     id = 2,
+                    code = "TYP-00002",
                     name = "Humidity",
                     description = "Humidity sensor",
                     categoryId = 1,
@@ -630,9 +635,9 @@ private fun SettingFormDialogEditPreview() {
                 )
             ),
             periods = listOf(
-                Period(id = 1, name = "DAY"),
-                Period(id = 2, name = "NIGHT"),
-                Period(id = 3, name = "ALL")
+                Period(id = 1, code = "PER-00001", name = "DAY"),
+                Period(id = 2, code = "PER-00002", name = "NIGHT"),
+                Period(id = 3, code = "PER-00003", name = "ALL")
             )
         )
     }

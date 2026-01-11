@@ -167,6 +167,7 @@ private object ClientDetailAlertsTabPreviewData {
     val sampleAlerts = listOf(
         Alert(
             id = 1L,
+            code = "ALT-00001",
             tenantId = 1L,
             greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
@@ -183,6 +184,7 @@ private object ClientDetailAlertsTabPreviewData {
         ),
         Alert(
             id = 2L,
+            code = "ALT-00002",
             tenantId = 1L,
             greenhouseId = 1L,
             greenhouseName = "Greenhouse A",

@@ -12,6 +12,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AlertTypeResponse(
     val id: Short,
+    val code: String,
     val name: String,
     val description: String? = null
 )
@@ -22,6 +23,7 @@ data class AlertTypeResponse(
 @Serializable
 data class AlertSeverityResponse(
     val id: Short,
+    val code: String,
     val name: String,
     val level: Short,
     val description: String? = null,
@@ -40,6 +42,7 @@ data class AlertSeverityResponse(
 @Serializable
 data class AlertResponse(
     val id: Long,
+    val code: String,
     val tenantId: Long,
     val greenhouseId: Long,
     val greenhouseName: String? = null,
@@ -99,6 +102,7 @@ data class AlertResolveRequest(
  */
 data class AlertType(
     val id: Short,
+    val code: String,
     val name: String,
     val description: String?
 )
@@ -108,6 +112,7 @@ data class AlertType(
  */
 data class AlertSeverityCatalog(
     val id: Short,
+    val code: String,
     val name: String,
     val level: Short,
     val description: String?,
@@ -120,6 +125,7 @@ data class AlertSeverityCatalog(
  */
 data class Alert(
     val id: Long,
+    val code: String,
     val tenantId: Long,
     val greenhouseId: Long,
     val greenhouseName: String?,
@@ -150,6 +156,7 @@ data class Alert(
  */
 fun AlertTypeResponse.toDomain() = AlertType(
     id = id,
+    code = code,
     name = name,
     description = description
 )
@@ -159,6 +166,7 @@ fun AlertTypeResponse.toDomain() = AlertType(
  */
 fun AlertSeverityResponse.toDomain() = AlertSeverityCatalog(
     id = id,
+    code = code,
     name = name,
     level = level,
     description = description,
@@ -171,6 +179,7 @@ fun AlertSeverityResponse.toDomain() = AlertSeverityCatalog(
  */
 fun AlertResponse.toDomain() = Alert(
     id = id,
+    code = code,
     tenantId = tenantId,
     greenhouseId = greenhouseId,
     greenhouseName = greenhouseName,

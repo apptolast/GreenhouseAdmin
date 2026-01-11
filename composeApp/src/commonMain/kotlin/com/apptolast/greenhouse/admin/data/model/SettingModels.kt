@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PeriodResponse(
     val id: Short,
+    val code: String,
     val name: String
 )
 
@@ -23,6 +24,7 @@ data class PeriodResponse(
 @Serializable
 data class SettingResponse(
     val id: Long,
+    val code: String,
     val greenhouseId: Long,
     val tenantId: Long,
     val parameterId: Short,
@@ -69,6 +71,7 @@ data class SettingUpdateRequest(
  */
 data class Period(
     val id: Short,
+    val code: String,
     val name: String
 ) {
     /**
@@ -90,6 +93,7 @@ data class Period(
  */
 data class Setting(
     val id: Long,
+    val code: String,
     val greenhouseId: Long,
     val greenhouseName: String? = null,
     val tenantId: Long,
@@ -144,6 +148,7 @@ data class Setting(
  */
 fun PeriodResponse.toDomain() = Period(
     id = id,
+    code = code,
     name = name
 )
 
@@ -152,6 +157,7 @@ fun PeriodResponse.toDomain() = Period(
  */
 fun SettingResponse.toDomain() = Setting(
     id = id,
+    code = code,
     greenhouseId = greenhouseId,
     greenhouseName = null,
     tenantId = tenantId,

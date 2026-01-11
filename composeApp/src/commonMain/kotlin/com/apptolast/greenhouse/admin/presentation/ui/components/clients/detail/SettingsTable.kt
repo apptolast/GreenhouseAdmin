@@ -192,9 +192,9 @@ private fun SettingTableRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        // ID - Copyable
+        // ID - Copyable code
         CopyableIdCell(
-            id = setting.id.toString(),
+            id = setting.code,
             onCopyId = onCopyId,
             modifier = Modifier.weight(0.4f)
         )
@@ -347,7 +347,7 @@ private fun SettingsCardList(
                 setting = setting,
                 onEdit = { onEditSetting(setting) },
                 onDelete = { onDeleteSetting(setting) },
-                onCopyId = { onCopyId(setting.id.toString()) }
+                onCopyId = { onCopyId(setting.code) }
             )
         }
     }
@@ -472,6 +472,7 @@ private object SettingsTablePreviewData {
     val sampleSettings = listOf(
         Setting(
             id = 1L,
+            code = "SET-00001",
             greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
             tenantId = 1L,
@@ -486,6 +487,7 @@ private object SettingsTablePreviewData {
         ),
         Setting(
             id = 2L,
+            code = "SET-00002",
             greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
             tenantId = 1L,
@@ -500,6 +502,7 @@ private object SettingsTablePreviewData {
         ),
         Setting(
             id = 3L,
+            code = "SET-00003",
             greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
             tenantId = 1L,

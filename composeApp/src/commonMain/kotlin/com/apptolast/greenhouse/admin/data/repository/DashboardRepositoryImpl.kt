@@ -234,6 +234,7 @@ class DashboardRepositoryImpl(
                 .map { alertDto ->
                     RecentAlert(
                         id = alertDto.id,
+                        code = alertDto.code,
                         tenantId = alertDto.tenantId,
                         tenantName = tenantMap[tenantId]?.name ?: "Unknown",
                         greenhouseName = alertDto.greenhouseName,
@@ -256,6 +257,7 @@ class DashboardRepositoryImpl(
             .map { tenant ->
                 RecentClient(
                     id = tenant.id,
+                    code = tenant.code,
                     name = tenant.name,
                     province = tenant.province,
                     isActive = tenant.isActive ?: true

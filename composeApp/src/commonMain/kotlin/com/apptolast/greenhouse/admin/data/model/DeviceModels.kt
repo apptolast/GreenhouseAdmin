@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DeviceResponse(
     val id: Long,
+    val code: String,
     val tenantId: Long,
     val greenhouseId: Long,
     val name: String? = null,
@@ -55,6 +56,7 @@ data class DeviceUpdateRequest(
 @Serializable
 data class Device(
     val id: Long,
+    val code: String,
     val tenantId: Long,
     val greenhouseId: Long,
     val name: String? = null,
@@ -133,6 +135,7 @@ enum class DeviceCategory {
  */
 fun DeviceResponse.toDevice() = Device(
     id = id,
+    code = code,
     tenantId = tenantId,
     greenhouseId = greenhouseId,
     name = name,
@@ -155,6 +158,7 @@ fun DeviceResponse.toDevice() = Device(
 @Serializable
 data class DeviceCategoryResponse(
     val id: Short,
+    val code: String,
     val name: String
 )
 
@@ -164,6 +168,7 @@ data class DeviceCategoryResponse(
 @Serializable
 data class DeviceTypeResponse(
     val id: Short,
+    val code: String,
     val name: String,
     val description: String? = null,
     val categoryId: Short,
@@ -183,6 +188,7 @@ data class DeviceTypeResponse(
 @Serializable
 data class DeviceUnitResponse(
     val id: Short,
+    val code: String,
     val symbol: String,
     val name: String,
     val description: String? = null,
@@ -196,6 +202,7 @@ data class DeviceUnitResponse(
  */
 data class DeviceCatalogCategory(
     val id: Short,
+    val code: String,
     val name: String
 )
 
@@ -204,6 +211,7 @@ data class DeviceCatalogCategory(
  */
 data class DeviceCatalogType(
     val id: Short,
+    val code: String,
     val name: String,
     val description: String?,
     val categoryId: Short,
@@ -217,6 +225,7 @@ data class DeviceCatalogType(
  */
 data class DeviceCatalogUnit(
     val id: Short,
+    val code: String,
     val symbol: String,
     val name: String,
     val description: String? = null,
@@ -225,10 +234,11 @@ data class DeviceCatalogUnit(
 
 // ==================== CATALOG EXTENSION FUNCTIONS ====================
 
-fun DeviceCategoryResponse.toDomain() = DeviceCatalogCategory(id, name)
+fun DeviceCategoryResponse.toDomain() = DeviceCatalogCategory(id, code, name)
 
 fun DeviceTypeResponse.toDomain() = DeviceCatalogType(
     id = id,
+    code = code,
     name = name,
     description = description,
     categoryId = categoryId,
@@ -239,6 +249,7 @@ fun DeviceTypeResponse.toDomain() = DeviceCatalogType(
 
 fun DeviceUnitResponse.toDomain() = DeviceCatalogUnit(
     id = id,
+    code = code,
     symbol = symbol,
     name = name,
     description = description,
@@ -331,6 +342,7 @@ data class DeviceUnitUpdateRequest(
 @Serializable
 data class ActuatorStateResponse(
     val id: Short,
+    val code: String,
     val name: String,
     val description: String? = null,
     val isOperational: Boolean = false,
@@ -370,6 +382,7 @@ data class ActuatorStateUpdateRequest(
  */
 data class ActuatorState(
     val id: Short,
+    val code: String,
     val name: String,
     val description: String?,
     val isOperational: Boolean,
@@ -382,6 +395,7 @@ data class ActuatorState(
  */
 fun ActuatorStateResponse.toDomain() = ActuatorState(
     id = id,
+    code = code,
     name = name,
     description = description,
     isOperational = isOperational,

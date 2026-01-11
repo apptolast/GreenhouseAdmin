@@ -163,6 +163,7 @@ private object ClientDetailSettingsTabPreviewData {
     val sampleSettings = listOf(
         Setting(
             id = 1L,
+            code = "SET-00001",
             greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
             tenantId = 1L,
@@ -177,6 +178,7 @@ private object ClientDetailSettingsTabPreviewData {
         ),
         Setting(
             id = 2L,
+            code = "SET-00002",
             greenhouseId = 1L,
             greenhouseName = "Greenhouse A",
             tenantId = 1L,

@@ -519,16 +519,17 @@ private fun AlertFormDialogCreatePreview() {
         AlertFormDialog(
             mode = AlertFormMode.Create,
             greenhouses = listOf(
-                Greenhouse(id = 1L, tenantId = 1L, name = "Greenhouse A"),
-                Greenhouse(id = 2L, tenantId = 1L, name = "Greenhouse B")
+                Greenhouse(id = 1L, code = "GRH-00001", tenantId = 1L, name = "Greenhouse A"),
+                Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
             ),
             alertTypes = listOf(
-                AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),
-                AlertType(id = 2, name = "Humidity", description = "Humidity alerts")
+                AlertType(id = 1, code = "ATY-00001", name = "Temperature", description = "Temperature alerts"),
+                AlertType(id = 2, code = "ATY-00002", name = "Humidity", description = "Humidity alerts")
             ),
             severities = listOf(
                 AlertSeverityCatalog(
                     id = 1,
+                    code = "SEV-00001",
                     name = "Low",
                     level = 1,
                     description = null,
@@ -537,6 +538,7 @@ private fun AlertFormDialogCreatePreview() {
                 ),
                 AlertSeverityCatalog(
                     id = 2,
+                    code = "SEV-00002",
                     name = "Medium",
                     level = 2,
                     description = null,
@@ -545,6 +547,7 @@ private fun AlertFormDialogCreatePreview() {
                 ),
                 AlertSeverityCatalog(
                     id = 3,
+                    code = "SEV-00003",
                     name = "High",
                     level = 3,
                     description = null,
@@ -564,6 +567,7 @@ private fun AlertFormDialogEditPreview() {
             mode = AlertFormMode.Edit(
                 Alert(
                     id = 1L,
+                    code = "ALT-00001",
                     tenantId = 1L,
                     greenhouseId = 1L,
                     greenhouseName = "Greenhouse A",
@@ -580,16 +584,17 @@ private fun AlertFormDialogEditPreview() {
                 )
             ),
             greenhouses = listOf(
-                Greenhouse(id = 1L, tenantId = 1L, name = "Greenhouse A"),
-                Greenhouse(id = 2L, tenantId = 1L, name = "Greenhouse B")
+                Greenhouse(id = 1L, code = "GRH-00001", tenantId = 1L, name = "Greenhouse A"),
+                Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
             ),
             alertTypes = listOf(
-                AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),
-                AlertType(id = 2, name = "Humidity", description = "Humidity alerts")
+                AlertType(id = 1, code = "ATY-00001", name = "Temperature", description = "Temperature alerts"),
+                AlertType(id = 2, code = "ATY-00002", name = "Humidity", description = "Humidity alerts")
             ),
             severities = listOf(
                 AlertSeverityCatalog(
                     id = 1,
+                    code = "SEV-00001",
                     name = "Low",
                     level = 1,
                     description = null,
@@ -598,6 +603,7 @@ private fun AlertFormDialogEditPreview() {
                 ),
                 AlertSeverityCatalog(
                     id = 2,
+                    code = "SEV-00002",
                     name = "Medium",
                     level = 2,
                     description = null,
@@ -606,6 +612,7 @@ private fun AlertFormDialogEditPreview() {
                 ),
                 AlertSeverityCatalog(
                     id = 3,
+                    code = "SEV-00003",
                     name = "High",
                     level = 3,
                     description = null,

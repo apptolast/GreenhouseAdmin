@@ -117,7 +117,7 @@ fun DevicesTable(
                     device = device,
                     onEdit = { onEditDevice(device) },
                     onDelete = { onDeleteDevice(device) },
-                    onCopyId = { onCopyId(device.id.toString()) }
+                    onCopyId = { onCopyId(device.code) }
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
@@ -208,9 +208,9 @@ private fun DeviceTableRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        // ID - Copyable UUID
+        // ID - Copyable code
         CopyableIdCell(
-            id = device.id.toString(),
+            id = device.code,
             onCopyId = onCopyId,
             modifier = Modifier.weight(0.4f)
         )
@@ -313,7 +313,7 @@ private fun DevicesCardList(
                 device = device,
                 onEdit = { onEditDevice(device) },
                 onDelete = { onDeleteDevice(device) },
-                onCopyId = { onCopyId(device.id.toString()) }
+                onCopyId = { onCopyId(device.code) }
             )
         }
     }
@@ -366,7 +366,7 @@ private fun DeviceCard(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = device.id.toString(),
+                        text = device.code,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -479,6 +479,7 @@ private object DevicesTablePreviewData {
     val sampleDevices = listOf(
         Device(
             id = 1L,
+            code = "DEV-00001",
             tenantId = 1L,
             greenhouseId = 1L,
             name = "Sensor Temperatura Invernadero 1",
@@ -492,6 +493,7 @@ private object DevicesTablePreviewData {
         ),
         Device(
             id = 2L,
+            code = "DEV-00002",
             tenantId = 1L,
             greenhouseId = 1L,
             name = null, // Device without name
@@ -505,6 +507,7 @@ private object DevicesTablePreviewData {
         ),
         Device(
             id = 3L,
+            code = "DEV-00003",
             tenantId = 1L,
             greenhouseId = 1L,
             name = "Sensor CO2 Norte",

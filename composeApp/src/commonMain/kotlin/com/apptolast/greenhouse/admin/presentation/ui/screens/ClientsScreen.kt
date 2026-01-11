@@ -265,6 +265,7 @@ private object ClientsScreenPreviewData {
     val sampleClients = listOf(
         Client(
             id = 1L,
+            code = "TNT-00001",
             name = "Fresh Vegetables Co.",
             email = "contact@freshveg.com",
             phone = "+34 612 345 678",
@@ -274,6 +275,7 @@ private object ClientsScreenPreviewData {
         ),
         Client(
             id = 2L,
+            code = "TNT-00002",
             name = "Green Gardens Ltd.",
             email = "info@greengardens.com",
             phone = "+34 623 456 789",
@@ -283,6 +285,7 @@ private object ClientsScreenPreviewData {
         ),
         Client(
             id = 3L,
+            code = "TNT-00003",
             name = "Bio Farms Andalucia",
             email = "hello@biofarms.es",
             phone = "+34 634 567 890",
