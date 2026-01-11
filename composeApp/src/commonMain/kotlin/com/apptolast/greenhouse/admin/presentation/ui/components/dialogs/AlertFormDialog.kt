@@ -523,13 +523,12 @@ private fun AlertFormDialogCreatePreview() {
                 Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
             ),
             alertTypes = listOf(
-                AlertType(id = 1, code = "ATY-00001", name = "Temperature", description = "Temperature alerts"),
-                AlertType(id = 2, code = "ATY-00002", name = "Humidity", description = "Humidity alerts")
+                AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),
+                AlertType(id = 2, name = "Humidity", description = "Humidity alerts")
             ),
             severities = listOf(
                 AlertSeverityCatalog(
                     id = 1,
-                    code = "SEV-00001",
                     name = "Low",
                     level = 1,
                     description = null,
@@ -538,7 +537,6 @@ private fun AlertFormDialogCreatePreview() {
                 ),
                 AlertSeverityCatalog(
                     id = 2,
-                    code = "SEV-00002",
                     name = "Medium",
                     level = 2,
                     description = null,
@@ -547,7 +545,6 @@ private fun AlertFormDialogCreatePreview() {
                 ),
                 AlertSeverityCatalog(
                     id = 3,
-                    code = "SEV-00003",
                     name = "High",
                     level = 3,
                     description = null,
@@ -588,13 +585,12 @@ private fun AlertFormDialogEditPreview() {
                 Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
             ),
             alertTypes = listOf(
-                AlertType(id = 1, code = "ATY-00001", name = "Temperature", description = "Temperature alerts"),
-                AlertType(id = 2, code = "ATY-00002", name = "Humidity", description = "Humidity alerts")
+                AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),
+                AlertType(id = 2, name = "Humidity", description = "Humidity alerts")
             ),
             severities = listOf(
                 AlertSeverityCatalog(
                     id = 1,
-                    code = "SEV-00001",
                     name = "Low",
                     level = 1,
                     description = null,
@@ -603,7 +599,6 @@ private fun AlertFormDialogEditPreview() {
                 ),
                 AlertSeverityCatalog(
                     id = 2,
-                    code = "SEV-00002",
                     name = "Medium",
                     level = 2,
                     description = null,
@@ -612,7 +607,6 @@ private fun AlertFormDialogEditPreview() {
                 ),
                 AlertSeverityCatalog(
                     id = 3,
-                    code = "SEV-00003",
                     name = "High",
                     level = 3,
                     description = null,

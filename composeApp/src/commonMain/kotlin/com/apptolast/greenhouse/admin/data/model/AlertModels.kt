@@ -12,7 +12,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AlertTypeResponse(
     val id: Short,
-    val code: String,
     val name: String,
     val description: String? = null
 )
@@ -23,7 +22,6 @@ data class AlertTypeResponse(
 @Serializable
 data class AlertSeverityResponse(
     val id: Short,
-    val code: String,
     val name: String,
     val level: Short,
     val description: String? = null,
@@ -102,7 +100,6 @@ data class AlertResolveRequest(
  */
 data class AlertType(
     val id: Short,
-    val code: String,
     val name: String,
     val description: String?
 )
@@ -112,7 +109,6 @@ data class AlertType(
  */
 data class AlertSeverityCatalog(
     val id: Short,
-    val code: String,
     val name: String,
     val level: Short,
     val description: String?,
@@ -156,7 +152,6 @@ data class Alert(
  */
 fun AlertTypeResponse.toDomain() = AlertType(
     id = id,
-    code = code,
     name = name,
     description = description
 )
@@ -166,7 +161,6 @@ fun AlertTypeResponse.toDomain() = AlertType(
  */
 fun AlertSeverityResponse.toDomain() = AlertSeverityCatalog(
     id = id,
-    code = code,
     name = name,
     level = level,
     description = description,

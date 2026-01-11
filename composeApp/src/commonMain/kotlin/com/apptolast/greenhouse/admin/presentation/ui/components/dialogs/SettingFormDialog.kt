@@ -558,7 +558,6 @@ private fun SettingFormDialogCreatePreview() {
             parameters = listOf(
                 DeviceCatalogType(
                     id = 1,
-                    code = "TYP-00001",
                     name = "Temperature",
                     description = "Temperature sensor",
                     categoryId = 1,
@@ -568,7 +567,6 @@ private fun SettingFormDialogCreatePreview() {
                 ),
                 DeviceCatalogType(
                     id = 2,
-                    code = "TYP-00002",
                     name = "Humidity",
                     description = "Humidity sensor",
                     categoryId = 1,
@@ -578,9 +576,9 @@ private fun SettingFormDialogCreatePreview() {
                 )
             ),
             periods = listOf(
-                Period(id = 1, code = "PER-00001", name = "DAY"),
-                Period(id = 2, code = "PER-00002", name = "NIGHT"),
-                Period(id = 3, code = "PER-00003", name = "ALL")
+                Period(id = 1, name = "DAY"),
+                Period(id = 2, name = "NIGHT"),
+                Period(id = 3, name = "ALL")
             )
         )
     }
@@ -615,7 +613,6 @@ private fun SettingFormDialogEditPreview() {
             parameters = listOf(
                 DeviceCatalogType(
                     id = 1,
-                    code = "TYP-00001",
                     name = "Temperature",
                     description = "Temperature sensor",
                     categoryId = 1,
@@ -625,7 +622,6 @@ private fun SettingFormDialogEditPreview() {
                 ),
                 DeviceCatalogType(
                     id = 2,
-                    code = "TYP-00002",
                     name = "Humidity",
                     description = "Humidity sensor",
                     categoryId = 1,
@@ -635,9 +631,9 @@ private fun SettingFormDialogEditPreview() {
                 )
             ),
             periods = listOf(
-                Period(id = 1, code = "PER-00001", name = "DAY"),
-                Period(id = 2, code = "PER-00002", name = "NIGHT"),
-                Period(id = 3, code = "PER-00003", name = "ALL")
+                Period(id = 1, name = "DAY"),
+                Period(id = 2, name = "NIGHT"),
+                Period(id = 3, name = "ALL")
             )
         )
     }

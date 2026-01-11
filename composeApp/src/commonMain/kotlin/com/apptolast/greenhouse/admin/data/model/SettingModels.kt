@@ -11,7 +11,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PeriodResponse(
     val id: Short,
-    val code: String,
     val name: String
 )
 
@@ -71,7 +70,6 @@ data class SettingUpdateRequest(
  */
 data class Period(
     val id: Short,
-    val code: String,
     val name: String
 ) {
     /**
@@ -148,7 +146,6 @@ data class Setting(
  */
 fun PeriodResponse.toDomain() = Period(
     id = id,
-    code = code,
     name = name
 )
 

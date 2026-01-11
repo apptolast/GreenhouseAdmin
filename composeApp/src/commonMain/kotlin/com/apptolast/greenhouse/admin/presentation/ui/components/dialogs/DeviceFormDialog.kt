@@ -657,19 +657,19 @@ private object DeviceFormDialogPreviewData {
     )
 
     val sampleCategories = listOf(
-        DeviceCatalogCategory(1, "CAT-00001", "SENSOR"),
-        DeviceCatalogCategory(2, "CAT-00002", "ACTUATOR")
+        DeviceCatalogCategory(1, "SENSOR"),
+        DeviceCatalogCategory(2, "ACTUATOR")
     )
 
     val sampleTypes = listOf(
-        DeviceCatalogType(1, "TYP-00001", "TEMPERATURE", "Temperature sensor", 1, 1, "°C", null),
-        DeviceCatalogType(2, "TYP-00002", "HUMIDITY", "Humidity sensor", 1, 3, "%", null)
+        DeviceCatalogType(1, "TEMPERATURE", "Temperature sensor", 1, 1, "°C", null),
+        DeviceCatalogType(2, "HUMIDITY", "Humidity sensor", 1, 3, "%", null)
     )
 
     val sampleUnits = listOf(
-        DeviceCatalogUnit(1, "UNT-00001", "°C", "Celsius"),
-        DeviceCatalogUnit(2, "UNT-00002", "°F", "Fahrenheit"),
-        DeviceCatalogUnit(3, "UNT-00003", "%", "Percentage")
+        DeviceCatalogUnit(1, "°C", "Celsius"),
+        DeviceCatalogUnit(2, "°F", "Fahrenheit"),
+        DeviceCatalogUnit(3, "%", "Percentage")
     )
 
     val sampleDevice = Device(
