@@ -45,6 +45,7 @@ import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
 import com.apptolast.greenhouse.admin.data.model.DeviceFormData
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
+import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DeviceFormMode
 import greenhouseadmin.composeapp.generated.resources.Res
@@ -55,14 +56,14 @@ import greenhouseadmin.composeapp.generated.resources.dialog_edit_device_subtitl
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_device_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_device_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_device_title
-import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
 import greenhouseadmin.composeapp.generated.resources.error_name_max_length
+import greenhouseadmin.composeapp.generated.resources.error_sector_required
 import greenhouseadmin.composeapp.generated.resources.error_type_required
 import greenhouseadmin.composeapp.generated.resources.label_category
 import greenhouseadmin.composeapp.generated.resources.label_device_name
 import greenhouseadmin.composeapp.generated.resources.label_device_type
-import greenhouseadmin.composeapp.generated.resources.label_greenhouse
 import greenhouseadmin.composeapp.generated.resources.label_is_active
+import greenhouseadmin.composeapp.generated.resources.label_sector
 import greenhouseadmin.composeapp.generated.resources.label_unit
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -71,11 +72,13 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
  * Dialog for creating or editing a device.
  * Uses catalog data for categories, types, and units.
  * Types are filtered locally based on the selected category.
+ * Note: Devices are associated with sectors (not greenhouses directly).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceFormDialog(
     mode: DeviceFormMode,
+    sectors: List<Sector> = emptyList(),
     greenhouses: List<Greenhouse> = emptyList(),
     categories: List<DeviceCatalogCategory> = emptyList(),
     allTypes: List<DeviceCatalogType> = emptyList(),
@@ -83,7 +86,7 @@ fun DeviceFormDialog(
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (greenhouseId: Long?, name: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
+    onSubmit: (sectorId: Long?, name: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -91,7 +94,7 @@ fun DeviceFormDialog(
         when (mode) {
             is DeviceFormMode.Create -> DeviceFormData()
             is DeviceFormMode.Edit -> DeviceFormData(
-                greenhouseId = mode.device.greenhouseId,
+                sectorId = mode.device.sectorId,
                 name = mode.device.name ?: "",
                 categoryId = mode.device.categoryId,
                 typeId = mode.device.typeId,
@@ -104,18 +107,18 @@ fun DeviceFormDialog(
     var formData by remember(mode) { mutableStateOf(initialFormData) }
     var validationErrors by remember { mutableStateOf(DeviceFormData.ValidationErrors()) }
     var hasAttemptedSubmit by remember { mutableStateOf(false) }
-    var greenhouseExpanded by remember { mutableStateOf(false) }
+    var sectorExpanded by remember { mutableStateOf(false) }
     var categoryExpanded by remember { mutableStateOf(false) }
     var typeExpanded by remember { mutableStateOf(false) }
     var unitExpanded by remember { mutableStateOf(false) }
 
-    val greenhouseErrorMsg = stringResource(Res.string.error_greenhouse_required)
+    val sectorErrorMsg = stringResource(Res.string.error_sector_required)
     val nameMaxLengthErrorMsg = stringResource(Res.string.error_name_max_length)
     val typeErrorMsg = stringResource(Res.string.error_type_required)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
-            "error_greenhouse_required" -> greenhouseErrorMsg
+            "error_sector_required" -> sectorErrorMsg
             "error_name_max_length" -> nameMaxLengthErrorMsg
             "error_type_required" -> typeErrorMsg
             else -> null
@@ -149,10 +152,19 @@ fun DeviceFormDialog(
     }
 
     // Find selected items
-    val selectedGreenhouse = greenhouses.find { it.id == formData.greenhouseId }
+    val selectedSector = sectors.find { it.id == formData.sectorId }
+    selectedSector?.let { sector ->
+        greenhouses.find { it.id == sector.greenhouseId }
+    }
     val selectedCategory = categories.find { it.id == formData.categoryId }
     val selectedType = filteredTypes.find { it.id == formData.typeId }
     val selectedUnit = units.find { it.id == formData.unitId }
+
+    // Helper function to get sector display text with greenhouse name
+    fun getSectorDisplayText(sector: Sector): String {
+        val greenhouse = greenhouses.find { it.id == sector.greenhouseId }
+        return "${sector.displayName} (${greenhouse?.name ?: "Unknown"})"
+    }
 
     // Auto-select unit when type changes (if type has a default unit)
     LaunchedEffect(formData.typeId) {
@@ -211,10 +223,10 @@ fun DeviceFormDialog(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // Greenhouse dropdown (required, not editable in edit mode)
+                // Sector dropdown (required, not editable in edit mode)
                 Column {
                     Text(
-                        text = stringResource(Res.string.label_greenhouse),
+                        text = stringResource(Res.string.label_sector),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -222,23 +234,31 @@ fun DeviceFormDialog(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     ExposedDropdownMenuBox(
-                        expanded = greenhouseExpanded,
-                        onExpandedChange = { if (!isSubmitting && !isEditMode) greenhouseExpanded = it }
+                        expanded = sectorExpanded,
+                        onExpandedChange = { if (!isSubmitting && !isEditMode) sectorExpanded = it }
                     ) {
                         OutlinedTextField(
-                            value = selectedGreenhouse?.name ?: "",
+                            value = selectedSector?.let { getSectorDisplayText(it) } ?: "",
                             onValueChange = {},
                             readOnly = true,
                             enabled = !isSubmitting && !isEditMode,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                            trailingIcon = {
+                            placeholder = {
                                 if (!isEditMode) {
-                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = greenhouseExpanded)
+                                    Text(
+                                        text = "Select sector...",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                    )
                                 }
                             },
-                            isError = hasAttemptedSubmit && validationErrors.greenhouseId != null,
+                            trailingIcon = {
+                                if (!isEditMode) {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = sectorExpanded)
+                                }
+                            },
+                            isError = hasAttemptedSubmit && validationErrors.sectorId != null,
                             shape = RoundedCornerShape(8.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -251,15 +271,27 @@ fun DeviceFormDialog(
 
                         if (!isEditMode) {
                             ExposedDropdownMenu(
-                                expanded = greenhouseExpanded,
-                                onDismissRequest = { greenhouseExpanded = false }
+                                expanded = sectorExpanded,
+                                onDismissRequest = { sectorExpanded = false }
                             ) {
-                                greenhouses.forEach { greenhouse ->
+                                sectors.forEach { sector ->
                                     DropdownMenuItem(
-                                        text = { Text(greenhouse.name) },
+                                        text = {
+                                            Column {
+                                                Text(sector.displayName)
+                                                val greenhouse = greenhouses.find { it.id == sector.greenhouseId }
+                                                greenhouse?.let {
+                                                    Text(
+                                                        text = it.name,
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                }
+                                            }
+                                        },
                                         onClick = {
-                                            formData = formData.copy(greenhouseId = greenhouse.id)
-                                            greenhouseExpanded = false
+                                            formData = formData.copy(sectorId = sector.id)
+                                            sectorExpanded = false
                                             if (hasAttemptedSubmit) validationErrors = formData.validate()
                                         }
                                     )
@@ -268,9 +300,9 @@ fun DeviceFormDialog(
                         }
                     }
 
-                    if (hasAttemptedSubmit && validationErrors.greenhouseId != null) {
+                    if (hasAttemptedSubmit && validationErrors.sectorId != null) {
                         Text(
-                            text = getErrorMessage(validationErrors.greenhouseId) ?: "",
+                            text = getErrorMessage(validationErrors.sectorId) ?: "",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(top = 4.dp)
@@ -597,7 +629,7 @@ fun DeviceFormDialog(
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
                                 onSubmit(
-                                    formData.greenhouseId,
+                                    formData.sectorId,
                                     formData.name,
                                     formData.categoryId,
                                     formData.typeId,
@@ -656,6 +688,27 @@ private object DeviceFormDialogPreviewData {
         )
     )
 
+    val sampleSectors = listOf(
+        Sector(
+            id = 1L,
+            code = "SEC-00001",
+            greenhouseId = 1L,
+            variety = "Tomate Cherry"
+        ),
+        Sector(
+            id = 2L,
+            code = "SEC-00002",
+            greenhouseId = 1L,
+            variety = "Pimiento Rojo"
+        ),
+        Sector(
+            id = 3L,
+            code = "SEC-00003",
+            greenhouseId = 2L,
+            variety = "Pepino"
+        )
+    )
+
     val sampleCategories = listOf(
         DeviceCatalogCategory(1, "SENSOR"),
         DeviceCatalogCategory(2, "ACTUATOR")
@@ -676,7 +729,8 @@ private object DeviceFormDialogPreviewData {
         id = 1L,
         code = "DEV-00001",
         tenantId = 1L,
-        greenhouseId = 1L,
+        sectorId = 1L,
+        sectorCode = "SEC-00001",
         name = "Sensor Temperatura Norte",
         categoryId = Device.CATEGORY_SENSOR,
         categoryName = "SENSOR",
@@ -694,6 +748,7 @@ private fun DeviceFormDialogCreatePreview() {
     GreenhouseAdminTheme {
         DeviceFormDialog(
             mode = DeviceFormMode.Create,
+            sectors = DeviceFormDialogPreviewData.sampleSectors,
             greenhouses = DeviceFormDialogPreviewData.sampleGreenhouses,
             categories = DeviceFormDialogPreviewData.sampleCategories,
             allTypes = DeviceFormDialogPreviewData.sampleTypes,
@@ -708,6 +763,7 @@ private fun DeviceFormDialogEditPreview() {
     GreenhouseAdminTheme {
         DeviceFormDialog(
             mode = DeviceFormMode.Edit(DeviceFormDialogPreviewData.sampleDevice),
+            sectors = DeviceFormDialogPreviewData.sampleSectors,
             greenhouses = DeviceFormDialogPreviewData.sampleGreenhouses,
             categories = DeviceFormDialogPreviewData.sampleCategories,
             allTypes = DeviceFormDialogPreviewData.sampleTypes,

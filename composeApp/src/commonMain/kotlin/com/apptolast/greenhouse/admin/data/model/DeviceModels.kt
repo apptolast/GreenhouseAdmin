@@ -5,13 +5,15 @@ import kotlinx.serialization.Serializable
 /**
  * Response DTO from the API representing a Device.
  * Matches the DeviceResponse structure from InvernaderosAPI.
+ * Note: Devices are associated with sectors, not greenhouses directly.
  */
 @Serializable
 data class DeviceResponse(
     val id: Long,
     val code: String,
     val tenantId: Long,
-    val greenhouseId: Long,
+    val sectorId: Long,
+    val sectorCode: String? = null,
     val name: String? = null,
     val categoryId: Short? = null,
     val categoryName: String? = null,
@@ -26,10 +28,11 @@ data class DeviceResponse(
 
 /**
  * Request DTO for creating a new Device.
+ * Note: sectorId is required. Greenhouse is derived from sector.
  */
 @Serializable
 data class DeviceCreateRequest(
-    val greenhouseId: Long,
+    val sectorId: Long,
     val name: String? = null,
     val categoryId: Short? = null,
     val typeId: Short? = null,
@@ -52,13 +55,15 @@ data class DeviceUpdateRequest(
 /**
  * Domain model representing a Device (Sensor or Actuator).
  * Used internally in the app for business logic.
+ * Note: Devices belong to sectors. Greenhouse is derived from sector.
  */
 @Serializable
 data class Device(
     val id: Long,
     val code: String,
     val tenantId: Long,
-    val greenhouseId: Long,
+    val sectorId: Long,
+    val sectorCode: String? = null,
     val name: String? = null,
     val categoryId: Short? = null,
     val categoryName: String? = null,
@@ -137,7 +142,8 @@ fun DeviceResponse.toDevice() = Device(
     id = id,
     code = code,
     tenantId = tenantId,
-    greenhouseId = greenhouseId,
+    sectorId = sectorId,
+    sectorCode = sectorCode,
     name = name,
     categoryId = categoryId,
     categoryName = categoryName,

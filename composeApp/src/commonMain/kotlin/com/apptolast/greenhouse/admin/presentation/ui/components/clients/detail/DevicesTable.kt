@@ -38,6 +38,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Device
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
+import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
@@ -49,6 +51,7 @@ import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_category
 import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_name
+import greenhouseadmin.composeapp.generated.resources.header_sector
 import greenhouseadmin.composeapp.generated.resources.header_status
 import greenhouseadmin.composeapp.generated.resources.header_type
 import greenhouseadmin.composeapp.generated.resources.header_unit
@@ -61,6 +64,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun DevicesTableOrCards(
     devices: List<Device>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     onEditDevice: (Device) -> Unit = {},
     onDeleteDevice: (Device) -> Unit = {},
     onCopyId: (String) -> Unit = {},
@@ -71,6 +76,8 @@ fun DevicesTableOrCards(
     if (windowInfo.isCompact) {
         DevicesCardList(
             devices = devices,
+            sectors = sectors,
+            greenhouses = greenhouses,
             onEditDevice = onEditDevice,
             onDeleteDevice = onDeleteDevice,
             onCopyId = onCopyId,
@@ -79,6 +86,8 @@ fun DevicesTableOrCards(
     } else {
         DevicesTable(
             devices = devices,
+            sectors = sectors,
+            greenhouses = greenhouses,
             onEditDevice = onEditDevice,
             onDeleteDevice = onDeleteDevice,
             onCopyId = onCopyId,
@@ -89,11 +98,13 @@ fun DevicesTableOrCards(
 
 /**
  * Table displaying list of devices with headers and rows.
- * Columns: ID | NAME | CATEGORY | TYPE | UNIT | STATUS | ACTIONS
+ * Columns: ID | NAME | SECTOR | CATEGORY | TYPE | UNIT | STATUS | ACTIONS
  */
 @Composable
 fun DevicesTable(
     devices: List<Device>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     onEditDevice: (Device) -> Unit = {},
     onDeleteDevice: (Device) -> Unit = {},
     onCopyId: (String) -> Unit = {},
@@ -113,8 +124,12 @@ fun DevicesTable(
 
             // Device rows
             devices.forEach { device ->
+                val sector = sectors.find { it.id == device.sectorId }
+                val greenhouse = sector?.let { s -> greenhouses.find { it.id == s.greenhouseId } }
                 DeviceTableRow(
                     device = device,
+                    sectorName = sector?.displayName,
+                    greenhouseName = greenhouse?.name,
                     onEdit = { onEditDevice(device) },
                     onDelete = { onDeleteDevice(device) },
                     onCopyId = { onCopyId(device.code) }
@@ -147,7 +162,15 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_name),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.9f)
+        )
+
+        // SECTOR column
+        Text(
+            text = stringResource(Res.string.header_sector),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.8f)
         )
 
         // CATEGORY column
@@ -155,7 +178,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_category),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.7f)
+            modifier = Modifier.weight(0.6f)
         )
 
         // TYPE column
@@ -163,7 +186,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_type),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.9f)
+            modifier = Modifier.weight(0.7f)
         )
 
         // UNIT column
@@ -171,7 +194,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_unit),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.5f)
+            modifier = Modifier.weight(0.4f)
         )
 
         // STATUS column
@@ -179,7 +202,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.7f)
+            modifier = Modifier.weight(0.6f)
         )
 
         // ACTIONS column
@@ -196,6 +219,8 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
 @Composable
 private fun DeviceTableRow(
     device: Device,
+    sectorName: String? = null,
+    greenhouseName: String? = null,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onCopyId: (String) -> Unit,
@@ -221,17 +246,37 @@ private fun DeviceTableRow(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             fontWeight = if (device.name != null) FontWeight.Medium else FontWeight.Normal,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.9f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
+
+        // SECTOR - Sector name with greenhouse in subtitle
+        Column(modifier = Modifier.weight(0.8f)) {
+            Text(
+                text = sectorName ?: "-",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            greenhouseName?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
 
         // CATEGORY - Plain text
         Text(
             text = device.categoryName ?: device.categoryDisplayName,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(0.7f),
+            modifier = Modifier.weight(0.6f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -241,7 +286,7 @@ private fun DeviceTableRow(
             text = device.typeName ?: "-",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(0.9f),
+            modifier = Modifier.weight(0.7f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -251,7 +296,7 @@ private fun DeviceTableRow(
             text = device.unitSymbol ?: "-",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.5f),
+            modifier = Modifier.weight(0.4f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -259,7 +304,7 @@ private fun DeviceTableRow(
         // STATUS - Status chip with wrapContentWidth
         StatusChip(
             isActive = device.isActive,
-            modifier = Modifier.weight(0.7f).wrapContentWidth(align = Alignment.Start)
+            modifier = Modifier.weight(0.6f).wrapContentWidth(align = Alignment.Start)
         )
 
         // ACTIONS
@@ -299,6 +344,8 @@ private fun DeviceTableRow(
 @Composable
 private fun DevicesCardList(
     devices: List<Device>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     modifier: Modifier = Modifier,
     onEditDevice: (Device) -> Unit = {},
     onDeleteDevice: (Device) -> Unit = {},
@@ -309,8 +356,12 @@ private fun DevicesCardList(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         devices.forEach { device ->
+            val sector = sectors.find { it.id == device.sectorId }
+            val greenhouse = sector?.let { s -> greenhouses.find { it.id == s.greenhouseId } }
             DeviceCard(
                 device = device,
+                sectorName = sector?.displayName,
+                greenhouseName = greenhouse?.name,
                 onEdit = { onEditDevice(device) },
                 onDelete = { onDeleteDevice(device) },
                 onCopyId = { onCopyId(device.code) }
@@ -325,6 +376,8 @@ private fun DevicesCardList(
 @Composable
 private fun DeviceCard(
     device: Device,
+    sectorName: String? = null,
+    greenhouseName: String? = null,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onCopyId: () -> Unit,
@@ -422,11 +475,32 @@ private fun DeviceCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Info row: Category | Type | Unit
+            // Info row: Sector | Category | Type | Unit
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                if (sectorName != null) {
+                    Column {
+                        Text(
+                            text = stringResource(Res.string.header_sector),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = sectorName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        greenhouseName?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
                 Column {
                     Text(
                         text = stringResource(Res.string.header_category),
@@ -481,7 +555,8 @@ private object DevicesTablePreviewData {
             id = 1L,
             code = "DEV-00001",
             tenantId = 1L,
-            greenhouseId = 1L,
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             name = "Sensor Temperatura Invernadero 1",
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "SENSOR",
@@ -495,7 +570,8 @@ private object DevicesTablePreviewData {
             id = 2L,
             code = "DEV-00002",
             tenantId = 1L,
-            greenhouseId = 1L,
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             name = null, // Device without name
             categoryId = Device.CATEGORY_ACTUATOR,
             categoryName = "ACTUATOR",
@@ -509,7 +585,8 @@ private object DevicesTablePreviewData {
             id = 3L,
             code = "DEV-00003",
             tenantId = 1L,
-            greenhouseId = 1L,
+            sectorId = 2L,
+            sectorCode = "SEC-00002",
             name = "Sensor CO2 Norte",
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "SENSOR",

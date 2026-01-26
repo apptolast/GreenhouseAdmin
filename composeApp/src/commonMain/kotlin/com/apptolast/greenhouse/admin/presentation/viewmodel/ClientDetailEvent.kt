@@ -263,9 +263,10 @@ sealed interface ClientDetailEvent {
 
     /**
      * User submitted the device form (create or edit).
+     * Note: Devices are associated with sectors, not greenhouses.
      */
     data class OnSubmitDeviceForm(
-        val greenhouseId: Long?,
+        val sectorId: Long?,
         val name: String,
         val categoryId: Short?,
         val typeId: Short?,

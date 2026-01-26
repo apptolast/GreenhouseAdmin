@@ -142,7 +142,7 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnCancelDeleteDevice -> cancelDeleteDevice()
             is ClientDetailEvent.OnDismissDeviceFormDialog -> dismissDeviceFormDialog()
             is ClientDetailEvent.OnSubmitDeviceForm -> submitDeviceForm(
-                event.greenhouseId,
+                event.sectorId,
                 event.name,
                 event.categoryId,
                 event.typeId,
@@ -942,14 +942,14 @@ class ClientDetailViewModel(
     }
 
     private fun submitDeviceForm(
-        greenhouseId: Long?,
+        sectorId: Long?,
         name: String,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
         isActive: Boolean
     ) {
-        if (greenhouseId == null) return
+        if (sectorId == null) return
 
         val mode = _uiState.value.deviceFormMode
         val deviceName = name.ifBlank { null } // Convert empty string to null
@@ -961,7 +961,7 @@ class ClientDetailViewModel(
                 is DeviceFormMode.Create -> {
                     devicesRepository.createDevice(
                         tenantId = clientId,
-                        greenhouseId = greenhouseId,
+                        sectorId = sectorId,
                         name = deviceName,
                         categoryId = categoryId,
                         typeId = typeId,
@@ -971,6 +971,7 @@ class ClientDetailViewModel(
                 }
 
                 is DeviceFormMode.Edit -> {
+                    // Note: sectorId cannot be changed on update
                     devicesRepository.updateDevice(
                         tenantId = clientId,
                         deviceId = mode.device.id,

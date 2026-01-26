@@ -314,6 +314,7 @@ private fun ClientDetailScreenContent(
     if (uiState.showDeviceFormDialog) {
         DeviceFormDialog(
             mode = uiState.deviceFormMode,
+            sectors = uiState.sectors,
             greenhouses = uiState.greenhouses,
             categories = uiState.deviceCategories,
             allTypes = uiState.deviceTypes,
@@ -321,8 +322,8 @@ private fun ClientDetailScreenContent(
             isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingDevice,
             error = uiState.submitDeviceError,
-            onSubmit = { greenhouseId, name, categoryId, typeId, unitId, isActive ->
-                onEvent(ClientDetailEvent.OnSubmitDeviceForm(greenhouseId, name, categoryId, typeId, unitId, isActive))
+            onSubmit = { sectorId, name, categoryId, typeId, unitId, isActive ->
+                onEvent(ClientDetailEvent.OnSubmitDeviceForm(sectorId, name, categoryId, typeId, unitId, isActive))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissDeviceFormDialog) }
         )
@@ -502,6 +503,8 @@ private fun ClientDetailContent(
                 ClientDetailTab.DEVICES -> {
                     ClientDetailDevicesTab(
                         devices = uiState.devices,
+                        sectors = uiState.sectors,
+                        greenhouses = uiState.greenhouses,
                         isLoading = uiState.isLoadingDevices,
                         error = uiState.devicesError,
                         onAddDevice = { onEvent(ClientDetailEvent.OnAddDeviceClicked) },
@@ -665,7 +668,8 @@ private object ClientDetailScreenPreviewData {
             id = 1L,
             code = "DEV-00001",
             tenantId = 12345L,
-            greenhouseId = 1L,
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "Sensor",
             typeId = 1,
@@ -678,7 +682,8 @@ private object ClientDetailScreenPreviewData {
             id = 2L,
             code = "DEV-00002",
             tenantId = 12345L,
-            greenhouseId = 1L,
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             categoryId = Device.CATEGORY_ACTUATOR,
             categoryName = "Actuator",
             typeId = 2,
@@ -691,7 +696,8 @@ private object ClientDetailScreenPreviewData {
             id = 3L,
             code = "DEV-00003",
             tenantId = 12345L,
-            greenhouseId = 1L,
+            sectorId = 2L,
+            sectorCode = "SEC-00002",
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "Sensor",
             typeId = 3,
