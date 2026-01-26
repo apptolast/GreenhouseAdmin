@@ -1,5 +1,6 @@
 package com.apptolast.greenhouse.admin.data.remote.api
 
+import com.apptolast.greenhouse.admin.data.model.ActuatorStateResponse
 import com.apptolast.greenhouse.admin.data.model.PeriodResponse
 import com.apptolast.greenhouse.admin.data.model.SettingCreateRequest
 import com.apptolast.greenhouse.admin.data.model.SettingResponse
@@ -27,6 +28,14 @@ class SettingsApiService(private val httpClient: HttpClient) {
      */
     suspend fun getPeriods(): List<PeriodResponse> {
         return httpClient.get("catalog/periods").body()
+    }
+
+    /**
+     * Get all actuator states from the catalog.
+     * Actuator states define the state configuration (ON, OFF, AUTO, etc.).
+     */
+    suspend fun getActuatorStates(): List<ActuatorStateResponse> {
+        return httpClient.get("catalog/actuator-states").body()
     }
 
     // ==================== CRUD ENDPOINTS (with tenantId) ====================
@@ -98,27 +107,28 @@ class SettingsApiService(private val httpClient: HttpClient) {
     }
 
     /**
-     * Get settings for a specific greenhouse and period.
+     * Get settings for a specific greenhouse and actuator state.
      */
-    suspend fun getSettingsByGreenhouseAndPeriod(
+    suspend fun getSettingsByGreenhouseAndActuatorState(
         tenantId: Long,
         greenhouseId: Long,
-        periodId: Short
+        actuatorStateId: Short
     ): List<SettingResponse> {
-        return httpClient.get("tenants/$tenantId/settings/greenhouse/$greenhouseId/period/$periodId").body()
+        return httpClient.get("tenants/$tenantId/settings/greenhouse/$greenhouseId/actuator-state/$actuatorStateId")
+            .body()
     }
 
     /**
-     * Get a specific setting by greenhouse, parameter, and period combination.
+     * Get a specific setting by greenhouse, parameter, and actuator state combination.
      */
-    suspend fun getSettingByGreenhouseParameterPeriod(
+    suspend fun getSettingByGreenhouseParameterActuatorState(
         tenantId: Long,
         greenhouseId: Long,
         parameterId: Short,
-        periodId: Short
+        actuatorStateId: Short
     ): SettingResponse {
         return httpClient.get(
-            "tenants/$tenantId/settings/greenhouse/$greenhouseId/parameter/$parameterId/period/$periodId"
+            "tenants/$tenantId/settings/greenhouse/$greenhouseId/parameter/$parameterId/actuator-state/$actuatorStateId"
         ).body()
     }
 }

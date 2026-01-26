@@ -142,7 +142,7 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnCancelDeleteDevice -> cancelDeleteDevice()
             is ClientDetailEvent.OnDismissDeviceFormDialog -> dismissDeviceFormDialog()
             is ClientDetailEvent.OnSubmitDeviceForm -> submitDeviceForm(
-                event.greenhouseId,
+                event.sectorId,
                 event.name,
                 event.categoryId,
                 event.typeId,
@@ -182,9 +182,8 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnSubmitSettingForm -> submitSettingForm(
                 event.greenhouseId,
                 event.parameterId,
-                event.periodId,
-                event.minValue,
-                event.maxValue,
+                event.actuatorStateId,
+                event.value,
                 event.isActive
             )
         }
@@ -236,7 +235,7 @@ class ClientDetailViewModel(
                     val severitiesDeferred = async { alertsRepository.getAlertSeverities() }
 
                     // Settings catalogs
-                    val periodsDeferred = async { settingsRepository.getPeriods() }
+                    val actuatorStatesDeferred = async { settingsRepository.getActuatorStates() }
 
                     // Greenhouses (tenant-specific but used across all tabs)
                     val greenhousesDeferred = async { greenhousesRepository.getGreenhousesByTenantId(clientId) }
@@ -247,7 +246,7 @@ class ClientDetailViewModel(
                     val units = unitsDeferred.await()
                     val alertTypes = alertTypesDeferred.await()
                     val severities = severitiesDeferred.await()
-                    val periods = periodsDeferred.await()
+                    val actuatorStates = actuatorStatesDeferred.await()
                     val greenhouses = greenhousesDeferred.await()
 
                     // Update state with all catalog data
@@ -261,7 +260,7 @@ class ClientDetailViewModel(
                             alertTypes = alertTypes.getOrDefault(emptyList()),
                             alertSeverities = severities.getOrDefault(emptyList()),
                             // Settings catalogs
-                            periods = periods.getOrDefault(emptyList()),
+                            actuatorStates = actuatorStates.getOrDefault(emptyList()).sortedBy { it.displayOrder },
                             // Greenhouses
                             greenhouses = greenhouses.getOrDefault(emptyList()),
                             // Loading state
@@ -943,14 +942,14 @@ class ClientDetailViewModel(
     }
 
     private fun submitDeviceForm(
-        greenhouseId: Long?,
+        sectorId: Long?,
         name: String,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
         isActive: Boolean
     ) {
-        if (greenhouseId == null) return
+        if (sectorId == null) return
 
         val mode = _uiState.value.deviceFormMode
         val deviceName = name.ifBlank { null } // Convert empty string to null
@@ -962,7 +961,7 @@ class ClientDetailViewModel(
                 is DeviceFormMode.Create -> {
                     devicesRepository.createDevice(
                         tenantId = clientId,
-                        greenhouseId = greenhouseId,
+                        sectorId = sectorId,
                         name = deviceName,
                         categoryId = categoryId,
                         typeId = typeId,
@@ -972,6 +971,7 @@ class ClientDetailViewModel(
                 }
 
                 is DeviceFormMode.Edit -> {
+                    // Note: sectorId cannot be changed on update
                     devicesRepository.updateDevice(
                         tenantId = clientId,
                         deviceId = mode.device.id,
@@ -1303,9 +1303,8 @@ class ClientDetailViewModel(
     private fun submitSettingForm(
         greenhouseId: Long?,
         parameterId: Short,
-        periodId: Short,
-        minValue: Double?,
-        maxValue: Double?,
+        actuatorStateId: Short,
+        value: String,
         isActive: Boolean
     ) {
         if (greenhouseId == null) return
@@ -1320,9 +1319,8 @@ class ClientDetailViewModel(
                     val request = SettingCreateRequest(
                         greenhouseId = greenhouseId,
                         parameterId = parameterId,
-                        periodId = periodId,
-                        minValue = minValue,
-                        maxValue = maxValue,
+                        actuatorStateId = actuatorStateId,
+                        value = value.ifBlank { null },
                         isActive = isActive
                     )
                     settingsRepository.createSetting(clientId, request)
@@ -1331,9 +1329,8 @@ class ClientDetailViewModel(
                 is SettingFormMode.Edit -> {
                     val request = SettingUpdateRequest(
                         parameterId = parameterId,
-                        periodId = periodId,
-                        minValue = minValue,
-                        maxValue = maxValue,
+                        actuatorStateId = actuatorStateId,
+                        value = value.ifBlank { null },
                         isActive = isActive
                     )
                     settingsRepository.updateSetting(clientId, mode.setting.id, request)

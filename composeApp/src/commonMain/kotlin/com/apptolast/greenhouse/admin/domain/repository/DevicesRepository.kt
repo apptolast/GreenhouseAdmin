@@ -20,7 +20,7 @@ interface DevicesRepository {
     /**
      * Creates a new device for a tenant.
      * @param tenantId The tenant ID the device belongs to
-     * @param greenhouseId The greenhouse ID where the device is installed
+     * @param sectorId The sector ID where the device is installed
      * @param name Optional display name for the device
      * @param categoryId Device category (1=SENSOR, 2=ACTUATOR)
      * @param typeId Device type ID
@@ -30,7 +30,7 @@ interface DevicesRepository {
      */
     suspend fun createDevice(
         tenantId: Long,
-        greenhouseId: Long,
+        sectorId: Long,
         name: String?,
         categoryId: Short?,
         typeId: Short?,

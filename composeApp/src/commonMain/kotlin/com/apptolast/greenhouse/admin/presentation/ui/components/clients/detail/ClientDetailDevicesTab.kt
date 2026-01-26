@@ -26,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Device
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
+import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
@@ -46,6 +48,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun ClientDetailDevicesTab(
     devices: List<Device>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     isLoading: Boolean = false,
     error: String? = null,
     onAddDevice: () -> Unit = {},
@@ -126,6 +130,8 @@ fun ClientDetailDevicesTab(
             else -> {
                 DevicesTableOrCards(
                     devices = devices,
+                    sectors = sectors,
+                    greenhouses = greenhouses,
                     onEditDevice = onEditDevice,
                     onDeleteDevice = onDeleteDevice,
                     onCopyId = onCopyId
@@ -165,7 +171,8 @@ private object ClientDetailDevicesTabPreviewData {
             id = 1L,
             code = "DEV-00001",
             tenantId = 1L,
-            greenhouseId = 1L,
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             categoryId = Device.CATEGORY_SENSOR,
             categoryName = "Sensor",
             typeId = 1,
@@ -178,7 +185,8 @@ private object ClientDetailDevicesTabPreviewData {
             id = 2L,
             code = "DEV-00002",
             tenantId = 1L,
-            greenhouseId = 1L,
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             categoryId = Device.CATEGORY_ACTUATOR,
             categoryName = "Actuator",
             typeId = 2,

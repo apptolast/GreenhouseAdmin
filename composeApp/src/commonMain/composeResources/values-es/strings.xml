@@ -127,7 +127,7 @@
     <string name="tab_sectors">Sectores</string>
     <string name="tab_devices">Dispositivos</string>
     <string name="tab_alerts">Alertas</string>
-    <string name="tab_settings">Ajustes</string>
+    <string name="tab_settings">Consignas</string>
 
     <!-- Contact Details Card -->
     <string name="card_contact_details">Datos de Contacto</string>
@@ -233,17 +233,20 @@
     <string name="header_type">TIPO</string>
     <string name="header_category">CATEGORÍA</string>
     <string name="header_unit">UNIDAD</string>
+    <string name="header_sector">SECTOR</string>
 
     <!-- Device Category -->
     <string name="device_category_sensor">Sensor</string>
     <string name="device_category_actuator">Actuador</string>
     <string name="label_category">Categoría</string>
     <string name="label_greenhouse">Invernadero</string>
+    <string name="label_sector">Sector</string>
     <string name="label_device_type">Tipo de Dispositivo</string>
     <string name="label_unit">Unidad</string>
     <string name="label_is_active">Activo</string>
     <string name="label_device_name">Nombre del Dispositivo</string>
     <string name="error_type_required">El tipo de dispositivo es obligatorio</string>
+    <string name="error_sector_required">Por favor, selecciona un sector</string>
     <string name="error_name_max_length">El nombre no puede exceder 100 caracteres</string>
 
     <!-- Legacy - kept for compatibility -->
@@ -325,11 +328,11 @@
     <string name="dialog_delete_alert_title">¿Eliminar Alerta?</string>
     <string name="dialog_delete_alert_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>
 
-    <!-- Settings Tab -->
-    <string name="settings_title">Ajustes del Cliente</string>
-    <string name="settings_subtitle">Gestiona los umbrales de parámetros para este cliente.</string>
-    <string name="new_setting">Nuevo Ajuste</string>
-    <string name="settings_empty">No se encontraron ajustes para este cliente.</string>
+    <!-- Consignas Tab (Client Detail) -->
+    <string name="settings_title">Consignas del Cliente</string>
+    <string name="settings_subtitle">Gestiona las consignas de parámetros para este cliente.</string>
+    <string name="new_setting">Nueva Consigna</string>
+    <string name="settings_empty">No se encontraron consignas para este cliente.</string>
 
     <!-- Setting Table Headers -->
     <string name="header_parameter">PARÁMETRO</string>
@@ -342,25 +345,25 @@
     <string name="label_min_value">Valor Mínimo</string>
     <string name="label_max_value">Valor Máximo</string>
 
-    <!-- Setting Dialogs -->
-    <string name="dialog_new_setting_title">Añadir Nuevo Ajuste</string>
-    <string name="dialog_new_setting_subtitle">Configura un umbral de parámetro para un invernadero</string>
-    <string name="button_create_setting">Añadir Ajuste</string>
-    <string name="dialog_edit_setting_title">Editar Ajuste</string>
-    <string name="dialog_edit_setting_subtitle">Actualizar configuración del umbral de parámetro</string>
+    <!-- Consigna Dialogs -->
+    <string name="dialog_new_setting_title">Añadir Nueva Consigna</string>
+    <string name="dialog_new_setting_subtitle">Configura una consigna de parámetro para un invernadero</string>
+    <string name="button_create_setting">Añadir Consigna</string>
+    <string name="dialog_edit_setting_title">Editar Consigna</string>
+    <string name="dialog_edit_setting_subtitle">Actualizar configuración de la consigna de parámetro</string>
 
-    <!-- Setting Validation Errors -->
+    <!-- Consigna Validation Errors -->
     <string name="error_parameter_required">El parámetro es obligatorio</string>
     <string name="error_period_required">El período es obligatorio</string>
     <string name="error_min_greater_than_max">El valor mínimo no puede ser mayor que el máximo</string>
 
-    <!-- Setting Errors -->
-    <string name="error_create_setting_failed">Error al crear el ajuste. Por favor, inténtalo de nuevo.</string>
-    <string name="error_update_setting_failed">Error al actualizar el ajuste. Por favor, inténtalo de nuevo.</string>
-    <string name="error_delete_setting_failed">Error al eliminar el ajuste. Por favor, inténtalo de nuevo.</string>
+    <!-- Consigna Errors -->
+    <string name="error_create_setting_failed">Error al crear la consigna. Por favor, inténtalo de nuevo.</string>
+    <string name="error_update_setting_failed">Error al actualizar la consigna. Por favor, inténtalo de nuevo.</string>
+    <string name="error_delete_setting_failed">Error al eliminar la consigna. Por favor, inténtalo de nuevo.</string>
 
-    <!-- Delete Setting Confirmation -->
-    <string name="dialog_delete_setting_title">¿Eliminar Ajuste?</string>
+    <!-- Delete Consigna Confirmation -->
+    <string name="dialog_delete_setting_title">¿Eliminar Consigna?</string>
     <string name="dialog_delete_setting_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>
 
     <!-- Settings Screen -->

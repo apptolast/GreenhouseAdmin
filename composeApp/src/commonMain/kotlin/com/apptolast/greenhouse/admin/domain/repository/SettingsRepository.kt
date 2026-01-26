@@ -1,5 +1,6 @@
 package com.apptolast.greenhouse.admin.domain.repository
 
+import com.apptolast.greenhouse.admin.data.model.ActuatorState
 import com.apptolast.greenhouse.admin.data.model.Period
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.SettingCreateRequest
@@ -19,6 +20,13 @@ interface SettingsRepository {
      * @return Result containing list of periods or error
      */
     suspend fun getPeriods(): Result<List<Period>>
+
+    /**
+     * Retrieves all actuator states from the catalog.
+     * Actuator states define the state configuration (ON, OFF, AUTO, etc.).
+     * @return Result containing list of actuator states or error
+     */
+    suspend fun getActuatorStates(): Result<List<ActuatorState>>
 
     // ==================== CRUD ====================
 

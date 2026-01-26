@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,12 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.apptolast.greenhouse.admin.data.model.ActuatorState
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.Period
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.SettingFormData
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
@@ -55,18 +53,16 @@ import greenhouseadmin.composeapp.generated.resources.dialog_edit_setting_subtit
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_setting_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_setting_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_setting_title
+import greenhouseadmin.composeapp.generated.resources.error_actuator_state_required
 import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
-import greenhouseadmin.composeapp.generated.resources.error_min_greater_than_max
 import greenhouseadmin.composeapp.generated.resources.error_parameter_required
-import greenhouseadmin.composeapp.generated.resources.error_period_required
 import greenhouseadmin.composeapp.generated.resources.field_greenhouse
+import greenhouseadmin.composeapp.generated.resources.label_actuator_state
 import greenhouseadmin.composeapp.generated.resources.label_loading
-import greenhouseadmin.composeapp.generated.resources.label_max_value
-import greenhouseadmin.composeapp.generated.resources.label_min_value
 import greenhouseadmin.composeapp.generated.resources.label_parameter
-import greenhouseadmin.composeapp.generated.resources.label_period
 import greenhouseadmin.composeapp.generated.resources.label_select
 import greenhouseadmin.composeapp.generated.resources.label_status
+import greenhouseadmin.composeapp.generated.resources.label_value
 import greenhouseadmin.composeapp.generated.resources.status_active
 import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
@@ -74,7 +70,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Dialog for creating or editing a setting (parameter threshold configuration).
- * Uses API catalogs for Parameter (DeviceCatalogType) and Period dropdowns.
+ * Uses API catalogs for Parameter (DeviceCatalogType) and ActuatorState dropdowns.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,11 +78,11 @@ fun SettingFormDialog(
     mode: SettingFormMode,
     greenhouses: List<Greenhouse> = emptyList(),
     parameters: List<DeviceCatalogType> = emptyList(),
-    periods: List<Period> = emptyList(),
+    actuatorStates: List<ActuatorState> = emptyList(),
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (greenhouseId: Long?, parameterId: Short, periodId: Short, minValue: Double?, maxValue: Double?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
+    onSubmit: (greenhouseId: Long?, parameterId: Short, actuatorStateId: Short, value: String, isActive: Boolean) -> Unit = { _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -96,9 +92,8 @@ fun SettingFormDialog(
             is SettingFormMode.Edit -> SettingFormData(
                 greenhouseId = mode.setting.greenhouseId,
                 parameterId = mode.setting.parameterId,
-                periodId = mode.setting.periodId,
-                minValue = mode.setting.minValue?.toString() ?: "",
-                maxValue = mode.setting.maxValue?.toString() ?: "",
+                actuatorStateId = mode.setting.actuatorStateId,
+                value = mode.setting.value ?: "",
                 isActive = mode.setting.isActive
             )
         }
@@ -109,19 +104,17 @@ fun SettingFormDialog(
     var hasAttemptedSubmit by remember { mutableStateOf(false) }
     var greenhouseExpanded by remember { mutableStateOf(false) }
     var parameterExpanded by remember { mutableStateOf(false) }
-    var periodExpanded by remember { mutableStateOf(false) }
+    var actuatorStateExpanded by remember { mutableStateOf(false) }
 
     val greenhouseRequiredMsg = stringResource(Res.string.error_greenhouse_required)
     val parameterRequiredMsg = stringResource(Res.string.error_parameter_required)
-    val periodRequiredMsg = stringResource(Res.string.error_period_required)
-    val minGreaterThanMaxMsg = stringResource(Res.string.error_min_greater_than_max)
+    val actuatorStateRequiredMsg = stringResource(Res.string.error_actuator_state_required)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
             "error_greenhouse_required" -> greenhouseRequiredMsg
             "error_parameter_required" -> parameterRequiredMsg
-            "error_period_required" -> periodRequiredMsg
-            "error_min_greater_than_max" -> minGreaterThanMaxMsg
+            "error_actuator_state_required" -> actuatorStateRequiredMsg
             else -> null
         }
     }
@@ -149,7 +142,7 @@ fun SettingFormDialog(
     // Find selected items for display
     val selectedGreenhouse = greenhouses.find { it.id == formData.greenhouseId }
     val selectedParameter = parameters.find { it.id == formData.parameterId }
-    val selectedPeriod = periods.find { it.id == formData.periodId }
+    val selectedActuatorState = actuatorStates.find { it.id == formData.actuatorStateId }
 
     Dialog(onDismissRequest = { if (!isSubmitting) onDismiss() }) {
         Card(
@@ -232,24 +225,24 @@ fun SettingFormDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Period dropdown (required)
+                // Actuator State dropdown (required)
                 SettingFormDropdown(
-                    label = stringResource(Res.string.label_period),
-                    expanded = periodExpanded,
-                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) periodExpanded = it },
-                    selectedText = selectedPeriod?.displayName ?: selectText,
+                    label = stringResource(Res.string.label_actuator_state),
+                    expanded = actuatorStateExpanded,
+                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) actuatorStateExpanded = it },
+                    selectedText = selectedActuatorState?.name ?: selectText,
                     isLoading = isLoadingCatalog,
                     loadingText = loadingText,
                     enabled = !isSubmitting,
-                    isError = validationErrors.periodId != null,
-                    errorMessage = getErrorMessage(validationErrors.periodId)
+                    isError = validationErrors.actuatorStateId != null,
+                    errorMessage = getErrorMessage(validationErrors.actuatorStateId)
                 ) {
-                    periods.forEach { period ->
+                    actuatorStates.forEach { actuatorState ->
                         DropdownMenuItem(
-                            text = { Text(period.displayName) },
+                            text = { Text(actuatorState.name) },
                             onClick = {
-                                formData = formData.copy(periodId = period.id)
-                                periodExpanded = false
+                                formData = formData.copy(actuatorStateId = actuatorState.id)
+                                actuatorStateExpanded = false
                                 if (hasAttemptedSubmit) validationErrors = formData.validate()
                             }
                         )
@@ -258,45 +251,13 @@ fun SettingFormDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Min/Max values in a row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // Min Value field
-                    SettingFormNumberField(
-                        value = formData.minValue,
-                        onValueChange = {
-                            formData = formData.copy(minValue = it)
-                            if (hasAttemptedSubmit) validationErrors = formData.validate()
-                        },
-                        label = stringResource(Res.string.label_min_value),
-                        enabled = !isSubmitting,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    // Max Value field
-                    SettingFormNumberField(
-                        value = formData.maxValue,
-                        onValueChange = {
-                            formData = formData.copy(maxValue = it)
-                            if (hasAttemptedSubmit) validationErrors = formData.validate()
-                        },
-                        label = stringResource(Res.string.label_max_value),
-                        enabled = !isSubmitting,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                // Min/Max validation error
-                if (validationErrors.minMax != null) {
-                    Text(
-                        text = getErrorMessage(validationErrors.minMax) ?: "",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
+                // Value field
+                SettingFormTextField(
+                    value = formData.value,
+                    onValueChange = { formData = formData.copy(value = it) },
+                    label = stringResource(Res.string.label_value),
+                    enabled = !isSubmitting
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -343,9 +304,8 @@ fun SettingFormDialog(
                                 onSubmit(
                                     formData.greenhouseId,
                                     formData.parameterId!!,
-                                    formData.periodId!!,
-                                    formData.minValueDouble,
-                                    formData.maxValueDouble,
+                                    formData.actuatorStateId!!,
+                                    formData.value,
                                     formData.isActive
                                 )
                             }
@@ -452,10 +412,10 @@ private fun SettingFormDropdown(
 }
 
 /**
- * Number field component for min/max values.
+ * Text field component for value input.
  */
 @Composable
-private fun SettingFormNumberField(
+private fun SettingFormTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -473,16 +433,10 @@ private fun SettingFormNumberField(
 
         OutlinedTextField(
             value = value,
-            onValueChange = { newValue ->
-                // Only allow numeric input with optional decimal point
-                if (newValue.isEmpty() || newValue.matches(Regex("^-?\\d*\\.?\\d*$"))) {
-                    onValueChange(newValue)
-                }
-            },
+            onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -575,10 +529,31 @@ private fun SettingFormDialogCreatePreview() {
                     controlType = null
                 )
             ),
-            periods = listOf(
-                Period(id = 1, name = "DAY"),
-                Period(id = 2, name = "NIGHT"),
-                Period(id = 3, name = "ALL")
+            actuatorStates = listOf(
+                ActuatorState(
+                    id = 1,
+                    name = "OFF",
+                    description = "Device off",
+                    isOperational = false,
+                    displayOrder = 1,
+                    color = null
+                ),
+                ActuatorState(
+                    id = 2,
+                    name = "ON",
+                    description = "Device on",
+                    isOperational = true,
+                    displayOrder = 2,
+                    color = null
+                ),
+                ActuatorState(
+                    id = 3,
+                    name = "AUTO",
+                    description = "Automatic mode",
+                    isOperational = true,
+                    displayOrder = 3,
+                    color = null
+                )
             )
         )
     }
@@ -598,10 +573,9 @@ private fun SettingFormDialogEditPreview() {
                     tenantId = 1L,
                     parameterId = 1,
                     parameterName = "Temperature",
-                    periodId = 1,
-                    periodName = "DAY",
-                    minValue = 18.0,
-                    maxValue = 25.0,
+                    actuatorStateId = 2,
+                    actuatorStateName = "ON",
+                    value = "25",
                     isActive = true,
                     createdAt = "2024-01-15T10:30:00Z"
                 )
@@ -630,10 +604,31 @@ private fun SettingFormDialogEditPreview() {
                     controlType = null
                 )
             ),
-            periods = listOf(
-                Period(id = 1, name = "DAY"),
-                Period(id = 2, name = "NIGHT"),
-                Period(id = 3, name = "ALL")
+            actuatorStates = listOf(
+                ActuatorState(
+                    id = 1,
+                    name = "OFF",
+                    description = "Device off",
+                    isOperational = false,
+                    displayOrder = 1,
+                    color = null
+                ),
+                ActuatorState(
+                    id = 2,
+                    name = "ON",
+                    description = "Device on",
+                    isOperational = true,
+                    displayOrder = 2,
+                    color = null
+                ),
+                ActuatorState(
+                    id = 3,
+                    name = "AUTO",
+                    description = "Automatic mode",
+                    isOperational = true,
+                    displayOrder = 3,
+                    color = null
+                )
             )
         )
     }
