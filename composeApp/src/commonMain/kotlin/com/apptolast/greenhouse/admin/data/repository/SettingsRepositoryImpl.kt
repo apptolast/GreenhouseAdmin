@@ -1,5 +1,6 @@
 package com.apptolast.greenhouse.admin.data.repository
 
+import com.apptolast.greenhouse.admin.data.model.ActuatorState
 import com.apptolast.greenhouse.admin.data.model.Period
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.SettingCreateRequest
@@ -19,6 +20,10 @@ class SettingsRepositoryImpl(
 
     override suspend fun getPeriods(): Result<List<Period>> = runCatching {
         settingsApi.getPeriods().map { it.toDomain() }
+    }
+
+    override suspend fun getActuatorStates(): Result<List<ActuatorState>> = runCatching {
+        settingsApi.getActuatorStates().map { it.toDomain() }
     }
 
     // ==================== CRUD ====================

@@ -378,9 +378,8 @@ sealed interface ClientDetailEvent {
     data class OnSubmitSettingForm(
         val greenhouseId: Long?,
         val parameterId: Short,
-        val periodId: Short,
-        val minValue: Double?,
-        val maxValue: Double?,
+        val actuatorStateId: Short,
+        val value: String,
         val isActive: Boolean
     ) : ClientDetailEvent
 }

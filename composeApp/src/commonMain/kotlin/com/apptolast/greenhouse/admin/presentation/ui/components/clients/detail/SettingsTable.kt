@@ -50,11 +50,11 @@ import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
+import greenhouseadmin.composeapp.generated.resources.header_actuator_state
 import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_parameter
-import greenhouseadmin.composeapp.generated.resources.header_period
-import greenhouseadmin.composeapp.generated.resources.header_range
 import greenhouseadmin.composeapp.generated.resources.header_status
+import greenhouseadmin.composeapp.generated.resources.header_value
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -150,13 +150,13 @@ private fun SettingsTableHeader(modifier: Modifier = Modifier) {
             modifier = Modifier.weight(1f)
         )
         Text(
-            text = stringResource(Res.string.header_period),
+            text = stringResource(Res.string.header_actuator_state),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.6f)
         )
         Text(
-            text = stringResource(Res.string.header_range),
+            text = stringResource(Res.string.header_value),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.6f)
@@ -214,15 +214,15 @@ private fun SettingTableRow(
             )
         }
 
-        // PERIOD badge
-        PeriodBadge(
-            periodName = setting.periodDisplayName,
+        // ACTUATOR STATE badge
+        ActuatorStateBadge(
+            stateName = setting.actuatorStateDisplayName,
             modifier = Modifier.weight(0.6f).wrapContentWidth(align = Alignment.Start),
         )
 
-        // RANGE
+        // VALUE
         Text(
-            text = setting.rangeDisplay,
+            text = setting.valueDisplay,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.6f),
@@ -291,23 +291,25 @@ fun SettingAvatar(
 }
 
 /**
- * Badge component for displaying period (DAY/NIGHT/ALL).
+ * Badge component for displaying actuator state (ON/OFF/AUTO/etc.).
  */
 @Composable
-private fun PeriodBadge(
-    periodName: String,
+private fun ActuatorStateBadge(
+    stateName: String,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = when (periodName.uppercase()) {
-        "DAY" -> Color(0xFFFFB74D).copy(alpha = 0.2f) // Orange tint
-        "NIGHT" -> Color(0xFF5C6BC0).copy(alpha = 0.2f) // Indigo tint
-        "ALL", "ALL DAY" -> Color(0xFF4CAF50).copy(alpha = 0.2f) // Green tint
+    val backgroundColor = when (stateName.uppercase()) {
+        "ON" -> Color(0xFF4CAF50).copy(alpha = 0.2f) // Green tint
+        "OFF" -> Color(0xFFE53935).copy(alpha = 0.2f) // Red tint
+        "AUTO" -> Color(0xFF2196F3).copy(alpha = 0.2f) // Blue tint
+        "MANUAL" -> Color(0xFFFFB74D).copy(alpha = 0.2f) // Orange tint
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
-    val textColor = when (periodName.uppercase()) {
-        "DAY" -> Color(0xFFFF8F00) // Dark orange
-        "NIGHT" -> Color(0xFF3949AB) // Dark indigo
-        "ALL", "ALL DAY" -> Color(0xFF2E7D32) // Dark green
+    val textColor = when (stateName.uppercase()) {
+        "ON" -> Color(0xFF2E7D32) // Dark green
+        "OFF" -> Color(0xFFC62828) // Dark red
+        "AUTO" -> Color(0xFF1565C0) // Dark blue
+        "MANUAL" -> Color(0xFFFF8F00) // Dark orange
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
@@ -319,7 +321,7 @@ private fun PeriodBadge(
         contentAlignment = Alignment.CenterStart
     ) {
         Text(
-            text = periodName,
+            text = stateName,
             style = MaterialTheme.typography.labelSmall,
             color = textColor,
             fontWeight = FontWeight.Medium
@@ -400,7 +402,7 @@ private fun SettingCard(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = setting.rangeDisplay,
+                        text = setting.valueDisplay,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -456,12 +458,12 @@ private fun SettingCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Info row: Period badge | Status chip
+            // Info row: Actuator State badge | Status chip
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                PeriodBadge(periodName = setting.periodDisplayName)
+                ActuatorStateBadge(stateName = setting.actuatorStateDisplayName)
                 StatusChip(isActive = setting.isActive)
             }
         }
@@ -478,10 +480,9 @@ private object SettingsTablePreviewData {
             tenantId = 1L,
             parameterId = 1,
             parameterName = "Temperature",
-            periodId = 1,
-            periodName = "DAY",
-            minValue = 18.0,
-            maxValue = 25.0,
+            actuatorStateId = 1,
+            actuatorStateName = "ON",
+            value = "25",
             isActive = true,
             createdAt = "2024-01-15T10:30:00Z"
         ),
@@ -493,10 +494,9 @@ private object SettingsTablePreviewData {
             tenantId = 1L,
             parameterId = 2,
             parameterName = "Humidity",
-            periodId = 2,
-            periodName = "NIGHT",
-            minValue = 60.0,
-            maxValue = 80.0,
+            actuatorStateId = 2,
+            actuatorStateName = "OFF",
+            value = "80",
             isActive = true,
             createdAt = "2024-01-15T10:30:00Z"
         ),
@@ -508,10 +508,9 @@ private object SettingsTablePreviewData {
             tenantId = 1L,
             parameterId = 1,
             parameterName = "Temperature",
-            periodId = 3,
-            periodName = "ALL",
-            minValue = 15.0,
-            maxValue = null,
+            actuatorStateId = 3,
+            actuatorStateName = "AUTO",
+            value = null,
             isActive = false,
             createdAt = "2024-01-15T10:30:00Z"
         )
@@ -542,12 +541,13 @@ private fun SettingAvatarPreview() {
 
 @Preview
 @Composable
-private fun PeriodBadgePreview() {
+private fun ActuatorStateBadgePreview() {
     GreenhouseAdminTheme {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PeriodBadge(periodName = "Day")
-            PeriodBadge(periodName = "Night")
-            PeriodBadge(periodName = "All Day")
+            ActuatorStateBadge(stateName = "ON")
+            ActuatorStateBadge(stateName = "OFF")
+            ActuatorStateBadge(stateName = "AUTO")
+            ActuatorStateBadge(stateName = "MANUAL")
         }
     }
 }

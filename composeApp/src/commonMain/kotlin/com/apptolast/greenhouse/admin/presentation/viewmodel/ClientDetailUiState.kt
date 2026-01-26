@@ -1,5 +1,6 @@
 package com.apptolast.greenhouse.admin.presentation.viewmodel
 
+import com.apptolast.greenhouse.admin.data.model.ActuatorState
 import com.apptolast.greenhouse.admin.data.model.Alert
 import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
 import com.apptolast.greenhouse.admin.data.model.AlertType
@@ -9,7 +10,6 @@ import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.Period
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.User
@@ -162,7 +162,7 @@ data class ClientDetailUiState(
     val deleteSettingError: String? = null,
 
     // Setting catalog state (preloaded at init)
-    val periods: List<Period> = emptyList()
+    val actuatorStates: List<ActuatorState> = emptyList()
 ) {
     /**
      * Returns true if in error state with no content.

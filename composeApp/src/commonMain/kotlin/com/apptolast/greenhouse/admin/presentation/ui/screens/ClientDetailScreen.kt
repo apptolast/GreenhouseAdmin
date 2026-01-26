@@ -373,18 +373,17 @@ private fun ClientDetailScreenContent(
             mode = uiState.settingFormMode,
             greenhouses = uiState.greenhouses,
             parameters = uiState.deviceTypes,
-            periods = uiState.periods,
+            actuatorStates = uiState.actuatorStates,
             isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingSetting,
             error = uiState.submitSettingError,
-            onSubmit = { greenhouseId, parameterId, periodId, minValue, maxValue, isActive ->
+            onSubmit = { greenhouseId, parameterId, actuatorStateId, value, isActive ->
                 onEvent(
                     ClientDetailEvent.OnSubmitSettingForm(
                         greenhouseId = greenhouseId,
                         parameterId = parameterId,
-                        periodId = periodId,
-                        minValue = minValue,
-                        maxValue = maxValue,
+                        actuatorStateId = actuatorStateId,
+                        value = value,
                         isActive = isActive
                     )
                 )

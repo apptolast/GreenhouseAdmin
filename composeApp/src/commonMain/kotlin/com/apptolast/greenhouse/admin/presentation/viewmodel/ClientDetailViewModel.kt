@@ -182,9 +182,8 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnSubmitSettingForm -> submitSettingForm(
                 event.greenhouseId,
                 event.parameterId,
-                event.periodId,
-                event.minValue,
-                event.maxValue,
+                event.actuatorStateId,
+                event.value,
                 event.isActive
             )
         }
@@ -236,7 +235,7 @@ class ClientDetailViewModel(
                     val severitiesDeferred = async { alertsRepository.getAlertSeverities() }
 
                     // Settings catalogs
-                    val periodsDeferred = async { settingsRepository.getPeriods() }
+                    val actuatorStatesDeferred = async { settingsRepository.getActuatorStates() }
 
                     // Greenhouses (tenant-specific but used across all tabs)
                     val greenhousesDeferred = async { greenhousesRepository.getGreenhousesByTenantId(clientId) }
@@ -247,7 +246,7 @@ class ClientDetailViewModel(
                     val units = unitsDeferred.await()
                     val alertTypes = alertTypesDeferred.await()
                     val severities = severitiesDeferred.await()
-                    val periods = periodsDeferred.await()
+                    val actuatorStates = actuatorStatesDeferred.await()
                     val greenhouses = greenhousesDeferred.await()
 
                     // Update state with all catalog data
@@ -261,7 +260,7 @@ class ClientDetailViewModel(
                             alertTypes = alertTypes.getOrDefault(emptyList()),
                             alertSeverities = severities.getOrDefault(emptyList()),
                             // Settings catalogs
-                            periods = periods.getOrDefault(emptyList()),
+                            actuatorStates = actuatorStates.getOrDefault(emptyList()).sortedBy { it.displayOrder },
                             // Greenhouses
                             greenhouses = greenhouses.getOrDefault(emptyList()),
                             // Loading state
@@ -1303,9 +1302,8 @@ class ClientDetailViewModel(
     private fun submitSettingForm(
         greenhouseId: Long?,
         parameterId: Short,
-        periodId: Short,
-        minValue: Double?,
-        maxValue: Double?,
+        actuatorStateId: Short,
+        value: String,
         isActive: Boolean
     ) {
         if (greenhouseId == null) return
@@ -1320,9 +1318,8 @@ class ClientDetailViewModel(
                     val request = SettingCreateRequest(
                         greenhouseId = greenhouseId,
                         parameterId = parameterId,
-                        periodId = periodId,
-                        minValue = minValue,
-                        maxValue = maxValue,
+                        actuatorStateId = actuatorStateId,
+                        value = value.ifBlank { null },
                         isActive = isActive
                     )
                     settingsRepository.createSetting(clientId, request)
@@ -1331,9 +1328,8 @@ class ClientDetailViewModel(
                 is SettingFormMode.Edit -> {
                     val request = SettingUpdateRequest(
                         parameterId = parameterId,
-                        periodId = periodId,
-                        minValue = minValue,
-                        maxValue = maxValue,
+                        actuatorStateId = actuatorStateId,
+                        value = value.ifBlank { null },
                         isActive = isActive
                     )
                     settingsRepository.updateSetting(clientId, mode.setting.id, request)

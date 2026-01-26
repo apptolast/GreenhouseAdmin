@@ -169,10 +169,9 @@ private object ClientDetailSettingsTabPreviewData {
             tenantId = 1L,
             parameterId = 1,
             parameterName = "Temperature",
-            periodId = 1,
-            periodName = "DAY",
-            minValue = 18.0,
-            maxValue = 25.0,
+            actuatorStateId = 1,
+            actuatorStateName = "ON",
+            value = "25",
             isActive = true,
             createdAt = "2024-01-15T10:30:00Z"
         ),
@@ -184,10 +183,9 @@ private object ClientDetailSettingsTabPreviewData {
             tenantId = 1L,
             parameterId = 2,
             parameterName = "Humidity",
-            periodId = 2,
-            periodName = "NIGHT",
-            minValue = 60.0,
-            maxValue = 80.0,
+            actuatorStateId = 2,
+            actuatorStateName = "OFF",
+            value = "80",
             isActive = true,
             createdAt = "2024-01-15T10:30:00Z"
         )

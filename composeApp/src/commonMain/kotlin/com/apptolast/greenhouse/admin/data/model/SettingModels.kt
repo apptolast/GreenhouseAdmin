@@ -28,10 +28,9 @@ data class SettingResponse(
     val tenantId: Long,
     val parameterId: Short,
     val parameterName: String? = null,
-    val periodId: Short,
-    val periodName: String? = null,
-    val minValue: Double? = null,
-    val maxValue: Double? = null,
+    val actuatorStateId: Short? = null,
+    val actuatorStateName: String? = null,
+    val value: String? = null,
     val isActive: Boolean = true,
     val createdAt: String,
     val updatedAt: String
@@ -44,9 +43,8 @@ data class SettingResponse(
 data class SettingCreateRequest(
     val greenhouseId: Long,
     val parameterId: Short,
-    val periodId: Short,
-    val minValue: Double? = null,
-    val maxValue: Double? = null,
+    val actuatorStateId: Short? = null,
+    val value: String? = null,
     val isActive: Boolean = true
 )
 
@@ -57,9 +55,8 @@ data class SettingCreateRequest(
 @Serializable
 data class SettingUpdateRequest(
     val parameterId: Short? = null,
-    val periodId: Short? = null,
-    val minValue: Double? = null,
-    val maxValue: Double? = null,
+    val actuatorStateId: Short? = null,
+    val value: String? = null,
     val isActive: Boolean? = null
 )
 
@@ -97,10 +94,9 @@ data class Setting(
     val tenantId: Long,
     val parameterId: Short,
     val parameterName: String?,
-    val periodId: Short,
-    val periodName: String?,
-    val minValue: Double?,
-    val maxValue: Double?,
+    val actuatorStateId: Short?,
+    val actuatorStateName: String?,
+    val value: String?,
     val isActive: Boolean,
     val createdAt: String
 ) {
@@ -117,26 +113,16 @@ data class Setting(
         get() = parameterName ?: "Parameter $parameterId"
 
     /**
-     * Formatted display of the value range.
+     * Formatted display of the value.
      */
-    val rangeDisplay: String
-        get() = when {
-            minValue != null && maxValue != null -> "$minValue - $maxValue"
-            minValue != null -> "≥ $minValue"
-            maxValue != null -> "≤ $maxValue"
-            else -> "-"
-        }
+    val valueDisplay: String
+        get() = value ?: "-"
 
     /**
-     * Display name for the period.
+     * Display name for the actuator state.
      */
-    val periodDisplayName: String
-        get() = when (periodName?.uppercase()) {
-            "DAY" -> "Day"
-            "NIGHT" -> "Night"
-            "ALL" -> "All Day"
-            else -> periodName ?: "Period $periodId"
-        }
+    val actuatorStateDisplayName: String
+        get() = actuatorStateName ?: (actuatorStateId?.let { "State $it" } ?: "-")
 }
 
 // ==================== EXTENSION FUNCTIONS ====================
@@ -160,10 +146,9 @@ fun SettingResponse.toDomain() = Setting(
     tenantId = tenantId,
     parameterId = parameterId,
     parameterName = parameterName,
-    periodId = periodId,
-    periodName = periodName,
-    minValue = minValue,
-    maxValue = maxValue,
+    actuatorStateId = actuatorStateId,
+    actuatorStateName = actuatorStateName,
+    value = value,
     isActive = isActive,
     createdAt = createdAt
 )
