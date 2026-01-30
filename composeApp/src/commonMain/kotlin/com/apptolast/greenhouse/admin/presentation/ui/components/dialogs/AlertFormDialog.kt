@@ -44,7 +44,7 @@ import com.apptolast.greenhouse.admin.data.model.Alert
 import com.apptolast.greenhouse.admin.data.model.AlertFormData
 import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
 import com.apptolast.greenhouse.admin.data.model.AlertType
-import com.apptolast.greenhouse.admin.data.model.Greenhouse
+import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.AlertFormMode
 import greenhouseadmin.composeapp.generated.resources.Res
@@ -55,12 +55,13 @@ import greenhouseadmin.composeapp.generated.resources.dialog_edit_alert_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_alert_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_alert_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_alert_title
-import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
-import greenhouseadmin.composeapp.generated.resources.error_message_required
+import greenhouseadmin.composeapp.generated.resources.error_content_required
+import greenhouseadmin.composeapp.generated.resources.error_sector_required
 import greenhouseadmin.composeapp.generated.resources.field_alert_type
-import greenhouseadmin.composeapp.generated.resources.field_greenhouse
 import greenhouseadmin.composeapp.generated.resources.field_message
+import greenhouseadmin.composeapp.generated.resources.field_sector
 import greenhouseadmin.composeapp.generated.resources.field_severity
+import greenhouseadmin.composeapp.generated.resources.label_description
 import greenhouseadmin.composeapp.generated.resources.label_loading
 import greenhouseadmin.composeapp.generated.resources.label_none
 import greenhouseadmin.composeapp.generated.resources.label_select
@@ -75,13 +76,13 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun AlertFormDialog(
     mode: AlertFormMode,
-    greenhouses: List<Greenhouse> = emptyList(),
+    sectors: List<Sector> = emptyList(),
     alertTypes: List<AlertType> = emptyList(),
     severities: List<AlertSeverityCatalog> = emptyList(),
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (greenhouseId: Long?, alertTypeId: Short?, severityId: Short?, message: String) -> Unit = { _, _, _, _ -> },
+    onSubmit: (sectorId: Long?, alertTypeId: Short?, severityId: Short?, message: String?, description: String?) -> Unit = { _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -89,10 +90,11 @@ fun AlertFormDialog(
         when (mode) {
             is AlertFormMode.Create -> AlertFormData()
             is AlertFormMode.Edit -> AlertFormData(
-                greenhouseId = mode.alert.greenhouseId,
+                sectorId = mode.alert.sectorId,
                 alertTypeId = mode.alert.alertTypeId,
                 severityId = mode.alert.severityId,
-                message = mode.alert.message
+                message = mode.alert.message ?: "",
+                description = mode.alert.description ?: ""
             )
         }
     }
@@ -100,17 +102,17 @@ fun AlertFormDialog(
     var formData by remember(mode) { mutableStateOf(initialFormData) }
     var validationErrors by remember { mutableStateOf(AlertFormData.ValidationErrors()) }
     var hasAttemptedSubmit by remember { mutableStateOf(false) }
-    var greenhouseExpanded by remember { mutableStateOf(false) }
+    var sectorExpanded by remember { mutableStateOf(false) }
     var alertTypeExpanded by remember { mutableStateOf(false) }
     var severityExpanded by remember { mutableStateOf(false) }
 
-    val greenhouseRequiredMsg = stringResource(Res.string.error_greenhouse_required)
-    val messageRequiredMsg = stringResource(Res.string.error_message_required)
+    val sectorRequiredMsg = stringResource(Res.string.error_sector_required)
+    val contentRequiredMsg = stringResource(Res.string.error_content_required)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
-            "error_greenhouse_required" -> greenhouseRequiredMsg
-            "error_message_required" -> messageRequiredMsg
+            "error_sector_required" -> sectorRequiredMsg
+            "error_content_required" -> contentRequiredMsg
             else -> null
         }
     }
@@ -135,9 +137,10 @@ fun AlertFormDialog(
     val selectText = stringResource(Res.string.label_select)
     val noneText = stringResource(Res.string.label_none)
     val loadingText = stringResource(Res.string.label_loading)
+    val descriptionLabel = stringResource(Res.string.label_description)
 
     // Find selected items for display
-    val selectedGreenhouse = greenhouses.find { it.id == formData.greenhouseId }
+    val selectedSector = sectors.find { it.id == formData.sectorId }
     val selectedAlertType = alertTypes.find { it.id == formData.alertTypeId }
     val selectedSeverity = severities.find { it.id == formData.severityId }
 
@@ -170,24 +173,24 @@ fun AlertFormDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Greenhouse dropdown (required)
+                // Sector dropdown (required)
                 AlertFormDropdown(
-                    label = stringResource(Res.string.field_greenhouse),
-                    expanded = greenhouseExpanded,
-                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) greenhouseExpanded = it },
-                    selectedText = selectedGreenhouse?.name ?: selectText,
+                    label = stringResource(Res.string.field_sector),
+                    expanded = sectorExpanded,
+                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) sectorExpanded = it },
+                    selectedText = selectedSector?.let { it.name ?: it.code ?: "Sector ${it.id}" } ?: selectText,
                     isLoading = isLoadingCatalog,
                     loadingText = loadingText,
                     enabled = !isSubmitting,
-                    isError = validationErrors.greenhouseId != null,
-                    errorMessage = getErrorMessage(validationErrors.greenhouseId)
+                    isError = validationErrors.sectorId != null,
+                    errorMessage = getErrorMessage(validationErrors.sectorId)
                 ) {
-                    greenhouses.forEach { greenhouse ->
+                    sectors.forEach { sector ->
                         DropdownMenuItem(
-                            text = { Text(greenhouse.name) },
+                            text = { Text(sector.name ?: sector.code ?: "Sector ${sector.id}") },
                             onClick = {
-                                formData = formData.copy(greenhouseId = greenhouse.id)
-                                greenhouseExpanded = false
+                                formData = formData.copy(sectorId = sector.id)
+                                sectorExpanded = false
                                 if (hasAttemptedSubmit) validationErrors = formData.validate()
                             }
                         )
@@ -290,7 +293,7 @@ fun AlertFormDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Message field
+                // Message field (optional - but message OR description required)
                 AlertFormTextField(
                     value = formData.message,
                     onValueChange = {
@@ -298,7 +301,23 @@ fun AlertFormDialog(
                         if (hasAttemptedSubmit) validationErrors = formData.validate()
                     },
                     label = stringResource(Res.string.field_message),
-                    error = getErrorMessage(validationErrors.message),
+                    error = null, // Error shown on description field
+                    enabled = !isSubmitting,
+                    minLines = 2,
+                    maxLines = 4
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Description field (optional - but message OR description required)
+                AlertFormTextField(
+                    value = formData.description,
+                    onValueChange = {
+                        formData = formData.copy(description = it)
+                        if (hasAttemptedSubmit) validationErrors = formData.validate()
+                    },
+                    label = descriptionLabel,
+                    error = getErrorMessage(validationErrors.content),
                     enabled = !isSubmitting,
                     minLines = 3,
                     maxLines = 5
@@ -337,10 +356,11 @@ fun AlertFormDialog(
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
                                 onSubmit(
-                                    formData.greenhouseId,
+                                    formData.sectorId,
                                     formData.alertTypeId,
                                     formData.severityId,
-                                    formData.message
+                                    formData.message.ifBlank { null },
+                                    formData.description.ifBlank { null }
                                 )
                             }
                         },
@@ -518,9 +538,9 @@ private fun AlertFormDialogCreatePreview() {
     GreenhouseAdminTheme {
         AlertFormDialog(
             mode = AlertFormMode.Create,
-            greenhouses = listOf(
-                Greenhouse(id = 1L, code = "GRH-00001", tenantId = 1L, name = "Greenhouse A"),
-                Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
+            sectors = listOf(
+                Sector(id = 1L, code = "SEC-00001", tenantId = 1L, greenhouseId = 1L, name = "Tomato"),
+                Sector(id = 2L, code = "SEC-00002", tenantId = 1L, greenhouseId = 1L, name = "Pepper")
             ),
             alertTypes = listOf(
                 AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),
@@ -566,23 +586,24 @@ private fun AlertFormDialogEditPreview() {
                     id = 1L,
                     code = "ALT-00001",
                     tenantId = 1L,
-                    greenhouseId = 1L,
-                    greenhouseName = "Greenhouse A",
+                    sectorId = 1L,
+                    sectorCode = "SEC-00001",
                     alertTypeId = 1,
                     alertTypeName = "Temperature",
                     severityId = 2,
                     severityName = "Medium",
                     severityLevel = 2,
                     message = "Temperature exceeds threshold",
+                    description = null,
                     isResolved = false,
                     resolvedAt = null,
                     resolvedByUserName = null,
                     createdAt = "2024-01-15T10:30:00Z"
                 )
             ),
-            greenhouses = listOf(
-                Greenhouse(id = 1L, code = "GRH-00001", tenantId = 1L, name = "Greenhouse A"),
-                Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
+            sectors = listOf(
+                Sector(id = 1L, code = "SEC-00001", tenantId = 1L, greenhouseId = 1L, name = "Tomato"),
+                Sector(id = 2L, code = "SEC-00002", tenantId = 1L, greenhouseId = 1L, name = "Pepper")
             ),
             alertTypes = listOf(
                 AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),

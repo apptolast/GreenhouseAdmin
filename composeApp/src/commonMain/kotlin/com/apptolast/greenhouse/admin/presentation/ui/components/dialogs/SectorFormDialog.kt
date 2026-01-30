@@ -49,9 +49,9 @@ import greenhouseadmin.composeapp.generated.resources.dialog_edit_sector_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_sector_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_sector_title
 import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
-import greenhouseadmin.composeapp.generated.resources.error_variety_min_length
+import greenhouseadmin.composeapp.generated.resources.error_sector_name_min_length
 import greenhouseadmin.composeapp.generated.resources.field_greenhouse
-import greenhouseadmin.composeapp.generated.resources.label_variety
+import greenhouseadmin.composeapp.generated.resources.label_sector_name
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -65,7 +65,7 @@ fun SectorFormDialog(
     greenhouses: List<Greenhouse>,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (greenhouseId: Long?, variety: String) -> Unit = { _, _ -> },
+    onSubmit: (greenhouseId: Long?, name: String) -> Unit = { _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -73,7 +73,7 @@ fun SectorFormDialog(
         when (mode) {
             is SectorFormMode.Create -> SectorFormData()
             is SectorFormMode.Edit -> SectorFormData(
-                variety = mode.sector.variety ?: "",
+                name = mode.sector.name ?: "",
                 greenhouseId = mode.sector.greenhouseId
             )
         }
@@ -85,12 +85,12 @@ fun SectorFormDialog(
     var greenhouseExpanded by remember { mutableStateOf(false) }
 
     // Get error message strings
-    val varietyErrorMsg = stringResource(Res.string.error_variety_min_length)
+    val nameErrorMsg = stringResource(Res.string.error_sector_name_min_length)
     val greenhouseRequiredMsg = stringResource(Res.string.error_greenhouse_required)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
-            "error_variety_min_length" -> varietyErrorMsg
+            "error_sector_name_min_length" -> nameErrorMsg
             "error_greenhouse_required" -> greenhouseRequiredMsg
             else -> null
         }
@@ -155,22 +155,20 @@ fun SectorFormDialog(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     ExposedDropdownMenuBox(
-                        expanded = greenhouseExpanded && !isEditMode,
-                        onExpandedChange = { if (!isSubmitting && !isEditMode) greenhouseExpanded = it }
+                        expanded = greenhouseExpanded,
+                        onExpandedChange = { if (!isSubmitting) greenhouseExpanded = it }
                     ) {
                         OutlinedTextField(
                             value = selectedGreenhouse?.name ?: "",
                             onValueChange = {},
                             readOnly = true,
-                            enabled = !isSubmitting && !isEditMode,
+                            enabled = !isSubmitting,
                             isError = hasAttemptedSubmit && validationErrors.greenhouseId != null,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                             trailingIcon = {
-                                if (!isEditMode) {
-                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = greenhouseExpanded)
-                                }
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = greenhouseExpanded)
                             },
                             shape = RoundedCornerShape(8.dp),
                             colors = OutlinedTextFieldDefaults.colors(
@@ -182,21 +180,19 @@ fun SectorFormDialog(
                             )
                         )
 
-                        if (!isEditMode) {
-                            ExposedDropdownMenu(
-                                expanded = greenhouseExpanded,
-                                onDismissRequest = { greenhouseExpanded = false }
-                            ) {
-                                greenhouses.forEach { greenhouse ->
-                                    DropdownMenuItem(
-                                        text = { Text(greenhouse.name) },
-                                        onClick = {
-                                            formData = formData.copy(greenhouseId = greenhouse.id)
-                                            greenhouseExpanded = false
-                                            if (hasAttemptedSubmit) validationErrors = formData.validate()
-                                        }
-                                    )
-                                }
+                        ExposedDropdownMenu(
+                            expanded = greenhouseExpanded,
+                            onDismissRequest = { greenhouseExpanded = false }
+                        ) {
+                            greenhouses.forEach { greenhouse ->
+                                DropdownMenuItem(
+                                    text = { Text(greenhouse.name) },
+                                    onClick = {
+                                        formData = formData.copy(greenhouseId = greenhouse.id)
+                                        greenhouseExpanded = false
+                                        if (hasAttemptedSubmit) validationErrors = formData.validate()
+                                    }
+                                )
                             }
                         }
                     }
@@ -213,15 +209,15 @@ fun SectorFormDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Variety field
+                // Name field
                 SectorFormTextField(
-                    value = formData.variety,
+                    value = formData.name,
                     onValueChange = {
-                        formData = formData.copy(variety = it)
+                        formData = formData.copy(name = it)
                         if (hasAttemptedSubmit) validationErrors = formData.validate()
                     },
-                    label = stringResource(Res.string.label_variety),
-                    error = getErrorMessage(validationErrors.variety),
+                    label = stringResource(Res.string.label_sector_name),
+                    error = getErrorMessage(validationErrors.name),
                     enabled = !isSubmitting
                 )
 
@@ -257,7 +253,7 @@ fun SectorFormDialog(
                             hasAttemptedSubmit = true
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
-                                onSubmit(formData.greenhouseId, formData.variety)
+                                onSubmit(formData.greenhouseId, formData.name)
                             }
                         },
                         enabled = !isSubmitting,
@@ -330,8 +326,9 @@ private object SectorFormDialogPreviewData {
     val sampleSector = Sector(
         id = 1L,
         code = "SEC-00001",
+        tenantId = 1L,
         greenhouseId = 1L,
-        variety = "Tomate Cherry"
+        name = "Tomate Cherry"
     )
 
     val sampleGreenhouses = listOf(

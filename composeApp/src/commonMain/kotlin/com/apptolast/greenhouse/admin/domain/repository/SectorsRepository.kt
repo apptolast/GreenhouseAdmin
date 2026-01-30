@@ -18,26 +18,28 @@ interface SectorsRepository {
      * Creates a new sector for a tenant.
      * @param tenantId The tenant ID the sector belongs to
      * @param greenhouseId The greenhouse ID the sector belongs to
-     * @param variety The variety/name of the sector
+     * @param name The name of the sector
      * @return Result containing the created Sector or error
      */
     suspend fun createSector(
         tenantId: Long,
         greenhouseId: Long,
-        variety: String?
+        name: String?
     ): Result<Sector>
 
     /**
      * Updates an existing sector.
      * @param tenantId The tenant ID the sector belongs to
      * @param sectorId The sector ID to update
-     * @param variety New variety/name (optional)
+     * @param greenhouseId New greenhouse ID (optional)
+     * @param name New name (optional)
      * @return Result containing the updated Sector or error
      */
     suspend fun updateSector(
         tenantId: Long,
         sectorId: Long,
-        variety: String?
+        greenhouseId: Long?,
+        name: String?
     ): Result<Sector>
 
     /**

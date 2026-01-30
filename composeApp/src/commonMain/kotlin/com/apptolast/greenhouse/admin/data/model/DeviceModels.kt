@@ -45,6 +45,7 @@ data class DeviceCreateRequest(
  */
 @Serializable
 data class DeviceUpdateRequest(
+    val sectorId: Long? = null,
     val name: String? = null,
     val categoryId: Short? = null,
     val typeId: Short? = null,

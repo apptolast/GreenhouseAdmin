@@ -4,29 +4,31 @@ package com.apptolast.greenhouse.admin.data.model
  * Form data for creating or editing an alert.
  */
 data class AlertFormData(
-    val greenhouseId: Long? = null,
+    val sectorId: Long? = null,
     val alertTypeId: Short? = null,
     val severityId: Short? = null,
-    val message: String = ""
+    val message: String = "",
+    val description: String = ""
 ) {
     /**
      * Validation errors for alert form fields.
      */
     data class ValidationErrors(
-        val greenhouseId: String? = null,
-        val message: String? = null
+        val sectorId: String? = null,
+        val content: String? = null
     ) {
         val hasErrors: Boolean
-            get() = greenhouseId != null || message != null
+            get() = sectorId != null || content != null
     }
 
     /**
      * Validates the form data and returns any errors.
+     * Note: Either message or description must be provided.
      */
     fun validate(): ValidationErrors {
         return ValidationErrors(
-            greenhouseId = if (greenhouseId == null) "error_greenhouse_required" else null,
-            message = if (message.isBlank()) "error_message_required" else null
+            sectorId = if (sectorId == null) "error_sector_required" else null,
+            content = if (message.isBlank() && description.isBlank()) "error_content_required" else null
         )
     }
 

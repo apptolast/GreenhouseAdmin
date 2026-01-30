@@ -45,6 +45,7 @@ class DevicesRepositoryImpl(
     override suspend fun updateDevice(
         tenantId: Long,
         deviceId: Long,
+        sectorId: Long?,
         name: String?,
         categoryId: Short?,
         typeId: Short?,
@@ -52,6 +53,7 @@ class DevicesRepositoryImpl(
         isActive: Boolean?
     ): Result<Device> = runCatching {
         val request = DeviceUpdateRequest(
+            sectorId = sectorId,
             name = name,
             categoryId = categoryId,
             typeId = typeId,

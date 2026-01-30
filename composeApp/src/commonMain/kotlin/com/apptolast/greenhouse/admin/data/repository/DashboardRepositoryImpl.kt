@@ -237,8 +237,9 @@ class DashboardRepositoryImpl(
                         code = alertDto.code,
                         tenantId = alertDto.tenantId,
                         tenantName = tenantMap[tenantId]?.name ?: "Unknown",
-                        greenhouseName = alertDto.greenhouseName,
+                        sectorCode = alertDto.sectorCode,
                         message = alertDto.message,
+                        description = alertDto.description,
                         severityName = alertDto.severityName,
                         severityLevel = alertDto.severityLevel,
                         createdAt = alertDto.createdAt

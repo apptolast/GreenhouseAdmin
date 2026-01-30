@@ -1,6 +1,8 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -41,6 +45,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
+import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
@@ -53,10 +59,18 @@ import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_actuator_state
 import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_parameter
+import greenhouseadmin.composeapp.generated.resources.header_sector
 import greenhouseadmin.composeapp.generated.resources.header_status
 import greenhouseadmin.composeapp.generated.resources.header_value
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+
+/**
+ * Enum representing sortable columns in the Settings table.
+ */
+private enum class SettingSortColumn {
+    ID
+}
 
 /**
  * Adaptive component that shows a table on larger screens and cards on compact screens.
@@ -64,6 +78,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun SettingsTableOrCards(
     settings: List<Setting>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     onEditSetting: (Setting) -> Unit = {},
     onDeleteSetting: (Setting) -> Unit = {},
     onCopyId: (String) -> Unit = {},
@@ -74,6 +90,8 @@ fun SettingsTableOrCards(
     if (windowInfo.isCompact) {
         SettingsCardList(
             settings = settings,
+            sectors = sectors,
+            greenhouses = greenhouses,
             onEditSetting = onEditSetting,
             onDeleteSetting = onDeleteSetting,
             onCopyId = onCopyId,
@@ -82,6 +100,8 @@ fun SettingsTableOrCards(
     } else {
         SettingsTable(
             settings = settings,
+            sectors = sectors,
+            greenhouses = greenhouses,
             onEditSetting = onEditSetting,
             onDeleteSetting = onDeleteSetting,
             onCopyId = onCopyId,
@@ -92,16 +112,46 @@ fun SettingsTableOrCards(
 
 /**
  * Table displaying list of settings with headers and rows.
- * Structure: ID | PARAMETER | PERIOD | RANGE | STATUS | ACTIONS
+ * Structure: ID | PARAMETER | SECTOR | ACTUATOR STATE | VALUE | STATUS | ACTIONS
+ * Sortable columns: ID
  */
 @Composable
 fun SettingsTable(
     settings: List<Setting>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     onEditSetting: (Setting) -> Unit = {},
     onDeleteSetting: (Setting) -> Unit = {},
     onCopyId: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var sortColumn by remember { mutableStateOf<SettingSortColumn?>(null) }
+    var sortDirection by remember { mutableStateOf(SortDirection.ASCENDING) }
+
+    // Sort settings based on selected column and direction
+    val sortedSettings = remember(settings, sortColumn, sortDirection) {
+        when (sortColumn) {
+            SettingSortColumn.ID -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    settings.sortedBy { it.code }
+                } else {
+                    settings.sortedByDescending { it.code }
+                }
+            }
+
+            null -> settings
+        }
+    }
+
+    fun onHeaderClick(column: SettingSortColumn) {
+        if (sortColumn == column) {
+            sortDirection = sortDirection.toggle()
+        } else {
+            sortColumn = column
+            sortDirection = SortDirection.ASCENDING
+        }
+    }
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -110,14 +160,22 @@ fun SettingsTable(
         shape = RoundedCornerShape(12.dp)
     ) {
         Column {
-            // Header row
-            SettingsTableHeader()
+            // Header row with sorting
+            SettingsTableHeader(
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                onSortClick = ::onHeaderClick
+            )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
             // Setting rows
-            settings.forEach { setting ->
+            sortedSettings.forEach { setting ->
+                val sector = sectors.find { it.id == setting.sectorId }
+                val greenhouse = sector?.let { s -> greenhouses.find { it.id == s.greenhouseId } }
                 SettingTableRow(
                     setting = setting,
+                    sectorName = sector?.displayName,
+                    greenhouseName = greenhouse?.name,
                     onEdit = { onEditSetting(setting) },
                     onDelete = { onDeleteSetting(setting) },
                     onCopyId = onCopyId
@@ -129,7 +187,12 @@ fun SettingsTable(
 }
 
 @Composable
-private fun SettingsTableHeader(modifier: Modifier = Modifier) {
+private fun SettingsTableHeader(
+    sortColumn: SettingSortColumn?,
+    sortDirection: SortDirection,
+    onSortClick: (SettingSortColumn) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -137,36 +200,51 @@ private fun SettingsTableHeader(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        Text(
+        // ID - Sortable
+        SettingSortableHeader(
             text = stringResource(Res.string.header_id),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            column = SettingSortColumn.ID,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(SettingSortColumn.ID) },
             modifier = Modifier.weight(0.4f)
         )
+        // PARAMETER - Not sortable
         Text(
             text = stringResource(Res.string.header_parameter),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.9f)
         )
+        // SECTOR - Not sortable
+        Text(
+            text = stringResource(Res.string.header_sector),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.6f)
+        )
+        // ACTUATOR STATE - Not sortable
         Text(
             text = stringResource(Res.string.header_actuator_state),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.6f)
         )
+        // VALUE - Not sortable
         Text(
             text = stringResource(Res.string.header_value),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.6f)
+            modifier = Modifier.weight(0.5f)
         )
+        // STATUS - Not sortable
         Text(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.6f)
+            modifier = Modifier.weight(0.5f)
         )
+        // ACTIONS - Not sortable
         Text(
             text = stringResource(Res.string.header_actions),
             style = MaterialTheme.typography.labelMedium,
@@ -177,9 +255,63 @@ private fun SettingsTableHeader(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Sortable header cell with sort icon for Settings table.
+ */
+@Composable
+private fun SettingSortableHeader(
+    text: String,
+    column: SettingSortColumn,
+    currentSortColumn: SettingSortColumn?,
+    sortDirection: SortDirection,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isActive = currentSortColumn == column
+
+    Row(
+        modifier = modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClick
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        if (isActive) {
+            Icon(
+                imageVector = if (sortDirection == SortDirection.ASCENDING) {
+                    Icons.Outlined.ArrowUpward
+                } else {
+                    Icons.Outlined.ArrowDownward
+                },
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            // Show a subtle indicator that this column is sortable
+            Icon(
+                imageVector = Icons.Outlined.ArrowUpward,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+            )
+        }
+    }
+}
+
 @Composable
 private fun SettingTableRow(
     setting: Setting,
+    sectorName: String? = null,
+    greenhouseName: String? = null,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onCopyId: (String) -> Unit,
@@ -199,19 +331,35 @@ private fun SettingTableRow(
             modifier = Modifier.weight(0.4f)
         )
 
-        // PARAMETER with avatar
-        Row(
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        // PARAMETER
+        Text(
+            text = setting.displayName,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(0.9f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        // SECTOR - Sector name with greenhouse in subtitle
+        Column(modifier = Modifier.weight(0.6f)) {
             Text(
-                text = setting.displayName,
+                text = sectorName ?: "-",
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            greenhouseName?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
 
         // ACTUATOR STATE badge
@@ -225,7 +373,7 @@ private fun SettingTableRow(
             text = setting.valueDisplay,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.6f),
+            modifier = Modifier.weight(0.5f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -233,7 +381,7 @@ private fun SettingTableRow(
         // STATUS - Using StatusChip
         StatusChip(
             isActive = setting.isActive,
-            modifier = Modifier.weight(0.6f).wrapContentWidth(align = Alignment.Start)
+            modifier = Modifier.weight(0.5f).wrapContentWidth(align = Alignment.Start)
         )
 
         // ACTIONS
@@ -335,6 +483,8 @@ private fun ActuatorStateBadge(
 @Composable
 private fun SettingsCardList(
     settings: List<Setting>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     onEditSetting: (Setting) -> Unit,
     onDeleteSetting: (Setting) -> Unit,
     onCopyId: (String) -> Unit,
@@ -345,8 +495,12 @@ private fun SettingsCardList(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         settings.forEach { setting ->
+            val sector = sectors.find { it.id == setting.sectorId }
+            val greenhouse = sector?.let { s -> greenhouses.find { it.id == s.greenhouseId } }
             SettingCard(
                 setting = setting,
+                sectorName = sector?.displayName,
+                greenhouseName = greenhouse?.name,
                 onEdit = { onEditSetting(setting) },
                 onDelete = { onDeleteSetting(setting) },
                 onCopyId = { onCopyId(setting.code) }
@@ -361,6 +515,8 @@ private fun SettingsCardList(
 @Composable
 private fun SettingCard(
     setting: Setting,
+    sectorName: String? = null,
+    greenhouseName: String? = null,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onCopyId: () -> Unit,
@@ -475,42 +631,45 @@ private object SettingsTablePreviewData {
         Setting(
             id = 1L,
             code = "SET-00001",
-            greenhouseId = 1L,
-            greenhouseName = "Greenhouse A",
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             tenantId = 1L,
             parameterId = 1,
             parameterName = "Temperature",
             actuatorStateId = 1,
             actuatorStateName = "ON",
             value = "25",
+            description = null,
             isActive = true,
             createdAt = "2024-01-15T10:30:00Z"
         ),
         Setting(
             id = 2L,
             code = "SET-00002",
-            greenhouseId = 1L,
-            greenhouseName = "Greenhouse A",
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             tenantId = 1L,
             parameterId = 2,
             parameterName = "Humidity",
             actuatorStateId = 2,
             actuatorStateName = "OFF",
             value = "80",
+            description = "Max humidity threshold",
             isActive = true,
             createdAt = "2024-01-15T10:30:00Z"
         ),
         Setting(
             id = 3L,
             code = "SET-00003",
-            greenhouseId = 1L,
-            greenhouseName = "Greenhouse A",
+            sectorId = 2L,
+            sectorCode = "SEC-00002",
             tenantId = 1L,
             parameterId = 1,
             parameterName = "Temperature",
             actuatorStateId = 3,
             actuatorStateName = "AUTO",
             value = null,
+            description = null,
             isActive = false,
             createdAt = "2024-01-15T10:30:00Z"
         )

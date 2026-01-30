@@ -223,7 +223,7 @@ fun DeviceFormDialog(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // Sector dropdown (required, not editable in edit mode)
+                // Sector dropdown (required)
                 Column {
                     Text(
                         text = stringResource(Res.string.label_sector),
@@ -235,28 +235,24 @@ fun DeviceFormDialog(
 
                     ExposedDropdownMenuBox(
                         expanded = sectorExpanded,
-                        onExpandedChange = { if (!isSubmitting && !isEditMode) sectorExpanded = it }
+                        onExpandedChange = { if (!isSubmitting) sectorExpanded = it }
                     ) {
                         OutlinedTextField(
                             value = selectedSector?.let { getSectorDisplayText(it) } ?: "",
                             onValueChange = {},
                             readOnly = true,
-                            enabled = !isSubmitting && !isEditMode,
+                            enabled = !isSubmitting,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                             placeholder = {
-                                if (!isEditMode) {
-                                    Text(
-                                        text = "Select sector...",
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                    )
-                                }
+                                Text(
+                                    text = "Select sector...",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
                             },
                             trailingIcon = {
-                                if (!isEditMode) {
-                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = sectorExpanded)
-                                }
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = sectorExpanded)
                             },
                             isError = hasAttemptedSubmit && validationErrors.sectorId != null,
                             shape = RoundedCornerShape(8.dp),
@@ -269,33 +265,31 @@ fun DeviceFormDialog(
                             )
                         )
 
-                        if (!isEditMode) {
-                            ExposedDropdownMenu(
-                                expanded = sectorExpanded,
-                                onDismissRequest = { sectorExpanded = false }
-                            ) {
-                                sectors.forEach { sector ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Column {
-                                                Text(sector.displayName)
-                                                val greenhouse = greenhouses.find { it.id == sector.greenhouseId }
-                                                greenhouse?.let {
-                                                    Text(
-                                                        text = it.name,
-                                                        style = MaterialTheme.typography.bodySmall,
-                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                    )
-                                                }
+                        ExposedDropdownMenu(
+                            expanded = sectorExpanded,
+                            onDismissRequest = { sectorExpanded = false }
+                        ) {
+                            sectors.forEach { sector ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Column {
+                                            Text(sector.displayName)
+                                            val greenhouse = greenhouses.find { it.id == sector.greenhouseId }
+                                            greenhouse?.let {
+                                                Text(
+                                                    text = it.name,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
                                             }
-                                        },
-                                        onClick = {
-                                            formData = formData.copy(sectorId = sector.id)
-                                            sectorExpanded = false
-                                            if (hasAttemptedSubmit) validationErrors = formData.validate()
                                         }
-                                    )
-                                }
+                                    },
+                                    onClick = {
+                                        formData = formData.copy(sectorId = sector.id)
+                                        sectorExpanded = false
+                                        if (hasAttemptedSubmit) validationErrors = formData.validate()
+                                    }
+                                )
                             }
                         }
                     }
@@ -692,20 +686,23 @@ private object DeviceFormDialogPreviewData {
         Sector(
             id = 1L,
             code = "SEC-00001",
+            tenantId = 1L,
             greenhouseId = 1L,
-            variety = "Tomate Cherry"
+            name = "Tomate Cherry"
         ),
         Sector(
             id = 2L,
             code = "SEC-00002",
+            tenantId = 1L,
             greenhouseId = 1L,
-            variety = "Pimiento Rojo"
+            name = "Pimiento Rojo"
         ),
         Sector(
             id = 3L,
             code = "SEC-00003",
+            tenantId = 1L,
             greenhouseId = 2L,
-            variety = "Pepino"
+            name = "Pepino"
         )
     )
 

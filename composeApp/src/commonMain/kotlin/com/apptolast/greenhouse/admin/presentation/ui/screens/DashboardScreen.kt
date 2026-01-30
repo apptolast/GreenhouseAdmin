@@ -361,7 +361,7 @@ private fun RecentAlertItem(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = alert.message,
+                text = alert.displayText,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -369,7 +369,7 @@ private fun RecentAlertItem(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "${alert.tenantName} - ${alert.greenhouseName ?: "Unknown"}",
+                text = "${alert.tenantName} - ${alert.sectorCode ?: "Unknown"}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,

@@ -42,6 +42,7 @@ interface DevicesRepository {
      * Updates an existing device.
      * @param tenantId The tenant ID the device belongs to
      * @param deviceId The device ID to update
+     * @param sectorId New sector ID (optional)
      * @param name New display name (optional)
      * @param categoryId New category ID (optional)
      * @param typeId New type ID (optional)
@@ -52,6 +53,7 @@ interface DevicesRepository {
     suspend fun updateDevice(
         tenantId: Long,
         deviceId: Long,
+        sectorId: Long?,
         name: String?,
         categoryId: Short?,
         typeId: Short?,

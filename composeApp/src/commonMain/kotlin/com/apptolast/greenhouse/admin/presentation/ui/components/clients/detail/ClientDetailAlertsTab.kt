@@ -26,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Alert
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
+import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
@@ -46,6 +48,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun ClientDetailAlertsTab(
     alerts: List<Alert>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     isLoading: Boolean = false,
     error: String? = null,
     onAddAlert: () -> Unit = {},
@@ -128,6 +132,8 @@ fun ClientDetailAlertsTab(
             else -> {
                 AlertsTableOrCards(
                     alerts = alerts,
+                    sectors = sectors,
+                    greenhouses = greenhouses,
                     onEditAlert = onEditAlert,
                     onDeleteAlert = onDeleteAlert,
                     onResolveAlert = onResolveAlert,
@@ -169,14 +175,15 @@ private object ClientDetailAlertsTabPreviewData {
             id = 1L,
             code = "ALT-00001",
             tenantId = 1L,
-            greenhouseId = 1L,
-            greenhouseName = "Greenhouse A",
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             alertTypeId = 1,
             alertTypeName = "Temperature",
             severityId = 3,
             severityName = "High",
             severityLevel = 3,
             message = "Temperature exceeds threshold in Sector A",
+            description = null,
             isResolved = false,
             resolvedAt = null,
             resolvedByUserName = null,
@@ -186,14 +193,15 @@ private object ClientDetailAlertsTabPreviewData {
             id = 2L,
             code = "ALT-00002",
             tenantId = 1L,
-            greenhouseId = 1L,
-            greenhouseName = "Greenhouse A",
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             alertTypeId = 2,
             alertTypeName = "Humidity",
             severityId = 2,
             severityName = "Medium",
             severityLevel = 2,
             message = "Humidity below optimal range",
+            description = null,
             isResolved = true,
             resolvedAt = "2024-01-15T12:00:00Z",
             resolvedByUserName = "Admin User",

@@ -10,8 +10,10 @@ import kotlinx.serialization.Serializable
 data class SectorResponse(
     val id: Long,
     val code: String,
+    val tenantId: Long,
     val greenhouseId: Long,
-    val variety: String? = null
+    val greenhouseCode: String? = null,
+    val name: String? = null
 )
 
 /**
@@ -20,7 +22,7 @@ data class SectorResponse(
 @Serializable
 data class SectorCreateRequest(
     val greenhouseId: Long,
-    val variety: String? = null
+    val name: String? = null
 )
 
 /**
@@ -28,7 +30,8 @@ data class SectorCreateRequest(
  */
 @Serializable
 data class SectorUpdateRequest(
-    val variety: String? = null
+    val greenhouseId: Long? = null,
+    val name: String? = null
 )
 
 /**
@@ -39,20 +42,22 @@ data class SectorUpdateRequest(
 data class Sector(
     val id: Long,
     val code: String,
+    val tenantId: Long,
     val greenhouseId: Long,
-    val variety: String? = null
+    val greenhouseCode: String? = null,
+    val name: String? = null
 ) {
     /**
-     * Returns the first letter of the variety as initial for avatars.
+     * Returns the first letter of the name as initial for avatars.
      */
     val initial: String
-        get() = variety?.firstOrNull()?.uppercaseChar()?.toString() ?: "S"
+        get() = name?.firstOrNull()?.uppercaseChar()?.toString() ?: "S"
 
     /**
-     * Returns the display name (variety or a default).
+     * Returns the display name (name or a default).
      */
     val displayName: String
-        get() = variety ?: "Sector"
+        get() = name ?: "Sector"
 }
 
 /**
@@ -61,6 +66,8 @@ data class Sector(
 fun SectorResponse.toSector() = Sector(
     id = id,
     code = code,
+    tenantId = tenantId,
     greenhouseId = greenhouseId,
-    variety = variety
+    greenhouseCode = greenhouseCode,
+    name = name
 )

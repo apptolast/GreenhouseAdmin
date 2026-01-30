@@ -82,53 +82,53 @@ class SettingsApiService(private val httpClient: HttpClient) {
     // ==================== FILTER ENDPOINTS ====================
 
     /**
-     * Get settings for a specific greenhouse.
+     * Get settings for a specific sector.
      */
-    suspend fun getSettingsByGreenhouse(tenantId: Long, greenhouseId: Long): List<SettingResponse> {
-        return httpClient.get("tenants/$tenantId/settings/greenhouse/$greenhouseId").body()
+    suspend fun getSettingsBySector(tenantId: Long, sectorId: Long): List<SettingResponse> {
+        return httpClient.get("tenants/$tenantId/settings/sector/$sectorId").body()
     }
 
     /**
-     * Get active settings for a specific greenhouse.
+     * Get active settings for a specific sector.
      */
-    suspend fun getActiveSettingsByGreenhouse(tenantId: Long, greenhouseId: Long): List<SettingResponse> {
-        return httpClient.get("tenants/$tenantId/settings/greenhouse/$greenhouseId/active").body()
+    suspend fun getActiveSettingsBySector(tenantId: Long, sectorId: Long): List<SettingResponse> {
+        return httpClient.get("tenants/$tenantId/settings/sector/$sectorId/active").body()
     }
 
     /**
-     * Get settings for a specific greenhouse and parameter.
+     * Get settings for a specific sector and parameter.
      */
-    suspend fun getSettingsByGreenhouseAndParameter(
+    suspend fun getSettingsBySectorAndParameter(
         tenantId: Long,
-        greenhouseId: Long,
+        sectorId: Long,
         parameterId: Short
     ): List<SettingResponse> {
-        return httpClient.get("tenants/$tenantId/settings/greenhouse/$greenhouseId/parameter/$parameterId").body()
+        return httpClient.get("tenants/$tenantId/settings/sector/$sectorId/parameter/$parameterId").body()
     }
 
     /**
-     * Get settings for a specific greenhouse and actuator state.
+     * Get settings for a specific sector and actuator state.
      */
-    suspend fun getSettingsByGreenhouseAndActuatorState(
+    suspend fun getSettingsBySectorAndActuatorState(
         tenantId: Long,
-        greenhouseId: Long,
+        sectorId: Long,
         actuatorStateId: Short
     ): List<SettingResponse> {
-        return httpClient.get("tenants/$tenantId/settings/greenhouse/$greenhouseId/actuator-state/$actuatorStateId")
+        return httpClient.get("tenants/$tenantId/settings/sector/$sectorId/actuator-state/$actuatorStateId")
             .body()
     }
 
     /**
-     * Get a specific setting by greenhouse, parameter, and actuator state combination.
+     * Get a specific setting by sector, parameter, and actuator state combination.
      */
-    suspend fun getSettingByGreenhouseParameterActuatorState(
+    suspend fun getSettingBySectorParameterActuatorState(
         tenantId: Long,
-        greenhouseId: Long,
+        sectorId: Long,
         parameterId: Short,
         actuatorStateId: Short
     ): SettingResponse {
         return httpClient.get(
-            "tenants/$tenantId/settings/greenhouse/$greenhouseId/parameter/$parameterId/actuator-state/$actuatorStateId"
+            "tenants/$tenantId/settings/sector/$sectorId/parameter/$parameterId/actuator-state/$actuatorStateId"
         ).body()
     }
 }

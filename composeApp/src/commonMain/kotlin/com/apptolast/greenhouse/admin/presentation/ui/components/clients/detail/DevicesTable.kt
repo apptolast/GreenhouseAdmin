@@ -1,5 +1,7 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +19,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -59,6 +63,13 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
+ * Enum representing sortable columns in the Devices table.
+ */
+private enum class DeviceSortColumn {
+    ID, NAME
+}
+
+/**
  * Adaptive component that shows a table on larger screens and cards on compact screens.
  */
 @Composable
@@ -99,6 +110,7 @@ fun DevicesTableOrCards(
 /**
  * Table displaying list of devices with headers and rows.
  * Columns: ID | NAME | SECTOR | CATEGORY | TYPE | UNIT | STATUS | ACTIONS
+ * Sortable columns: ID, NAME
  */
 @Composable
 fun DevicesTable(
@@ -110,6 +122,41 @@ fun DevicesTable(
     onCopyId: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var sortColumn by remember { mutableStateOf<DeviceSortColumn?>(null) }
+    var sortDirection by remember { mutableStateOf(SortDirection.ASCENDING) }
+
+    // Sort devices based on selected column and direction
+    val sortedDevices = remember(devices, sortColumn, sortDirection) {
+        when (sortColumn) {
+            DeviceSortColumn.ID -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    devices.sortedBy { it.code }
+                } else {
+                    devices.sortedByDescending { it.code }
+                }
+            }
+
+            DeviceSortColumn.NAME -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    devices.sortedBy { it.name?.lowercase() ?: "" }
+                } else {
+                    devices.sortedByDescending { it.name?.lowercase() ?: "" }
+                }
+            }
+
+            null -> devices
+        }
+    }
+
+    fun onHeaderClick(column: DeviceSortColumn) {
+        if (sortColumn == column) {
+            sortDirection = sortDirection.toggle()
+        } else {
+            sortColumn = column
+            sortDirection = SortDirection.ASCENDING
+        }
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -118,12 +165,16 @@ fun DevicesTable(
         shape = RoundedCornerShape(12.dp)
     ) {
         Column {
-            // Header row
-            DevicesTableHeader()
+            // Header row with sorting
+            DevicesTableHeader(
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                onSortClick = ::onHeaderClick
+            )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
             // Device rows
-            devices.forEach { device ->
+            sortedDevices.forEach { device ->
                 val sector = sectors.find { it.id == device.sectorId }
                 val greenhouse = sector?.let { s -> greenhouses.find { it.id == s.greenhouseId } }
                 DeviceTableRow(
@@ -141,7 +192,12 @@ fun DevicesTable(
 }
 
 @Composable
-private fun DevicesTableHeader(modifier: Modifier = Modifier) {
+private fun DevicesTableHeader(
+    sortColumn: DeviceSortColumn?,
+    sortDirection: SortDirection,
+    onSortClick: (DeviceSortColumn) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -149,23 +205,27 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        // ID column
-        Text(
+        // ID column - Sortable
+        DeviceSortableHeader(
             text = stringResource(Res.string.header_id),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            column = DeviceSortColumn.ID,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(DeviceSortColumn.ID) },
             modifier = Modifier.weight(0.4f)
         )
 
-        // NAME column
-        Text(
+        // NAME column - Sortable
+        DeviceSortableHeader(
             text = stringResource(Res.string.header_name),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            column = DeviceSortColumn.NAME,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(DeviceSortColumn.NAME) },
             modifier = Modifier.weight(0.9f)
         )
 
-        // SECTOR column
+        // SECTOR column - Not sortable
         Text(
             text = stringResource(Res.string.header_sector),
             style = MaterialTheme.typography.labelMedium,
@@ -173,7 +233,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             modifier = Modifier.weight(0.8f)
         )
 
-        // CATEGORY column
+        // CATEGORY column - Not sortable
         Text(
             text = stringResource(Res.string.header_category),
             style = MaterialTheme.typography.labelMedium,
@@ -181,7 +241,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             modifier = Modifier.weight(0.6f)
         )
 
-        // TYPE column
+        // TYPE column - Not sortable
         Text(
             text = stringResource(Res.string.header_type),
             style = MaterialTheme.typography.labelMedium,
@@ -189,7 +249,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             modifier = Modifier.weight(0.7f)
         )
 
-        // UNIT column
+        // UNIT column - Not sortable
         Text(
             text = stringResource(Res.string.header_unit),
             style = MaterialTheme.typography.labelMedium,
@@ -197,7 +257,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             modifier = Modifier.weight(0.4f)
         )
 
-        // STATUS column
+        // STATUS column - Not sortable
         Text(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
@@ -205,7 +265,7 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             modifier = Modifier.weight(0.6f)
         )
 
-        // ACTIONS column
+        // ACTIONS column - Not sortable
         Text(
             text = stringResource(Res.string.header_actions),
             style = MaterialTheme.typography.labelMedium,
@@ -213,6 +273,58 @@ private fun DevicesTableHeader(modifier: Modifier = Modifier) {
             modifier = Modifier.width(80.dp),
             textAlign = TextAlign.Center
         )
+    }
+}
+
+/**
+ * Sortable header cell with sort icon for Devices table.
+ */
+@Composable
+private fun DeviceSortableHeader(
+    text: String,
+    column: DeviceSortColumn,
+    currentSortColumn: DeviceSortColumn?,
+    sortDirection: SortDirection,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isActive = currentSortColumn == column
+
+    Row(
+        modifier = modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClick
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        if (isActive) {
+            Icon(
+                imageVector = if (sortDirection == SortDirection.ASCENDING) {
+                    Icons.Outlined.ArrowUpward
+                } else {
+                    Icons.Outlined.ArrowDownward
+                },
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            // Show a subtle indicator that this column is sortable
+            Icon(
+                imageVector = Icons.Outlined.ArrowUpward,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+            )
+        }
     }
 }
 

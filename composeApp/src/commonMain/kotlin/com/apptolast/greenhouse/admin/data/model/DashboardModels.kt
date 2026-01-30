@@ -89,12 +89,19 @@ data class RecentAlert(
     val code: String,
     val tenantId: Long,
     val tenantName: String,
-    val greenhouseName: String?,
-    val message: String,
+    val sectorCode: String?,
+    val message: String?,
+    val description: String?,
     val severityName: String?,
     val severityLevel: Short?,
     val createdAt: String
-)
+) {
+    /**
+     * Returns the display text (message or description).
+     */
+    val displayText: String
+        get() = message ?: description ?: ""
+}
 
 /**
  * Represents a recent client for dashboard display.

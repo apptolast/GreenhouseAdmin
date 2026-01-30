@@ -18,19 +18,21 @@ data class PeriodResponse(
 
 /**
  * Response DTO for Setting from API.
- * Represents parameter threshold configuration for a greenhouse.
+ * Represents parameter threshold configuration for a sector.
  */
 @Serializable
 data class SettingResponse(
     val id: Long,
     val code: String,
-    val greenhouseId: Long,
+    val sectorId: Long,
+    val sectorCode: String? = null,
     val tenantId: Long,
     val parameterId: Short,
     val parameterName: String? = null,
     val actuatorStateId: Short? = null,
     val actuatorStateName: String? = null,
     val value: String? = null,
+    val description: String? = null,
     val isActive: Boolean = true,
     val createdAt: String,
     val updatedAt: String
@@ -41,10 +43,11 @@ data class SettingResponse(
  */
 @Serializable
 data class SettingCreateRequest(
-    val greenhouseId: Long,
+    val sectorId: Long,
     val parameterId: Short,
     val actuatorStateId: Short? = null,
     val value: String? = null,
+    val description: String? = null,
     val isActive: Boolean = true
 )
 
@@ -54,9 +57,11 @@ data class SettingCreateRequest(
  */
 @Serializable
 data class SettingUpdateRequest(
+    val sectorId: Long? = null,
     val parameterId: Short? = null,
     val actuatorStateId: Short? = null,
     val value: String? = null,
+    val description: String? = null,
     val isActive: Boolean? = null
 )
 
@@ -83,20 +88,21 @@ data class Period(
 
 /**
  * Domain model for Setting entity.
- * Represents parameter threshold configuration for a greenhouse.
+ * Represents parameter threshold configuration for a sector.
  * Parameters reference device_types (e.g., TEMPERATURE, HUMIDITY).
  */
 data class Setting(
     val id: Long,
     val code: String,
-    val greenhouseId: Long,
-    val greenhouseName: String? = null,
+    val sectorId: Long,
+    val sectorCode: String? = null,
     val tenantId: Long,
     val parameterId: Short,
     val parameterName: String?,
     val actuatorStateId: Short?,
     val actuatorStateName: String?,
     val value: String?,
+    val description: String?,
     val isActive: Boolean,
     val createdAt: String
 ) {
@@ -141,14 +147,15 @@ fun PeriodResponse.toDomain() = Period(
 fun SettingResponse.toDomain() = Setting(
     id = id,
     code = code,
-    greenhouseId = greenhouseId,
-    greenhouseName = null,
+    sectorId = sectorId,
+    sectorCode = sectorCode,
     tenantId = tenantId,
     parameterId = parameterId,
     parameterName = parameterName,
     actuatorStateId = actuatorStateId,
     actuatorStateName = actuatorStateName,
     value = value,
+    description = description,
     isActive = isActive,
     createdAt = createdAt
 )

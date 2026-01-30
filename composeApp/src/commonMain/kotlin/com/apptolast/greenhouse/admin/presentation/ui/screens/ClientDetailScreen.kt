@@ -292,8 +292,8 @@ private fun ClientDetailScreenContent(
             greenhouses = uiState.greenhouses,
             isSubmitting = uiState.isSubmittingSector,
             error = uiState.submitSectorError,
-            onSubmit = { greenhouseId, variety ->
-                onEvent(ClientDetailEvent.OnSubmitSectorForm(greenhouseId, variety))
+            onSubmit = { greenhouseId, name ->
+                onEvent(ClientDetailEvent.OnSubmitSectorForm(greenhouseId, name))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissSectorFormDialog) }
         )
@@ -344,14 +344,14 @@ private fun ClientDetailScreenContent(
     if (uiState.showAlertFormDialog) {
         AlertFormDialog(
             mode = uiState.alertFormMode,
-            greenhouses = uiState.greenhouses,
+            sectors = uiState.sectors,
             alertTypes = uiState.alertTypes,
             severities = uiState.alertSeverities,
             isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingAlert,
             error = uiState.submitAlertError,
-            onSubmit = { greenhouseId, alertTypeId, severityId, message ->
-                onEvent(ClientDetailEvent.OnSubmitAlertForm(greenhouseId, alertTypeId, severityId, message))
+            onSubmit = { sectorId, alertTypeId, severityId, message, description ->
+                onEvent(ClientDetailEvent.OnSubmitAlertForm(sectorId, alertTypeId, severityId, message, description))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissAlertFormDialog) }
         )
@@ -360,7 +360,7 @@ private fun ClientDetailScreenContent(
     // Alert Delete Confirmation Dialog
     if (uiState.showDeleteAlertConfirmation && uiState.alertToDelete != null) {
         DeleteConfirmationDialog(
-            clientName = uiState.alertToDelete.message,
+            clientName = uiState.alertToDelete.displayText,
             isDeleting = uiState.isDeletingAlert,
             error = uiState.deleteAlertError,
             onConfirm = { onEvent(ClientDetailEvent.OnConfirmDeleteAlert) },
@@ -372,19 +372,21 @@ private fun ClientDetailScreenContent(
     if (uiState.showSettingFormDialog) {
         SettingFormDialog(
             mode = uiState.settingFormMode,
+            sectors = uiState.sectors,
             greenhouses = uiState.greenhouses,
             parameters = uiState.deviceTypes,
             actuatorStates = uiState.actuatorStates,
             isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingSetting,
             error = uiState.submitSettingError,
-            onSubmit = { greenhouseId, parameterId, actuatorStateId, value, isActive ->
+            onSubmit = { sectorId, parameterId, actuatorStateId, value, description, isActive ->
                 onEvent(
                     ClientDetailEvent.OnSubmitSettingForm(
-                        greenhouseId = greenhouseId,
+                        sectorId = sectorId,
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
                         value = value,
+                        description = description,
                         isActive = isActive
                     )
                 )
@@ -496,6 +498,7 @@ private fun ClientDetailContent(
                         onAddSector = { onEvent(ClientDetailEvent.OnAddSectorClicked) },
                         onEditSector = { sector -> onEvent(ClientDetailEvent.OnEditSectorClicked(sector)) },
                         onDeleteSector = { sector -> onEvent(ClientDetailEvent.OnDeleteSectorClicked(sector)) },
+                        onCopyId = onCopyId,
                         onRetry = { onEvent(ClientDetailEvent.LoadSectors) }
                     )
                 }
@@ -518,6 +521,8 @@ private fun ClientDetailContent(
                 ClientDetailTab.ALERTS -> {
                     ClientDetailAlertsTab(
                         alerts = uiState.alerts,
+                        sectors = uiState.sectors,
+                        greenhouses = uiState.greenhouses,
                         isLoading = uiState.isLoadingAlerts,
                         error = uiState.alertsError,
                         onAddAlert = { onEvent(ClientDetailEvent.OnAddAlertClicked) },
@@ -533,6 +538,8 @@ private fun ClientDetailContent(
                 ClientDetailTab.SETTINGS -> {
                     ClientDetailSettingsTab(
                         settings = uiState.settings,
+                        sectors = uiState.sectors,
+                        greenhouses = uiState.greenhouses,
                         isLoading = uiState.isLoadingSettings,
                         error = uiState.settingsError,
                         onAddSetting = { onEvent(ClientDetailEvent.OnAddSettingClicked) },

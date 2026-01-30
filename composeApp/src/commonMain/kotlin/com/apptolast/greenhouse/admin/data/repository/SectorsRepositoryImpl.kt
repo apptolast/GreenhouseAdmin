@@ -21,11 +21,11 @@ class SectorsRepositoryImpl(
     override suspend fun createSector(
         tenantId: Long,
         greenhouseId: Long,
-        variety: String?
+        name: String?
     ): Result<Sector> = runCatching {
         val request = SectorCreateRequest(
             greenhouseId = greenhouseId,
-            variety = variety
+            name = name
         )
         sectorsApi.createSector(tenantId, request).toSector()
     }
@@ -33,10 +33,12 @@ class SectorsRepositoryImpl(
     override suspend fun updateSector(
         tenantId: Long,
         sectorId: Long,
-        variety: String?
+        greenhouseId: Long?,
+        name: String?
     ): Result<Sector> = runCatching {
         val request = SectorUpdateRequest(
-            variety = variety
+            greenhouseId = greenhouseId,
+            name = name
         )
         sectorsApi.updateSector(tenantId, sectorId, request).toSector()
     }

@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
+import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
@@ -46,6 +48,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun ClientDetailSettingsTab(
     settings: List<Setting>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     isLoading: Boolean = false,
     error: String? = null,
     onAddSetting: () -> Unit = {},
@@ -126,6 +130,8 @@ fun ClientDetailSettingsTab(
             else -> {
                 SettingsTableOrCards(
                     settings = settings,
+                    sectors = sectors,
+                    greenhouses = greenhouses,
                     onEditSetting = onEditSetting,
                     onDeleteSetting = onDeleteSetting,
                     onCopyId = onCopyId
@@ -164,28 +170,30 @@ private object ClientDetailSettingsTabPreviewData {
         Setting(
             id = 1L,
             code = "SET-00001",
-            greenhouseId = 1L,
-            greenhouseName = "Greenhouse A",
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             tenantId = 1L,
             parameterId = 1,
             parameterName = "Temperature",
             actuatorStateId = 1,
             actuatorStateName = "ON",
             value = "25",
+            description = null,
             isActive = true,
             createdAt = "2024-01-15T10:30:00Z"
         ),
         Setting(
             id = 2L,
             code = "SET-00002",
-            greenhouseId = 1L,
-            greenhouseName = "Greenhouse A",
+            sectorId = 1L,
+            sectorCode = "SEC-00001",
             tenantId = 1L,
             parameterId = 2,
             parameterName = "Humidity",
             actuatorStateId = 2,
             actuatorStateName = "OFF",
             value = "80",
+            description = null,
             isActive = true,
             createdAt = "2024-01-15T10:30:00Z"
         )

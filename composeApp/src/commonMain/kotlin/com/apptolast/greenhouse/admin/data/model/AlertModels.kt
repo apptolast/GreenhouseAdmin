@@ -42,14 +42,15 @@ data class AlertResponse(
     val id: Long,
     val code: String,
     val tenantId: Long,
-    val greenhouseId: Long,
-    val greenhouseName: String? = null,
+    val sectorId: Long,
+    val sectorCode: String? = null,
     val alertTypeId: Short? = null,
     val alertTypeName: String? = null,
     val severityId: Short? = null,
     val severityName: String? = null,
     val severityLevel: Short? = null,
-    val message: String,
+    val message: String? = null,
+    val description: String? = null,
     val isResolved: Boolean = false,
     val resolvedAt: String? = null,
     val resolvedByUserId: Long? = null,
@@ -67,10 +68,11 @@ data class AlertResponse(
  */
 @Serializable
 data class AlertCreateRequest(
-    val greenhouseId: Long,
+    val sectorId: Long,
     val alertTypeId: Short? = null,
     val severityId: Short? = null,
-    val message: String
+    val message: String? = null,
+    val description: String? = null
 )
 
 /**
@@ -78,9 +80,11 @@ data class AlertCreateRequest(
  */
 @Serializable
 data class AlertUpdateRequest(
+    val sectorId: Long? = null,
     val alertTypeId: Short? = null,
     val severityId: Short? = null,
-    val message: String? = null
+    val message: String? = null,
+    val description: String? = null
 )
 
 /**
@@ -123,24 +127,31 @@ data class Alert(
     val id: Long,
     val code: String,
     val tenantId: Long,
-    val greenhouseId: Long,
-    val greenhouseName: String?,
+    val sectorId: Long,
+    val sectorCode: String?,
     val alertTypeId: Short?,
     val alertTypeName: String?,
     val severityId: Short?,
     val severityName: String?,
     val severityLevel: Short?,
-    val message: String,
+    val message: String?,
+    val description: String?,
     val isResolved: Boolean,
     val resolvedAt: String?,
     val resolvedByUserName: String?,
     val createdAt: String
 ) {
     /**
-     * Returns the initials (first two letters of message) for avatar display.
+     * Returns the initials (first two letters of message or description) for avatar display.
      */
     val initials: String
-        get() = message.take(2).uppercase()
+        get() = (message ?: description)?.take(2)?.uppercase() ?: "AL"
+
+    /**
+     * Returns the display text (message or description).
+     */
+    val displayText: String
+        get() = message ?: description ?: ""
 }
 
 // ============================================
@@ -175,14 +186,15 @@ fun AlertResponse.toDomain() = Alert(
     id = id,
     code = code,
     tenantId = tenantId,
-    greenhouseId = greenhouseId,
-    greenhouseName = greenhouseName,
+    sectorId = sectorId,
+    sectorCode = sectorCode,
     alertTypeId = alertTypeId,
     alertTypeName = alertTypeName,
     severityId = severityId,
     severityName = severityName,
     severityLevel = severityLevel,
     message = message,
+    description = description,
     isResolved = isResolved,
     resolvedAt = resolvedAt,
     resolvedByUserName = resolvedByUserName,

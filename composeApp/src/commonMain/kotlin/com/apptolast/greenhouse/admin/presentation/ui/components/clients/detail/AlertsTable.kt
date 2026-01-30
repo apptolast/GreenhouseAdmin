@@ -1,6 +1,8 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +24,8 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -47,6 +51,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.apptolast.greenhouse.admin.data.model.Alert
+import com.apptolast.greenhouse.admin.data.model.Greenhouse
+import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.SeverityChip
@@ -62,9 +68,9 @@ import greenhouseadmin.composeapp.generated.resources.alert_resolved
 import greenhouseadmin.composeapp.generated.resources.copy_id
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_date
-import greenhouseadmin.composeapp.generated.resources.header_greenhouse
 import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_message
+import greenhouseadmin.composeapp.generated.resources.header_sector
 import greenhouseadmin.composeapp.generated.resources.header_severity
 import greenhouseadmin.composeapp.generated.resources.header_status
 import greenhouseadmin.composeapp.generated.resources.header_type
@@ -73,11 +79,32 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
+ * Enum representing sortable columns in the Alerts table.
+ */
+enum class AlertSortColumn {
+    ID, MESSAGE, SEVERITY, DATE
+}
+
+/**
+ * Enum representing sort direction.
+ */
+enum class SortDirection {
+    ASCENDING, DESCENDING;
+
+    fun toggle(): SortDirection = when (this) {
+        ASCENDING -> DESCENDING
+        DESCENDING -> ASCENDING
+    }
+}
+
+/**
  * Adaptive component that shows a table on larger screens and cards on compact screens.
  */
 @Composable
 fun AlertsTableOrCards(
     alerts: List<Alert>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     onEditAlert: (Alert) -> Unit = {},
     onDeleteAlert: (Alert) -> Unit = {},
     onResolveAlert: (Alert) -> Unit = {},
@@ -90,6 +117,8 @@ fun AlertsTableOrCards(
     if (windowInfo.isCompact) {
         AlertsCardList(
             alerts = alerts,
+            sectors = sectors,
+            greenhouses = greenhouses,
             onEditAlert = onEditAlert,
             onDeleteAlert = onDeleteAlert,
             onResolveAlert = onResolveAlert,
@@ -100,6 +129,8 @@ fun AlertsTableOrCards(
     } else {
         AlertsTable(
             alerts = alerts,
+            sectors = sectors,
+            greenhouses = greenhouses,
             onEditAlert = onEditAlert,
             onDeleteAlert = onDeleteAlert,
             onResolveAlert = onResolveAlert,
@@ -112,11 +143,14 @@ fun AlertsTableOrCards(
 
 /**
  * Table displaying list of alerts with headers and rows.
- * Columns: ID | MESSAGE | GREENHOUSE | TYPE | SEVERITY | STATUS | DATE | ACTIONS
+ * Columns: ID | MESSAGE | SECTOR | TYPE | SEVERITY | STATUS | DATE | ACTIONS
+ * Sortable columns: ID, MESSAGE, SEVERITY, DATE
  */
 @Composable
 fun AlertsTable(
     alerts: List<Alert>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     onEditAlert: (Alert) -> Unit = {},
     onDeleteAlert: (Alert) -> Unit = {},
     onResolveAlert: (Alert) -> Unit = {},
@@ -124,6 +158,57 @@ fun AlertsTable(
     onCopyId: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var sortColumn by remember { mutableStateOf<AlertSortColumn?>(null) }
+    var sortDirection by remember { mutableStateOf(SortDirection.ASCENDING) }
+
+    // Sort alerts based on selected column and direction
+    val sortedAlerts = remember(alerts, sortColumn, sortDirection) {
+        when (sortColumn) {
+            AlertSortColumn.ID -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    alerts.sortedBy { it.code }
+                } else {
+                    alerts.sortedByDescending { it.code }
+                }
+            }
+
+            AlertSortColumn.MESSAGE -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    alerts.sortedBy { it.displayText.lowercase() }
+                } else {
+                    alerts.sortedByDescending { it.displayText.lowercase() }
+                }
+            }
+
+            AlertSortColumn.SEVERITY -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    alerts.sortedBy { it.severityLevel ?: Short.MAX_VALUE }
+                } else {
+                    alerts.sortedByDescending { it.severityLevel ?: Short.MIN_VALUE }
+                }
+            }
+
+            AlertSortColumn.DATE -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    alerts.sortedBy { it.createdAt }
+                } else {
+                    alerts.sortedByDescending { it.createdAt }
+                }
+            }
+
+            null -> alerts
+        }
+    }
+
+    fun onHeaderClick(column: AlertSortColumn) {
+        if (sortColumn == column) {
+            sortDirection = sortDirection.toggle()
+        } else {
+            sortColumn = column
+            sortDirection = SortDirection.ASCENDING
+        }
+    }
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -132,14 +217,22 @@ fun AlertsTable(
         shape = RoundedCornerShape(12.dp)
     ) {
         Column {
-            // Header row
-            AlertsTableHeader()
+            // Header row with sorting
+            AlertsTableHeader(
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                onSortClick = ::onHeaderClick
+            )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
             // Alert rows
-            alerts.forEach { alert ->
+            sortedAlerts.forEach { alert ->
+                val sector = sectors.find { it.id == alert.sectorId }
+                val greenhouse = sector?.let { s -> greenhouses.find { it.id == s.greenhouseId } }
                 AlertTableRow(
                     alert = alert,
+                    sectorName = sector?.displayName,
+                    greenhouseName = greenhouse?.name,
                     onEdit = { onEditAlert(alert) },
                     onDelete = { onDeleteAlert(alert) },
                     onResolve = { onResolveAlert(alert) },
@@ -153,7 +246,12 @@ fun AlertsTable(
 }
 
 @Composable
-private fun AlertsTableHeader(modifier: Modifier = Modifier) {
+private fun AlertsTableHeader(
+    sortColumn: AlertSortColumn?,
+    sortDirection: SortDirection,
+    onSortClick: (AlertSortColumn) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -161,48 +259,64 @@ private fun AlertsTableHeader(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        Text(
+        // ID - Sortable
+        SortableHeader(
             text = stringResource(Res.string.header_id),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            column = AlertSortColumn.ID,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(AlertSortColumn.ID) },
             modifier = Modifier.weight(1f)
         )
-        Text(
+        // MESSAGE - Sortable
+        SortableHeader(
             text = stringResource(Res.string.header_message),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            column = AlertSortColumn.MESSAGE,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(AlertSortColumn.MESSAGE) },
             modifier = Modifier.weight(1f)
         )
+        // SECTOR - Not sortable
         Text(
-            text = stringResource(Res.string.header_greenhouse),
+            text = stringResource(Res.string.header_sector),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.9f)
         )
+        // TYPE - Not sortable
         Text(
             text = stringResource(Res.string.header_type),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.8f)
         )
-        Text(
+        // SEVERITY - Sortable
+        SortableHeader(
             text = stringResource(Res.string.header_severity),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            column = AlertSortColumn.SEVERITY,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(AlertSortColumn.SEVERITY) },
             modifier = Modifier.weight(0.7f)
         )
+        // STATUS - Not sortable
         Text(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.6f)
         )
-        Text(
+        // DATE - Sortable
+        SortableHeader(
             text = stringResource(Res.string.header_date),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            column = AlertSortColumn.DATE,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(AlertSortColumn.DATE) },
             modifier = Modifier.weight(0.8f)
         )
+        // ACTIONS - Not sortable
         Text(
             text = stringResource(Res.string.header_actions),
             style = MaterialTheme.typography.labelMedium,
@@ -213,9 +327,63 @@ private fun AlertsTableHeader(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Sortable header cell with sort icon.
+ */
+@Composable
+private fun SortableHeader(
+    text: String,
+    column: AlertSortColumn,
+    currentSortColumn: AlertSortColumn?,
+    sortDirection: SortDirection,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isActive = currentSortColumn == column
+
+    Row(
+        modifier = modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClick
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        if (isActive) {
+            Icon(
+                imageVector = if (sortDirection == SortDirection.ASCENDING) {
+                    Icons.Outlined.ArrowUpward
+                } else {
+                    Icons.Outlined.ArrowDownward
+                },
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            // Show a subtle indicator that this column is sortable
+            Icon(
+                imageVector = Icons.Outlined.ArrowUpward,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+            )
+        }
+    }
+}
+
 @Composable
 private fun AlertTableRow(
     alert: Alert,
+    sectorName: String? = null,
+    greenhouseName: String? = null,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onResolve: () -> Unit,
@@ -253,7 +421,7 @@ private fun AlertTableRow(
 //            )
 //            Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = alert.message,
+                text = alert.displayText,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -262,15 +430,25 @@ private fun AlertTableRow(
             )
         }
 
-        // GREENHOUSE
-        Text(
-            text = alert.greenhouseName ?: notAssignedText,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.9f),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        // SECTOR - Sector name with greenhouse in subtitle
+        Column(modifier = Modifier.weight(0.9f)) {
+            Text(
+                text = sectorName ?: "-",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            greenhouseName?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
 
         // TYPE
         Text(
@@ -427,6 +605,8 @@ private fun getSeverityColor(severityLevel: Short?): Color {
 @Composable
 private fun AlertsCardList(
     alerts: List<Alert>,
+    sectors: List<Sector> = emptyList(),
+    greenhouses: List<Greenhouse> = emptyList(),
     modifier: Modifier = Modifier,
     onEditAlert: (Alert) -> Unit = {},
     onDeleteAlert: (Alert) -> Unit = {},
@@ -439,8 +619,12 @@ private fun AlertsCardList(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         alerts.forEach { alert ->
+            val sector = sectors.find { it.id == alert.sectorId }
+            val greenhouse = sector?.let { s -> greenhouses.find { it.id == s.greenhouseId } }
             AlertCard(
                 alert = alert,
+                sectorName = sector?.displayName,
+                greenhouseName = greenhouse?.name,
                 onEdit = { onEditAlert(alert) },
                 onDelete = { onDeleteAlert(alert) },
                 onResolve = { onResolveAlert(alert) },
@@ -457,6 +641,8 @@ private fun AlertsCardList(
 @Composable
 private fun AlertCard(
     alert: Alert,
+    sectorName: String? = null,
+    greenhouseName: String? = null,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onResolve: () -> Unit,
@@ -503,7 +689,7 @@ private fun AlertCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = alert.message,
+                        text = alert.displayText,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -587,24 +773,33 @@ private fun AlertCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Info row: Greenhouse | Type
+            // Info row: Sector | Type
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = stringResource(Res.string.header_greenhouse),
+                        text = stringResource(Res.string.header_sector),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = alert.greenhouseName ?: notAssignedText,
+                        text = sectorName ?: notAssignedText,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                    greenhouseName?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -685,14 +880,15 @@ val mockAlerts = listOf(
         id = 1,
         code = "ALT-00001",
         tenantId = 1,
-        greenhouseId = 1,
-        greenhouseName = "Greenhouse A",
+        sectorId = 1,
+        sectorCode = "SEC-00001",
         alertTypeId = 1,
         alertTypeName = "Temperature",
         severityId = 3,
         severityName = "High",
         severityLevel = 3,
         message = "Temperature exceeds threshold in Sector A",
+        description = null,
         isResolved = false,
         resolvedAt = null,
         resolvedByUserName = null,
@@ -702,14 +898,15 @@ val mockAlerts = listOf(
         id = 2,
         code = "ALT-00002",
         tenantId = 1,
-        greenhouseId = 1,
-        greenhouseName = "Greenhouse A",
+        sectorId = 1,
+        sectorCode = "SEC-00001",
         alertTypeId = 2,
         alertTypeName = "Humidity",
         severityId = 2,
         severityName = "Medium",
         severityLevel = 2,
         message = "Humidity below optimal range",
+        description = null,
         isResolved = true,
         resolvedAt = "2024-01-15T12:00:00Z",
         resolvedByUserName = "Admin User",
@@ -719,14 +916,15 @@ val mockAlerts = listOf(
         id = 3,
         code = "ALT-00003",
         tenantId = 1,
-        greenhouseId = 2,
-        greenhouseName = "Greenhouse B",
+        sectorId = 2,
+        sectorCode = "SEC-00002",
         alertTypeId = null,
         alertTypeName = null,
         severityId = 4,
         severityName = "Critical",
         severityLevel = 4,
-        message = "CO2 sensor disconnected",
+        message = null,
+        description = "CO2 sensor disconnected - requires immediate attention",
         isResolved = false,
         resolvedAt = null,
         resolvedByUserName = null,

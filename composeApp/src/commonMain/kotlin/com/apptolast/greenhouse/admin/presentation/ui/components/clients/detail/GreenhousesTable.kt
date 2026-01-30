@@ -1,6 +1,8 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -57,6 +61,13 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
+ * Enum representing sortable columns in the Greenhouses table.
+ */
+private enum class GreenhouseSortColumn {
+    NAME
+}
+
+/**
  * Adaptive component that shows a table on larger screens and cards on compact screens.
  */
 @Composable
@@ -87,6 +98,7 @@ fun GreenhousesTableOrCards(
 
 /**
  * Table displaying list of greenhouses with headers and rows.
+ * Sortable columns: NAME
  */
 @Composable
 fun GreenhousesTable(
@@ -95,6 +107,33 @@ fun GreenhousesTable(
     onDeleteGreenhouse: (Greenhouse) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var sortColumn by remember { mutableStateOf<GreenhouseSortColumn?>(null) }
+    var sortDirection by remember { mutableStateOf(SortDirection.ASCENDING) }
+
+    // Sort greenhouses based on selected column and direction
+    val sortedGreenhouses = remember(greenhouses, sortColumn, sortDirection) {
+        when (sortColumn) {
+            GreenhouseSortColumn.NAME -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    greenhouses.sortedBy { it.name.lowercase() }
+                } else {
+                    greenhouses.sortedByDescending { it.name.lowercase() }
+                }
+            }
+
+            null -> greenhouses
+        }
+    }
+
+    fun onHeaderClick(column: GreenhouseSortColumn) {
+        if (sortColumn == column) {
+            sortDirection = sortDirection.toggle()
+        } else {
+            sortColumn = column
+            sortDirection = SortDirection.ASCENDING
+        }
+    }
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -103,12 +142,16 @@ fun GreenhousesTable(
         shape = RoundedCornerShape(12.dp)
     ) {
         Column {
-            // Header row
-            GreenhousesTableHeader()
+            // Header row with sorting
+            GreenhousesTableHeader(
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                onSortClick = ::onHeaderClick
+            )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
             // Greenhouse rows
-            greenhouses.forEach { greenhouse ->
+            sortedGreenhouses.forEach { greenhouse ->
                 GreenhouseTableRow(
                     greenhouse = greenhouse,
                     onEdit = { onEditGreenhouse(greenhouse) },
@@ -121,7 +164,12 @@ fun GreenhousesTable(
 }
 
 @Composable
-private fun GreenhousesTableHeader(modifier: Modifier = Modifier) {
+private fun GreenhousesTableHeader(
+    sortColumn: GreenhouseSortColumn?,
+    sortDirection: SortDirection,
+    onSortClick: (GreenhouseSortColumn) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -129,30 +177,37 @@ private fun GreenhousesTableHeader(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        Text(
+        // NAME column - Sortable
+        GreenhouseSortableHeader(
             text = stringResource(Res.string.header_name),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            column = GreenhouseSortColumn.NAME,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(GreenhouseSortColumn.NAME) },
             modifier = Modifier.weight(2f)
         )
+        // LOCATION column - Not sortable
         Text(
             text = stringResource(Res.string.header_location),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
+        // AREA column - Not sortable
         Text(
             text = stringResource(Res.string.header_area),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
+        // STATUS column - Not sortable
         Text(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
+        // ACTIONS column - Not sortable
         Text(
             text = stringResource(Res.string.header_actions),
             style = MaterialTheme.typography.labelMedium,
@@ -160,6 +215,58 @@ private fun GreenhousesTableHeader(modifier: Modifier = Modifier) {
             modifier = Modifier.width(80.dp),
             textAlign = TextAlign.Center
         )
+    }
+}
+
+/**
+ * Sortable header cell with sort icon for Greenhouses table.
+ */
+@Composable
+private fun GreenhouseSortableHeader(
+    text: String,
+    column: GreenhouseSortColumn,
+    currentSortColumn: GreenhouseSortColumn?,
+    sortDirection: SortDirection,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isActive = currentSortColumn == column
+
+    Row(
+        modifier = modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClick
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        if (isActive) {
+            Icon(
+                imageVector = if (sortDirection == SortDirection.ASCENDING) {
+                    Icons.Outlined.ArrowUpward
+                } else {
+                    Icons.Outlined.ArrowDownward
+                },
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            // Show a subtle indicator that this column is sortable
+            Icon(
+                imageVector = Icons.Outlined.ArrowUpward,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+            )
+        }
     }
 }
 

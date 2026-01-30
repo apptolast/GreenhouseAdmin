@@ -84,7 +84,7 @@
     <!-- New Client Dialog -->
     <string name="dialog_new_client_title">Create New Client</string>
     <string name="dialog_new_client_subtitle">Add a new client to your network</string>
-    <string name="label_name">Full Name</string>
+    <string name="label_name">Name</string>
     <string name="label_username">Username</string>
     <string name="label_email">Email Address</string>
     <string name="label_phone">Phone Number</string>
@@ -202,7 +202,7 @@
     <!-- Sector Table Headers -->
     <string name="header_greenhouse">GREENHOUSE</string>
     <string name="header_area">AREA</string>
-    <string name="header_variety">VARIETY</string>
+    <string name="header_sector_name">NAME</string>
 
     <!-- Sector Dialogs -->
     <string name="dialog_new_sector_title">Add New Sector</string>
@@ -212,12 +212,12 @@
     <string name="dialog_edit_sector_subtitle">Update sector information</string>
     <string name="field_greenhouse">Greenhouse</string>
     <string name="field_area">Area (m²)</string>
-    <string name="label_variety">Variety</string>
+    <string name="label_sector_name">Sector Name</string>
 
     <!-- Sector Validation Errors -->
     <string name="error_greenhouse_required">Please select a greenhouse</string>
     <string name="error_category_required">Category is required</string>
-    <string name="error_variety_min_length">Variety must be at least 2 characters</string>
+    <string name="error_sector_name_min_length">Name must be at least 2 characters</string>
     <string name="error_area_required">Area is required</string>
     <string name="error_area_invalid">Please enter a valid number</string>
     <string name="error_area_positive">Area must be greater than 0</string>
@@ -320,10 +320,13 @@
     <string name="field_message">Message</string>
     <string name="field_severity">Severity</string>
     <string name="field_alert_type">Alert Type</string>
+    <string name="field_sector">Sector</string>
+    <string name="label_description">Description (optional)</string>
 
     <!-- Alert Validation Errors -->
     <string name="error_title_required">Title is required</string>
     <string name="error_message_required">Message is required</string>
+    <string name="error_content_required">Please enter a message or description</string>
     <string name="error_message_min_length">Message must be at least 5 characters</string>
 
     <!-- Alert Errors -->

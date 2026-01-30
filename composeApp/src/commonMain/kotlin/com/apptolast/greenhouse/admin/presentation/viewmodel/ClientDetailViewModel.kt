@@ -130,7 +130,7 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnDismissSectorFormDialog -> dismissSectorFormDialog()
             is ClientDetailEvent.OnSubmitSectorForm -> submitSectorForm(
                 event.greenhouseId,
-                event.variety
+                event.name
             )
 
             // Devices events
@@ -162,10 +162,11 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnCancelDeleteAlert -> cancelDeleteAlert()
             is ClientDetailEvent.OnDismissAlertFormDialog -> dismissAlertFormDialog()
             is ClientDetailEvent.OnSubmitAlertForm -> submitAlertForm(
-                event.greenhouseId,
+                event.sectorId,
                 event.alertTypeId,
                 event.severityId,
-                event.message
+                event.message,
+                event.description
             )
 
             is ClientDetailEvent.OnResolveAlertClicked -> resolveAlert(event.alert)
@@ -180,10 +181,11 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnCancelDeleteSetting -> cancelDeleteSetting()
             is ClientDetailEvent.OnDismissSettingFormDialog -> dismissSettingFormDialog()
             is ClientDetailEvent.OnSubmitSettingForm -> submitSettingForm(
-                event.greenhouseId,
+                event.sectorId,
                 event.parameterId,
                 event.actuatorStateId,
                 event.value,
+                event.description,
                 event.isActive
             )
         }
@@ -240,6 +242,9 @@ class ClientDetailViewModel(
                     // Greenhouses (tenant-specific but used across all tabs)
                     val greenhousesDeferred = async { greenhousesRepository.getGreenhousesByTenantId(clientId) }
 
+                    // Sectors (tenant-specific, used for alerts and settings forms)
+                    val sectorsDeferred = async { sectorsRepository.getSectorsByTenantId(clientId) }
+
                     // Await all results
                     val categories = categoriesDeferred.await()
                     val types = typesDeferred.await()
@@ -248,6 +253,7 @@ class ClientDetailViewModel(
                     val severities = severitiesDeferred.await()
                     val actuatorStates = actuatorStatesDeferred.await()
                     val greenhouses = greenhousesDeferred.await()
+                    val sectors = sectorsDeferred.await()
 
                     // Update state with all catalog data
                     _uiState.update { state ->
@@ -263,6 +269,8 @@ class ClientDetailViewModel(
                             actuatorStates = actuatorStates.getOrDefault(emptyList()).sortedBy { it.displayOrder },
                             // Greenhouses
                             greenhouses = greenhouses.getOrDefault(emptyList()),
+                            // Sectors
+                            sectors = sectors.getOrDefault(emptyList()),
                             // Loading state
                             isCatalogsLoading = false,
                             catalogsError = null
@@ -799,7 +807,7 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitSectorForm(greenhouseId: Long?, variety: String) {
+    private fun submitSectorForm(greenhouseId: Long?, name: String) {
         if (greenhouseId == null) return
 
         val mode = _uiState.value.sectorFormMode
@@ -812,7 +820,7 @@ class ClientDetailViewModel(
                     sectorsRepository.createSector(
                         tenantId = clientId,
                         greenhouseId = greenhouseId,
-                        variety = variety.trim().takeIf { it.isNotBlank() }
+                        name = name.trim().takeIf { it.isNotBlank() }
                     )
                 }
 
@@ -820,7 +828,8 @@ class ClientDetailViewModel(
                     sectorsRepository.updateSector(
                         tenantId = clientId,
                         sectorId = mode.sector.id,
-                        variety = variety.trim().takeIf { it.isNotBlank() }
+                        greenhouseId = greenhouseId,
+                        name = name.trim().takeIf { it.isNotBlank() }
                     )
                 }
             }
@@ -971,10 +980,10 @@ class ClientDetailViewModel(
                 }
 
                 is DeviceFormMode.Edit -> {
-                    // Note: sectorId cannot be changed on update
                     devicesRepository.updateDevice(
                         tenantId = clientId,
                         deviceId = mode.device.id,
+                        sectorId = sectorId,
                         name = deviceName,
                         categoryId = categoryId,
                         typeId = typeId,
@@ -1102,12 +1111,13 @@ class ClientDetailViewModel(
     }
 
     private fun submitAlertForm(
-        greenhouseId: Long?,
+        sectorId: Long?,
         alertTypeId: Short?,
         severityId: Short?,
-        message: String
+        message: String?,
+        description: String?
     ) {
-        if (greenhouseId == null) return
+        if (sectorId == null) return
 
         val mode = _uiState.value.alertFormMode
 
@@ -1117,19 +1127,22 @@ class ClientDetailViewModel(
             val result = when (mode) {
                 is AlertFormMode.Create -> {
                     val request = AlertCreateRequest(
-                        greenhouseId = greenhouseId,
+                        sectorId = sectorId,
                         alertTypeId = alertTypeId,
                         severityId = severityId,
-                        message = message.trim()
+                        message = message?.trim()?.ifBlank { null },
+                        description = description?.trim()?.ifBlank { null }
                     )
                     alertsRepository.createAlert(clientId, request)
                 }
 
                 is AlertFormMode.Edit -> {
                     val request = AlertUpdateRequest(
+                        sectorId = sectorId,
                         alertTypeId = alertTypeId,
                         severityId = severityId,
-                        message = message.trim()
+                        message = message?.trim()?.ifBlank { null },
+                        description = description?.trim()?.ifBlank { null }
                     )
                     alertsRepository.updateAlert(clientId, mode.alert.id, request)
                 }
@@ -1301,13 +1314,14 @@ class ClientDetailViewModel(
     }
 
     private fun submitSettingForm(
-        greenhouseId: Long?,
+        sectorId: Long?,
         parameterId: Short,
         actuatorStateId: Short,
         value: String,
+        description: String?,
         isActive: Boolean
     ) {
-        if (greenhouseId == null) return
+        if (sectorId == null) return
 
         val mode = _uiState.value.settingFormMode
 
@@ -1317,10 +1331,11 @@ class ClientDetailViewModel(
             val result = when (mode) {
                 is SettingFormMode.Create -> {
                     val request = SettingCreateRequest(
-                        greenhouseId = greenhouseId,
+                        sectorId = sectorId,
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
                         value = value.ifBlank { null },
+                        description = description?.ifBlank { null },
                         isActive = isActive
                     )
                     settingsRepository.createSetting(clientId, request)
@@ -1328,9 +1343,11 @@ class ClientDetailViewModel(
 
                 is SettingFormMode.Edit -> {
                     val request = SettingUpdateRequest(
+                        sectorId = sectorId,
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
                         value = value.ifBlank { null },
+                        description = description?.ifBlank { null },
                         isActive = isActive
                     )
                     settingsRepository.updateSetting(clientId, mode.setting.id, request)

@@ -53,6 +53,7 @@ fun ClientDetailSectorsTab(
     onAddSector: () -> Unit = {},
     onEditSector: (Sector) -> Unit = {},
     onDeleteSector: (Sector) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -129,7 +130,8 @@ fun ClientDetailSectorsTab(
                     sectors = sectors,
                     greenhouses = greenhouses,
                     onEditSector = onEditSector,
-                    onDeleteSector = onDeleteSector
+                    onDeleteSector = onDeleteSector,
+                    onCopyId = onCopyId
                 )
             }
         }
@@ -165,14 +167,16 @@ private object ClientDetailSectorsTabPreviewData {
         Sector(
             id = 1L,
             code = "SEC-00001",
+            tenantId = 1L,
             greenhouseId = 1L,
-            variety = "Tomate Cherry"
+            name = "Tomate Cherry"
         ),
         Sector(
             id = 2L,
             code = "SEC-00002",
+            tenantId = 1L,
             greenhouseId = 1L,
-            variety = "Pimiento Rojo"
+            name = "Pimiento Rojo"
         )
     )
 

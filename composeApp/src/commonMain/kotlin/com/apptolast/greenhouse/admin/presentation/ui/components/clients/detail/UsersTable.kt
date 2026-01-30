@@ -1,6 +1,8 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -57,6 +61,13 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
+ * Enum representing sortable columns in the Users table.
+ */
+private enum class UserSortColumn {
+    USERNAME, EMAIL, ROLE
+}
+
+/**
  * Adaptive component that shows a table on larger screens and cards on compact screens.
  */
 @Composable
@@ -87,6 +98,7 @@ fun UsersTableOrCards(
 
 /**
  * Table displaying list of users with headers and rows.
+ * Sortable columns: USERNAME, EMAIL, ROLE
  */
 @Composable
 fun UsersTable(
@@ -95,6 +107,49 @@ fun UsersTable(
     onDeleteUser: (User) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var sortColumn by remember { mutableStateOf<UserSortColumn?>(null) }
+    var sortDirection by remember { mutableStateOf(SortDirection.ASCENDING) }
+
+    // Sort users based on selected column and direction
+    val sortedUsers = remember(users, sortColumn, sortDirection) {
+        when (sortColumn) {
+            UserSortColumn.USERNAME -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    users.sortedBy { it.username.lowercase() }
+                } else {
+                    users.sortedByDescending { it.username.lowercase() }
+                }
+            }
+
+            UserSortColumn.EMAIL -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    users.sortedBy { it.email.lowercase() }
+                } else {
+                    users.sortedByDescending { it.email.lowercase() }
+                }
+            }
+
+            UserSortColumn.ROLE -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    users.sortedBy { it.role.displayName.lowercase() }
+                } else {
+                    users.sortedByDescending { it.role.displayName.lowercase() }
+                }
+            }
+
+            null -> users
+        }
+    }
+
+    fun onHeaderClick(column: UserSortColumn) {
+        if (sortColumn == column) {
+            sortDirection = sortDirection.toggle()
+        } else {
+            sortColumn = column
+            sortDirection = SortDirection.ASCENDING
+        }
+    }
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -103,12 +158,16 @@ fun UsersTable(
         shape = RoundedCornerShape(12.dp)
     ) {
         Column {
-            // Header row
-            UsersTableHeader()
+            // Header row with sorting
+            UsersTableHeader(
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                onSortClick = ::onHeaderClick
+            )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
             // User rows - using Column instead of LazyColumn to work inside scrollable parent
-            users.forEach { user ->
+            sortedUsers.forEach { user ->
                 UserTableRow(
                     user = user,
                     onEdit = { onEditUser(user) },
@@ -121,7 +180,12 @@ fun UsersTable(
 }
 
 @Composable
-private fun UsersTableHeader(modifier: Modifier = Modifier) {
+private fun UsersTableHeader(
+    sortColumn: UserSortColumn?,
+    sortDirection: SortDirection,
+    onSortClick: (UserSortColumn) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -129,30 +193,41 @@ private fun UsersTableHeader(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        Text(
+        // USERNAME column - Sortable
+        UserSortableHeader(
             text = stringResource(Res.string.header_username),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            column = UserSortColumn.USERNAME,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(UserSortColumn.USERNAME) },
             modifier = Modifier.weight(1.2f)
         )
-        Text(
+        // EMAIL column - Sortable
+        UserSortableHeader(
             text = stringResource(Res.string.header_email),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            column = UserSortColumn.EMAIL,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(UserSortColumn.EMAIL) },
             modifier = Modifier.weight(1.5f)
         )
-        Text(
+        // ROLE column - Sortable
+        UserSortableHeader(
             text = stringResource(Res.string.header_role),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            column = UserSortColumn.ROLE,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(UserSortColumn.ROLE) },
             modifier = Modifier.weight(0.8f)
         )
+        // STATUS column - Not sortable
         Text(
             text = stringResource(Res.string.header_status),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.7f)
         )
+        // ACTIONS column - Not sortable
         Text(
             text = stringResource(Res.string.header_actions),
             style = MaterialTheme.typography.labelMedium,
@@ -160,6 +235,58 @@ private fun UsersTableHeader(modifier: Modifier = Modifier) {
             modifier = Modifier.width(80.dp),
             textAlign = TextAlign.Center
         )
+    }
+}
+
+/**
+ * Sortable header cell with sort icon for Users table.
+ */
+@Composable
+private fun UserSortableHeader(
+    text: String,
+    column: UserSortColumn,
+    currentSortColumn: UserSortColumn?,
+    sortDirection: SortDirection,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isActive = currentSortColumn == column
+
+    Row(
+        modifier = modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClick
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        if (isActive) {
+            Icon(
+                imageVector = if (sortDirection == SortDirection.ASCENDING) {
+                    Icons.Outlined.ArrowUpward
+                } else {
+                    Icons.Outlined.ArrowDownward
+                },
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            // Show a subtle indicator that this column is sortable
+            Icon(
+                imageVector = Icons.Outlined.ArrowUpward,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+            )
+        }
     }
 }
 

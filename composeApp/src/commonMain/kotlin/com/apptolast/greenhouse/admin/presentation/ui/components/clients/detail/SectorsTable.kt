@@ -1,6 +1,8 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -41,15 +45,24 @@ import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_greenhouse
-import greenhouseadmin.composeapp.generated.resources.header_variety
+import greenhouseadmin.composeapp.generated.resources.header_id
+import greenhouseadmin.composeapp.generated.resources.header_sector_name
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+
+/**
+ * Enum representing sortable columns in the Sectors table.
+ */
+private enum class SectorSortColumn {
+    ID, NAME
+}
 
 /**
  * Adaptive component that shows a table on larger screens and cards on compact screens.
@@ -60,6 +73,7 @@ fun SectorsTableOrCards(
     greenhouses: List<Greenhouse> = emptyList(),
     onEditSector: (Sector) -> Unit = {},
     onDeleteSector: (Sector) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val windowInfo = LocalAppWindowInfo.current
@@ -70,6 +84,7 @@ fun SectorsTableOrCards(
             greenhouses = greenhouses,
             onEditSector = onEditSector,
             onDeleteSector = onDeleteSector,
+            onCopyId = onCopyId,
             modifier = modifier
         )
     } else {
@@ -78,6 +93,7 @@ fun SectorsTableOrCards(
             greenhouses = greenhouses,
             onEditSector = onEditSector,
             onDeleteSector = onDeleteSector,
+            onCopyId = onCopyId,
             modifier = modifier
         )
     }
@@ -85,6 +101,8 @@ fun SectorsTableOrCards(
 
 /**
  * Table displaying list of sectors with headers and rows.
+ * Columns: ID | NAME | GREENHOUSE | ACTIONS
+ * Sortable columns: ID, NAME
  */
 @Composable
 fun SectorsTable(
@@ -92,30 +110,71 @@ fun SectorsTable(
     greenhouses: List<Greenhouse> = emptyList(),
     onEditSector: (Sector) -> Unit = {},
     onDeleteSector: (Sector) -> Unit = {},
+    onCopyId: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var sortColumn by remember { mutableStateOf<SectorSortColumn?>(null) }
+    var sortDirection by remember { mutableStateOf(SortDirection.ASCENDING) }
+
     // Create a map for quick greenhouse name lookup
     val greenhouseNameMap = greenhouses.associateBy({ it.id }, { it.name })
 
+    // Sort sectors based on selected column and direction
+    val sortedSectors = remember(sectors, sortColumn, sortDirection) {
+        when (sortColumn) {
+            SectorSortColumn.ID -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    sectors.sortedBy { it.code }
+                } else {
+                    sectors.sortedByDescending { it.code }
+                }
+            }
+
+            SectorSortColumn.NAME -> {
+                if (sortDirection == SortDirection.ASCENDING) {
+                    sectors.sortedBy { it.displayName.lowercase() }
+                } else {
+                    sectors.sortedByDescending { it.displayName.lowercase() }
+                }
+            }
+
+            null -> sectors
+        }
+    }
+
+    fun onHeaderClick(column: SectorSortColumn) {
+        if (sortColumn == column) {
+            sortDirection = sortDirection.toggle()
+        } else {
+            sortColumn = column
+            sortDirection = SortDirection.ASCENDING
+        }
+    }
+
     Card(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column {
-            // Header row
-            SectorsTableHeader()
+            // Header row with sorting
+            SectorsTableHeader(
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                onSortClick = ::onHeaderClick
+            )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
             // Sector rows
-            sectors.forEach { sector ->
+            sortedSectors.forEach { sector ->
                 SectorTableRow(
                     sector = sector,
                     greenhouseName = greenhouseNameMap[sector.greenhouseId],
                     onEdit = { onEditSector(sector) },
-                    onDelete = { onDeleteSector(sector) }
+                    onDelete = { onDeleteSector(sector) },
+                    onCopyId = { onCopyId(sector.code) }
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             }
@@ -124,25 +183,45 @@ fun SectorsTable(
 }
 
 @Composable
-private fun SectorsTableHeader(modifier: Modifier = Modifier) {
+private fun SectorsTableHeader(
+    sortColumn: SectorSortColumn?,
+    sortDirection: SortDirection,
+    onSortClick: (SectorSortColumn) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
-        Text(
-            text = stringResource(Res.string.header_variety),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.5f)
+        // ID column - Sortable
+        SectorSortableHeader(
+            text = stringResource(Res.string.header_id),
+            column = SectorSortColumn.ID,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(SectorSortColumn.ID) },
+            modifier = Modifier.weight(0.8f)
         )
+        // NAME column - Sortable
+        SectorSortableHeader(
+            text = stringResource(Res.string.header_sector_name),
+            column = SectorSortColumn.NAME,
+            currentSortColumn = sortColumn,
+            sortDirection = sortDirection,
+            onClick = { onSortClick(SectorSortColumn.NAME) },
+            modifier = Modifier.weight(1.2f)
+        )
+        // GREENHOUSE column - Not sortable
         Text(
             text = stringResource(Res.string.header_greenhouse),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(1.2f)
         )
+        // ACTIONS column - Not sortable
         Text(
             text = stringResource(Res.string.header_actions),
             style = MaterialTheme.typography.labelMedium,
@@ -153,46 +232,98 @@ private fun SectorsTableHeader(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Sortable header cell with sort icon for Sectors table.
+ */
+@Composable
+private fun SectorSortableHeader(
+    text: String,
+    column: SectorSortColumn,
+    currentSortColumn: SectorSortColumn?,
+    sortDirection: SortDirection,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isActive = currentSortColumn == column
+
+    Row(
+        modifier = modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClick
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        if (isActive) {
+            Icon(
+                imageVector = if (sortDirection == SortDirection.ASCENDING) {
+                    Icons.Outlined.ArrowUpward
+                } else {
+                    Icons.Outlined.ArrowDownward
+                },
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            // Show a subtle indicator that this column is sortable
+            Icon(
+                imageVector = Icons.Outlined.ArrowUpward,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+            )
+        }
+    }
+}
+
 @Composable
 private fun SectorTableRow(
     sector: Sector,
     greenhouseName: String?,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    onCopyId: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
-        // VARIETY with avatar
-        Row(
-            modifier = Modifier.weight(1.5f),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-//            SectorAvatar(
-//                initials = sector.initial,
-//                modifier = Modifier.size(36.dp)
-//            )
-//            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = sector.displayName,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
+        // ID - Copyable code
+        CopyableIdCell(
+            id = sector.code,
+            onCopyId = { onCopyId() },
+            modifier = Modifier.weight(0.8f)
+        )
+
+        // NAME
+        Text(
+            text = sector.displayName,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1.2f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
 
         // GREENHOUSE
         Text(
             text = greenhouseName ?: sector.greenhouseId.toString(),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1.5f),
+            modifier = Modifier.weight(1.2f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -237,6 +368,7 @@ private fun SectorsCardList(
     greenhouses: List<Greenhouse>,
     onEditSector: (Sector) -> Unit,
     onDeleteSector: (Sector) -> Unit,
+    onCopyId: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val greenhouseNameMap = greenhouses.associateBy({ it.id }, { it.name })
@@ -250,7 +382,8 @@ private fun SectorsCardList(
                 sector = sector,
                 greenhouseName = greenhouseNameMap[sector.greenhouseId],
                 onEdit = { onEditSector(sector) },
-                onDelete = { onDeleteSector(sector) }
+                onDelete = { onDeleteSector(sector) },
+                onCopyId = { onCopyId(sector.code) }
             )
         }
     }
@@ -265,6 +398,7 @@ private fun SectorCard(
     greenhouseName: String?,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    onCopyId: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -279,7 +413,7 @@ private fun SectorCard(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // Header row: Avatar, Name, Menu
+            // Header row: Avatar, Name/ID, Menu
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -299,6 +433,11 @@ private fun SectorCard(
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = sector.code,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = greenhouseName ?: sector.greenhouseId.toString(),
@@ -388,20 +527,23 @@ private object SectorsTablePreviewData {
         Sector(
             id = 1L,
             code = "SEC-00001",
+            tenantId = 1L,
             greenhouseId = 1L,
-            variety = "Tomate Cherry"
+            name = "Tomate Cherry"
         ),
         Sector(
             id = 2L,
             code = "SEC-00002",
+            tenantId = 1L,
             greenhouseId = 1L,
-            variety = "Pimiento Rojo"
+            name = "Pimiento Rojo"
         ),
         Sector(
             id = 3L,
             code = "SEC-00003",
+            tenantId = 1L,
             greenhouseId = 2L,
-            variety = "Pepino"
+            name = "Pepino"
         )
     )
 

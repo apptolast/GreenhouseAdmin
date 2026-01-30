@@ -5,18 +5,18 @@ package com.apptolast.greenhouse.admin.data.model
  * Manages form state and validation.
  */
 data class SectorFormData(
-    val variety: String = "",
+    val name: String = "",
     val greenhouseId: Long? = null
 ) {
     /**
      * Validation errors for each field.
      */
     data class ValidationErrors(
-        val variety: String? = null,
+        val name: String? = null,
         val greenhouseId: String? = null
     ) {
         val hasErrors: Boolean
-            get() = variety != null || greenhouseId != null
+            get() = name != null || greenhouseId != null
     }
 
     /**
@@ -24,7 +24,7 @@ data class SectorFormData(
      */
     fun validate(): ValidationErrors {
         return ValidationErrors(
-            variety = if (variety.length < 2) "error_variety_min_length" else null,
+            name = if (name.length < 2) "error_sector_name_min_length" else null,
             greenhouseId = if (greenhouseId == null) "error_greenhouse_required" else null
         )
     }
@@ -33,5 +33,5 @@ data class SectorFormData(
      * Returns true if all required fields are valid.
      */
     val isValid: Boolean
-        get() = variety.length >= 2 && greenhouseId != null
+        get() = name.length >= 2 && greenhouseId != null
 }

@@ -75,7 +75,7 @@
     <!-- New Client Dialog -->
     <string name="dialog_new_client_title">Crear Nuevo Cliente</string>
     <string name="dialog_new_client_subtitle">Añade un nuevo cliente a tu red</string>
-    <string name="label_name">Nombre Completo</string>
+    <string name="label_name">Nombre</string>
     <string name="label_username">Nombre de Usuario</string>
     <string name="label_email">Correo Electrónico</string>
     <string name="label_phone">Teléfono</string>
@@ -193,7 +193,7 @@
     <!-- Sector Table Headers -->
     <string name="header_greenhouse">INVERNADERO</string>
     <string name="header_area">ÁREA</string>
-    <string name="header_variety">VARIEDAD</string>
+    <string name="header_sector_name">NOMBRE</string>
 
     <!-- Sector Dialogs -->
     <string name="dialog_new_sector_title">Añadir Nuevo Sector</string>
@@ -203,12 +203,12 @@
     <string name="dialog_edit_sector_subtitle">Actualizar información del sector</string>
     <string name="field_greenhouse">Invernadero</string>
     <string name="field_area">Área (m²)</string>
-    <string name="label_variety">Variedad</string>
+    <string name="label_sector_name">Nombre del Sector</string>
 
     <!-- Sector Validation Errors -->
     <string name="error_greenhouse_required">Por favor, selecciona un invernadero</string>
     <string name="error_category_required">La categoría es obligatoria</string>
-    <string name="error_variety_min_length">La variedad debe tener al menos 2 caracteres</string>
+    <string name="error_sector_name_min_length">El nombre debe tener al menos 2 caracteres</string>
     <string name="error_area_required">El área es obligatoria</string>
     <string name="error_area_invalid">Por favor, introduce un número válido</string>
     <string name="error_area_positive">El área debe ser mayor que 0</string>
@@ -311,10 +311,13 @@
     <string name="field_message">Mensaje</string>
     <string name="field_severity">Severidad</string>
     <string name="field_alert_type">Tipo de Alerta</string>
+    <string name="field_sector">Sector</string>
+    <string name="label_description">Descripción (opcional)</string>
 
     <!-- Alert Validation Errors -->
     <string name="error_title_required">El título es obligatorio</string>
     <string name="error_message_required">El mensaje es obligatorio</string>
+    <string name="error_content_required">Por favor ingrese un mensaje o descripción</string>
     <string name="error_message_min_length">El mensaje debe tener al menos 5 caracteres</string>
 
     <!-- Alert Errors -->

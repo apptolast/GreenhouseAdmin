@@ -41,6 +41,7 @@ import androidx.compose.ui.window.Dialog
 import com.apptolast.greenhouse.admin.data.model.ActuatorState
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
+import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.SettingFormData
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
@@ -54,10 +55,11 @@ import greenhouseadmin.composeapp.generated.resources.dialog_edit_setting_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_setting_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_setting_title
 import greenhouseadmin.composeapp.generated.resources.error_actuator_state_required
-import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
 import greenhouseadmin.composeapp.generated.resources.error_parameter_required
-import greenhouseadmin.composeapp.generated.resources.field_greenhouse
+import greenhouseadmin.composeapp.generated.resources.error_sector_required
+import greenhouseadmin.composeapp.generated.resources.field_sector
 import greenhouseadmin.composeapp.generated.resources.label_actuator_state
+import greenhouseadmin.composeapp.generated.resources.label_description
 import greenhouseadmin.composeapp.generated.resources.label_loading
 import greenhouseadmin.composeapp.generated.resources.label_parameter
 import greenhouseadmin.composeapp.generated.resources.label_select
@@ -76,13 +78,14 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun SettingFormDialog(
     mode: SettingFormMode,
+    sectors: List<Sector> = emptyList(),
     greenhouses: List<Greenhouse> = emptyList(),
     parameters: List<DeviceCatalogType> = emptyList(),
     actuatorStates: List<ActuatorState> = emptyList(),
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (greenhouseId: Long?, parameterId: Short, actuatorStateId: Short, value: String, isActive: Boolean) -> Unit = { _, _, _, _, _ -> },
+    onSubmit: (sectorId: Long?, parameterId: Short, actuatorStateId: Short, value: String, description: String?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -90,10 +93,11 @@ fun SettingFormDialog(
         when (mode) {
             is SettingFormMode.Create -> SettingFormData()
             is SettingFormMode.Edit -> SettingFormData(
-                greenhouseId = mode.setting.greenhouseId,
+                sectorId = mode.setting.sectorId,
                 parameterId = mode.setting.parameterId,
                 actuatorStateId = mode.setting.actuatorStateId,
                 value = mode.setting.value ?: "",
+                description = mode.setting.description ?: "",
                 isActive = mode.setting.isActive
             )
         }
@@ -102,17 +106,17 @@ fun SettingFormDialog(
     var formData by remember(mode) { mutableStateOf(initialFormData) }
     var validationErrors by remember { mutableStateOf(SettingFormData.ValidationErrors()) }
     var hasAttemptedSubmit by remember { mutableStateOf(false) }
-    var greenhouseExpanded by remember { mutableStateOf(false) }
+    var sectorExpanded by remember { mutableStateOf(false) }
     var parameterExpanded by remember { mutableStateOf(false) }
     var actuatorStateExpanded by remember { mutableStateOf(false) }
 
-    val greenhouseRequiredMsg = stringResource(Res.string.error_greenhouse_required)
+    val sectorRequiredMsg = stringResource(Res.string.error_sector_required)
     val parameterRequiredMsg = stringResource(Res.string.error_parameter_required)
     val actuatorStateRequiredMsg = stringResource(Res.string.error_actuator_state_required)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
-            "error_greenhouse_required" -> greenhouseRequiredMsg
+            "error_sector_required" -> sectorRequiredMsg
             "error_parameter_required" -> parameterRequiredMsg
             "error_actuator_state_required" -> actuatorStateRequiredMsg
             else -> null
@@ -138,11 +142,18 @@ fun SettingFormDialog(
 
     val selectText = stringResource(Res.string.label_select)
     val loadingText = stringResource(Res.string.label_loading)
+    val descriptionLabel = stringResource(Res.string.label_description)
 
     // Find selected items for display
-    val selectedGreenhouse = greenhouses.find { it.id == formData.greenhouseId }
+    val selectedSector = sectors.find { it.id == formData.sectorId }
     val selectedParameter = parameters.find { it.id == formData.parameterId }
     val selectedActuatorState = actuatorStates.find { it.id == formData.actuatorStateId }
+
+    // Helper function to get sector display text with greenhouse name
+    fun getSectorDisplayText(sector: Sector): String {
+        val greenhouse = greenhouses.find { it.id == sector.greenhouseId }
+        return "${sector.displayName} (${greenhouse?.name ?: "Unknown"})"
+    }
 
     Dialog(onDismissRequest = { if (!isSubmitting) onDismiss() }) {
         Card(
@@ -173,24 +184,36 @@ fun SettingFormDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Greenhouse dropdown (required)
+                // Sector dropdown (required)
                 SettingFormDropdown(
-                    label = stringResource(Res.string.field_greenhouse),
-                    expanded = greenhouseExpanded,
-                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) greenhouseExpanded = it },
-                    selectedText = selectedGreenhouse?.name ?: selectText,
+                    label = stringResource(Res.string.field_sector),
+                    expanded = sectorExpanded,
+                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) sectorExpanded = it },
+                    selectedText = selectedSector?.let { getSectorDisplayText(it) } ?: selectText,
                     isLoading = isLoadingCatalog,
                     loadingText = loadingText,
-                    enabled = !isSubmitting && !isEditMode, // Greenhouse not editable in edit mode
-                    isError = validationErrors.greenhouseId != null,
-                    errorMessage = getErrorMessage(validationErrors.greenhouseId)
+                    enabled = !isSubmitting && !isEditMode, // Sector not editable in edit mode
+                    isError = validationErrors.sectorId != null,
+                    errorMessage = getErrorMessage(validationErrors.sectorId)
                 ) {
-                    greenhouses.forEach { greenhouse ->
+                    sectors.forEach { sector ->
                         DropdownMenuItem(
-                            text = { Text(greenhouse.name) },
+                            text = {
+                                Column {
+                                    Text(sector.displayName)
+                                    val greenhouse = greenhouses.find { it.id == sector.greenhouseId }
+                                    greenhouse?.let {
+                                        Text(
+                                            text = it.name,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            },
                             onClick = {
-                                formData = formData.copy(greenhouseId = greenhouse.id)
-                                greenhouseExpanded = false
+                                formData = formData.copy(sectorId = sector.id)
+                                sectorExpanded = false
                                 if (hasAttemptedSubmit) validationErrors = formData.validate()
                             }
                         )
@@ -261,6 +284,18 @@ fun SettingFormDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Description field (optional)
+                SettingFormTextField(
+                    value = formData.description,
+                    onValueChange = { formData = formData.copy(description = it) },
+                    label = descriptionLabel,
+                    enabled = !isSubmitting,
+                    minLines = 2,
+                    maxLines = 4
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Status switch
                 SettingStatusSwitch(
                     isActive = formData.isActive,
@@ -302,10 +337,11 @@ fun SettingFormDialog(
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
                                 onSubmit(
-                                    formData.greenhouseId,
+                                    formData.sectorId,
                                     formData.parameterId!!,
                                     formData.actuatorStateId!!,
                                     formData.value,
+                                    formData.description.ifBlank { null },
                                     formData.isActive
                                 )
                             }
@@ -420,6 +456,8 @@ private fun SettingFormTextField(
     onValueChange: (String) -> Unit,
     label: String,
     enabled: Boolean,
+    minLines: Int = 1,
+    maxLines: Int = 1,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -436,7 +474,9 @@ private fun SettingFormTextField(
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
-            singleLine = true,
+            singleLine = minLines == 1 && maxLines == 1,
+            minLines = minLines,
+            maxLines = maxLines,
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -505,9 +545,9 @@ private fun SettingFormDialogCreatePreview() {
     GreenhouseAdminTheme {
         SettingFormDialog(
             mode = SettingFormMode.Create,
-            greenhouses = listOf(
-                Greenhouse(id = 1L, code = "GRH-00001", tenantId = 1L, name = "Greenhouse A"),
-                Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
+            sectors = listOf(
+                Sector(id = 1L, code = "SEC-00001", tenantId = 1L, greenhouseId = 1L, name = "Tomato"),
+                Sector(id = 2L, code = "SEC-00002", tenantId = 1L, greenhouseId = 1L, name = "Pepper")
             ),
             parameters = listOf(
                 DeviceCatalogType(
@@ -568,21 +608,22 @@ private fun SettingFormDialogEditPreview() {
                 Setting(
                     id = 1L,
                     code = "SET-00001",
-                    greenhouseId = 1L,
-                    greenhouseName = "Greenhouse A",
+                    sectorId = 1L,
+                    sectorCode = "SEC-00001",
                     tenantId = 1L,
                     parameterId = 1,
                     parameterName = "Temperature",
                     actuatorStateId = 2,
                     actuatorStateName = "ON",
                     value = "25",
+                    description = null,
                     isActive = true,
                     createdAt = "2024-01-15T10:30:00Z"
                 )
             ),
-            greenhouses = listOf(
-                Greenhouse(id = 1L, code = "GRH-00001", tenantId = 1L, name = "Greenhouse A"),
-                Greenhouse(id = 2L, code = "GRH-00002", tenantId = 1L, name = "Greenhouse B")
+            sectors = listOf(
+                Sector(id = 1L, code = "SEC-00001", tenantId = 1L, greenhouseId = 1L, name = "Tomato"),
+                Sector(id = 2L, code = "SEC-00002", tenantId = 1L, greenhouseId = 1L, name = "Pepper")
             ),
             parameters = listOf(
                 DeviceCatalogType(

@@ -2,20 +2,21 @@ package com.apptolast.greenhouse.admin.data.model
 
 /**
  * Form data class for creating/editing settings with validation.
- * Manages form state for greenhouse parameter threshold configuration.
+ * Manages form state for sector parameter threshold configuration.
  */
 data class SettingFormData(
-    val greenhouseId: Long? = null,
+    val sectorId: Long? = null,
     val parameterId: Short? = null,
     val actuatorStateId: Short? = null,
     val value: String = "",
+    val description: String = "",
     val isActive: Boolean = true
 ) {
     /**
      * Validation errors container.
      */
     data class ValidationErrors(
-        val greenhouseId: String? = null,
+        val sectorId: String? = null,
         val parameterId: String? = null,
         val actuatorStateId: String? = null
     ) {
@@ -23,7 +24,7 @@ data class SettingFormData(
          * Returns true if there are any validation errors.
          */
         val hasErrors: Boolean
-            get() = greenhouseId != null || parameterId != null || actuatorStateId != null
+            get() = sectorId != null || parameterId != null || actuatorStateId != null
     }
 
     /**
@@ -31,7 +32,7 @@ data class SettingFormData(
      */
     fun validate(): ValidationErrors {
         return ValidationErrors(
-            greenhouseId = if (greenhouseId == null) "error_greenhouse_required" else null,
+            sectorId = if (sectorId == null) "error_sector_required" else null,
             parameterId = if (parameterId == null) "error_parameter_required" else null,
             actuatorStateId = if (actuatorStateId == null) "error_actuator_state_required" else null
         )
