@@ -1,8 +1,5 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,14 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.outlined.ArrowDownward
-import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -38,8 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,7 +39,12 @@ import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.User
 import com.apptolast.greenhouse.admin.data.model.UserRole
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.InitialAvatar
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.avatarColorForInitial
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.SortDirection
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.SortableColumnHeader
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.TableRowActions
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
@@ -194,7 +191,7 @@ private fun UsersTableHeader(
         horizontalArrangement = Arrangement.Start
     ) {
         // USERNAME column - Sortable
-        UserSortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_username),
             column = UserSortColumn.USERNAME,
             currentSortColumn = sortColumn,
@@ -203,7 +200,7 @@ private fun UsersTableHeader(
             modifier = Modifier.weight(1.2f)
         )
         // EMAIL column - Sortable
-        UserSortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_email),
             column = UserSortColumn.EMAIL,
             currentSortColumn = sortColumn,
@@ -212,7 +209,7 @@ private fun UsersTableHeader(
             modifier = Modifier.weight(1.5f)
         )
         // ROLE column - Sortable
-        UserSortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_role),
             column = UserSortColumn.ROLE,
             currentSortColumn = sortColumn,
@@ -238,58 +235,6 @@ private fun UsersTableHeader(
     }
 }
 
-/**
- * Sortable header cell with sort icon for Users table.
- */
-@Composable
-private fun UserSortableHeader(
-    text: String,
-    column: UserSortColumn,
-    currentSortColumn: UserSortColumn?,
-    sortDirection: SortDirection,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val isActive = currentSortColumn == column
-
-    Row(
-        modifier = modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            onClick = onClick
-        ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        if (isActive) {
-            Icon(
-                imageVector = if (sortDirection == SortDirection.ASCENDING) {
-                    Icons.Outlined.ArrowUpward
-                } else {
-                    Icons.Outlined.ArrowDownward
-                },
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        } else {
-            // Show a subtle indicator that this column is sortable
-            Icon(
-                imageVector = Icons.Outlined.ArrowUpward,
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-            )
-        }
-    }
-}
-
 @Composable
 private fun UserTableRow(
     user: User,
@@ -309,8 +254,9 @@ private fun UserTableRow(
             modifier = Modifier.weight(1.2f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            UserAvatar(
-                initial = user.initial,
+            InitialAvatar(
+                initials = user.initial,
+                color = avatarColorForInitial(user.initial),
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -351,33 +297,7 @@ private fun UserTableRow(
         )
 
         // ACTIONS
-        Row(
-            modifier = Modifier.width(80.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            IconButton(
-                onClick = onEdit,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(Res.string.action_edit),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(Res.string.action_delete),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
+        TableRowActions(onEdit = onEdit, onDelete = onDelete)
     }
 }
 
@@ -432,8 +352,9 @@ private fun UserCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                UserAvatar(
-                    initial = user.initial,
+                InitialAvatar(
+                    initials = user.initial,
+                    color = avatarColorForInitial(user.initial),
                     modifier = Modifier.size(40.dp)
                 )
 
@@ -522,59 +443,6 @@ private fun UserCard(
     }
 }
 
-/**
- * Avatar component for users with colored background based on initial.
- */
-@Composable
-fun UserAvatar(
-    initial: String,
-    modifier: Modifier = Modifier
-) {
-    val backgroundColor = when (initial.firstOrNull()?.uppercaseChar()) {
-        'A' -> Color(0xFFE91E63)
-        'B' -> Color(0xFF9C27B0)
-        'C' -> Color(0xFF795548)
-        'D' -> Color(0xFF009688)
-        'E' -> Color(0xFF3F51B5)
-        'F' -> Color(0xFF4CAF50)
-        'G' -> Color(0xFFCDDC39)
-        'H' -> Color(0xFF2196F3)
-        'I' -> Color(0xFF00BCD4)
-        'J' -> Color(0xFFFF5722)
-        'K' -> Color(0xFF673AB7)
-        'L' -> Color(0xFF9C27B0)
-        'M' -> Color(0xFFFF9800)
-        'N' -> Color(0xFF8BC34A)
-        'O' -> Color(0xFFFFEB3B)
-        'P' -> Color(0xFF4CAF50)
-        'Q' -> Color(0xFF607D8B)
-        'R' -> Color(0xFFF44336)
-        'S' -> Color(0xFF03A9F4)
-        'T' -> Color(0xFF00BCD4)
-        'U' -> Color(0xFF9E9E9E)
-        'V' -> Color(0xFFFF5722)
-        'W' -> Color(0xFF795548)
-        'X' -> Color(0xFF607D8B)
-        'Y' -> Color(0xFFFFC107)
-        'Z' -> Color(0xFF9E9E9E)
-        else -> Color(0xFF607D8B)
-    }
-
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(backgroundColor),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = initial,
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.White,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
 private object UsersTablePreviewData {
     val sampleUsers = listOf(
         User(
@@ -615,10 +483,3 @@ private fun UsersTablePreview() {
     }
 }
 
-@Preview
-@Composable
-private fun UserAvatarPreview() {
-    GreenhouseAdminTheme {
-        UserAvatar(initial = "A")
-    }
-}

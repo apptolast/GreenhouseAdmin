@@ -57,7 +57,7 @@ data class ClientDetailUiState(
 
     // User form dialog states
     val showUserFormDialog: Boolean = false,
-    val userFormMode: UserFormMode = UserFormMode.Create,
+    val userFormMode: FormMode<User> = FormMode.Create,
     val isSubmittingUser: Boolean = false,
     val submitUserError: String? = null,
 
@@ -74,7 +74,7 @@ data class ClientDetailUiState(
 
     // Greenhouse form dialog states
     val showGreenhouseFormDialog: Boolean = false,
-    val greenhouseFormMode: GreenhouseFormMode = GreenhouseFormMode.Create,
+    val greenhouseFormMode: FormMode<Greenhouse> = FormMode.Create,
     val isSubmittingGreenhouse: Boolean = false,
     val submitGreenhouseError: String? = null,
 
@@ -91,7 +91,7 @@ data class ClientDetailUiState(
 
     // Sector form dialog states
     val showSectorFormDialog: Boolean = false,
-    val sectorFormMode: SectorFormMode = SectorFormMode.Create,
+    val sectorFormMode: FormMode<Sector> = FormMode.Create,
     val isSubmittingSector: Boolean = false,
     val submitSectorError: String? = null,
 
@@ -108,7 +108,7 @@ data class ClientDetailUiState(
 
     // Device form dialog states
     val showDeviceFormDialog: Boolean = false,
-    val deviceFormMode: DeviceFormMode = DeviceFormMode.Create,
+    val deviceFormMode: FormMode<Device> = FormMode.Create,
     val isSubmittingDevice: Boolean = false,
     val submitDeviceError: String? = null,
 
@@ -130,7 +130,7 @@ data class ClientDetailUiState(
 
     // Alert form dialog states
     val showAlertFormDialog: Boolean = false,
-    val alertFormMode: AlertFormMode = AlertFormMode.Create,
+    val alertFormMode: FormMode<Alert> = FormMode.Create,
     val isSubmittingAlert: Boolean = false,
     val submitAlertError: String? = null,
 
@@ -151,7 +151,7 @@ data class ClientDetailUiState(
 
     // Setting form dialog states
     val showSettingFormDialog: Boolean = false,
-    val settingFormMode: SettingFormMode = SettingFormMode.Create,
+    val settingFormMode: FormMode<Setting> = FormMode.Create,
     val isSubmittingSetting: Boolean = false,
     val submitSettingError: String? = null,
 
@@ -162,7 +162,25 @@ data class ClientDetailUiState(
     val deleteSettingError: String? = null,
 
     // Setting catalog state (preloaded at init)
-    val actuatorStates: List<ActuatorState> = emptyList()
+    val actuatorStates: List<ActuatorState> = emptyList(),
+
+    // === Greenhouse hierarchical view state ===
+
+    // Currently expanded greenhouses in the tree panel
+    val expandedGreenhouseIds: Set<Long> = emptySet(),
+
+    // Selected greenhouse in the tree panel (null = none)
+    val selectedGreenhouseId: Long? = null,
+
+    // Selected sector within a greenhouse (null = none)
+    val selectedSectorId: Long? = null,
+
+    // Active sub-tab when viewing a sector's detail
+    val sectorSubTab: SectorSubTab = SectorSubTab.DEVICES,
+
+    // Alerts tab filters
+    val alertsFilterGreenhouseId: Long? = null,
+    val alertsFilterSectorId: Long? = null
 ) {
     /**
      * Returns true if in error state with no content.
@@ -175,6 +193,58 @@ data class ClientDetailUiState(
      */
     val hasContent: Boolean
         get() = client != null
+
+    /**
+     * Sectors belonging to the selected greenhouse.
+     */
+    fun sectorsForGreenhouse(greenhouseId: Long): List<Sector> =
+        sectors.filter { it.greenhouseId == greenhouseId }
+
+    /**
+     * Devices belonging to a specific sector.
+     */
+    fun devicesForSector(sectorId: Long): List<Device> =
+        devices.filter { it.sectorId == sectorId }
+
+    /**
+     * Alerts belonging to a specific sector.
+     */
+    fun alertsForSector(sectorId: Long): List<Alert> =
+        alerts.filter { it.sectorId == sectorId }
+
+    /**
+     * Settings belonging to a specific sector.
+     */
+    fun settingsForSector(sectorId: Long): List<Setting> =
+        settings.filter { it.sectorId == sectorId }
+
+    /**
+     * Filtered alerts for the global Alerts tab.
+     * Filters by greenhouse and/or sector if filter values are set.
+     */
+    val filteredAlerts: List<Alert>
+        get() {
+            var result = alerts
+            alertsFilterSectorId?.let { sId ->
+                result = result.filter { it.sectorId == sId }
+            } ?: alertsFilterGreenhouseId?.let { ghId ->
+                val sectorIds = sectors.filter { it.greenhouseId == ghId }.map { it.id }.toSet()
+                result = result.filter { it.sectorId in sectorIds }
+            }
+            return result
+        }
+
+    /**
+     * The currently selected greenhouse object, if any.
+     */
+    val selectedGreenhouse: Greenhouse?
+        get() = selectedGreenhouseId?.let { id -> greenhouses.find { it.id == id } }
+
+    /**
+     * The currently selected sector object, if any.
+     */
+    val selectedSector: Sector?
+        get() = selectedSectorId?.let { id -> sectors.find { it.id == id } }
 }
 
 /**
@@ -184,56 +254,13 @@ enum class ClientDetailTab {
     GENERAL,
     USERS,
     GREENHOUSES,
-    SECTORS,
-    DEVICES,
-    ALERTS,
-    SETTINGS
+    ALERTS
 }
 
 /**
- * Mode for the user form dialog.
+ * Sub-tabs within the sector detail view inside the Greenhouses hierarchy.
  */
-sealed interface UserFormMode {
-    data object Create : UserFormMode
-    data class Edit(val user: User) : UserFormMode
+enum class SectorSubTab {
+    DEVICES, ALERTS, SETTINGS
 }
 
-/**
- * Mode for the greenhouse form dialog.
- */
-sealed interface GreenhouseFormMode {
-    data object Create : GreenhouseFormMode
-    data class Edit(val greenhouse: Greenhouse) : GreenhouseFormMode
-}
-
-/**
- * Mode for the sector form dialog.
- */
-sealed interface SectorFormMode {
-    data object Create : SectorFormMode
-    data class Edit(val sector: Sector) : SectorFormMode
-}
-
-/**
- * Mode for the device form dialog.
- */
-sealed interface DeviceFormMode {
-    data object Create : DeviceFormMode
-    data class Edit(val device: Device) : DeviceFormMode
-}
-
-/**
- * Mode for the alert form dialog.
- */
-sealed interface AlertFormMode {
-    data object Create : AlertFormMode
-    data class Edit(val alert: Alert) : AlertFormMode
-}
-
-/**
- * Mode for the setting form dialog.
- */
-sealed interface SettingFormMode {
-    data object Create : SettingFormMode
-    data class Edit(val setting: Setting) : SettingFormMode
-}

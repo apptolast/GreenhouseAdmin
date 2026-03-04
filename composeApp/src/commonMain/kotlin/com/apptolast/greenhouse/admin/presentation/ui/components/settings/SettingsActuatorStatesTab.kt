@@ -350,7 +350,7 @@ private fun ActuatorStateFormDialog(
     var color by remember(formMode) { mutableStateOf(existing?.color ?: "") }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {},
         shape = RoundedCornerShape(16.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         title = {

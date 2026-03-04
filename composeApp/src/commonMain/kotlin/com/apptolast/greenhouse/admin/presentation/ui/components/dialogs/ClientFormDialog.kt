@@ -149,7 +149,7 @@ fun ClientFormDialog(
         stringResource(Res.string.button_create)
     }
 
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(onDismissRequest = {}) {
         Card(
             modifier = modifier.width(480.dp),
             colors = CardDefaults.cardColors(

@@ -430,4 +430,53 @@
     <!-- Period Dialogs -->
     <string name="dialog_create_period">Crear Período</string>
     <string name="dialog_edit_period">Editar Período</string>
+
+    <!-- Vista Jerárquica de Invernaderos -->
+    <string name="greenhouse_tree_title">Invernaderos</string>
+    <string name="select_item_prompt">Selecciona un invernadero o sector</string>
+    <string name="back_to_greenhouses">Volver a invernaderos</string>
+    <string name="greenhouse_details">Detalles del Invernadero</string>
+    <string name="sub_tab_devices">Dispositivos</string>
+    <string name="sub_tab_alerts">Alertas</string>
+    <string name="sub_tab_settings">Consignas</string>
+    <string name="sector_no_devices">No hay dispositivos en este sector.</string>
+    <string name="sector_no_alerts">No hay alertas en este sector.</string>
+    <string name="sector_no_settings">No hay consignas en este sector.</string>
+    <string name="greenhouse_select_sector_hint">Selecciona un sector del árbol para gestionar sus dispositivos, alertas y consignas.</string>
+
+    <!-- Etiquetas información invernadero -->
+    <string name="greenhouse_info_code">Código</string>
+    <string name="greenhouse_info_area">Área</string>
+    <string name="greenhouse_info_timezone">Zona horaria</string>
+    <string name="greenhouse_info_status">Estado</string>
+    <string name="greenhouse_info_location">Ubicación</string>
+
+    <!-- Filtros de la pestaña Alertas -->
+    <string name="alerts_filter_greenhouse">Filtrar por invernadero</string>
+    <string name="alerts_filter_sector">Filtrar por sector</string>
+    <string name="alerts_filter_all">Todos</string>
+
+    <!-- Missing ES strings (sync with EN) -->
+    <string name="settings_tab_actuator_states">Consignas</string>
+    <string name="header_operational">OPERACIONAL</string>
+    <string name="header_order">ORDEN</string>
+    <string name="field_symbol">Símbolo</string>
+    <string name="field_is_operational">Operacional</string>
+    <string name="field_display_order">Orden de Visualización</string>
+    <string name="label_yes">Sí</string>
+    <string name="label_no">No</string>
+    <string name="total_users">Total Usuarios</string>
+    <string name="registered_users">Usuarios registrados</string>
+    <string name="device_breakdown">Desglose de Dispositivos</string>
+    <string name="sensors_actuators">Sensores / Actuadores</string>
+    <string name="recent_alerts">Alertas Recientes</string>
+    <string name="recent_clients">Clientes Recientes</string>
+    <string name="no_active_alerts">Sin alertas activas</string>
+    <string name="no_clients_found">No se encontraron clientes</string>
+    <string name="no_province">Sin provincia</string>
+    <string name="header_actuator_state">ESTADO ACTUADOR</string>
+    <string name="header_value">VALOR</string>
+    <string name="label_actuator_state">Estado Actuador</string>
+    <string name="label_value">Valor</string>
+    <string name="error_actuator_state_required">El estado actuador es obligatorio</string>
 </resources>

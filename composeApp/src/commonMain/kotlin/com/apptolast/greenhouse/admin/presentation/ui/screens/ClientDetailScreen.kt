@@ -38,14 +38,11 @@ import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailAlertsTab
-import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailDevicesTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailGeneralTab
-import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailGreenhousesTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailHeader
-import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailSectorsTab
-import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailSettingsTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailTabBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailUsersTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.greenhouse.GreenhouseHierarchicalTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.DashboardTopBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.LoadingContent
@@ -68,11 +65,6 @@ import greenhouseadmin.composeapp.generated.resources.app_name
 import greenhouseadmin.composeapp.generated.resources.breadcrumb_clients
 import greenhouseadmin.composeapp.generated.resources.error_unknown
 import greenhouseadmin.composeapp.generated.resources.id_copied
-import greenhouseadmin.composeapp.generated.resources.new_alert
-import greenhouseadmin.composeapp.generated.resources.new_device
-import greenhouseadmin.composeapp.generated.resources.new_greenhouse
-import greenhouseadmin.composeapp.generated.resources.new_sector
-import greenhouseadmin.composeapp.generated.resources.new_setting
 import greenhouseadmin.composeapp.generated.resources.new_user
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -289,11 +281,10 @@ private fun ClientDetailScreenContent(
     if (uiState.showSectorFormDialog) {
         SectorFormDialog(
             mode = uiState.sectorFormMode,
-            greenhouses = uiState.greenhouses,
             isSubmitting = uiState.isSubmittingSector,
             error = uiState.submitSectorError,
-            onSubmit = { greenhouseId, name ->
-                onEvent(ClientDetailEvent.OnSubmitSectorForm(greenhouseId, name))
+            onSubmit = { name ->
+                onEvent(ClientDetailEvent.OnSubmitSectorForm(name))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissSectorFormDialog) }
         )
@@ -314,16 +305,14 @@ private fun ClientDetailScreenContent(
     if (uiState.showDeviceFormDialog) {
         DeviceFormDialog(
             mode = uiState.deviceFormMode,
-            sectors = uiState.sectors,
-            greenhouses = uiState.greenhouses,
             categories = uiState.deviceCategories,
             allTypes = uiState.deviceTypes,
             units = uiState.deviceUnits,
             isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingDevice,
             error = uiState.submitDeviceError,
-            onSubmit = { sectorId, name, categoryId, typeId, unitId, isActive ->
-                onEvent(ClientDetailEvent.OnSubmitDeviceForm(sectorId, name, categoryId, typeId, unitId, isActive))
+            onSubmit = { name, categoryId, typeId, unitId, isActive ->
+                onEvent(ClientDetailEvent.OnSubmitDeviceForm(name, categoryId, typeId, unitId, isActive))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissDeviceFormDialog) }
         )
@@ -344,14 +333,13 @@ private fun ClientDetailScreenContent(
     if (uiState.showAlertFormDialog) {
         AlertFormDialog(
             mode = uiState.alertFormMode,
-            sectors = uiState.sectors,
             alertTypes = uiState.alertTypes,
             severities = uiState.alertSeverities,
             isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingAlert,
             error = uiState.submitAlertError,
-            onSubmit = { sectorId, alertTypeId, severityId, message, description ->
-                onEvent(ClientDetailEvent.OnSubmitAlertForm(sectorId, alertTypeId, severityId, message, description))
+            onSubmit = { alertTypeId, severityId, message, description ->
+                onEvent(ClientDetailEvent.OnSubmitAlertForm(alertTypeId, severityId, message, description))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissAlertFormDialog) }
         )
@@ -372,20 +360,16 @@ private fun ClientDetailScreenContent(
     if (uiState.showSettingFormDialog) {
         SettingFormDialog(
             mode = uiState.settingFormMode,
-            sectors = uiState.sectors,
-            greenhouses = uiState.greenhouses,
             parameters = uiState.deviceTypes,
             actuatorStates = uiState.actuatorStates,
             isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingSetting,
             error = uiState.submitSettingError,
-            onSubmit = { sectorId, parameterId, actuatorStateId, value, description, isActive ->
+            onSubmit = { parameterId, actuatorStateId, description, isActive ->
                 onEvent(
                     ClientDetailEvent.OnSubmitSettingForm(
-                        sectorId = sectorId,
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
-                        value = value,
                         description = description,
                         isActive = isActive
                     )
@@ -418,24 +402,18 @@ private fun ClientDetailContent(
     val contentPadding = AdaptiveDimens.contentPadding()
     val windowInfo = LocalAppWindowInfo.current
 
-    // Show FAB on compact screens when on tabs that support adding items
-    val showFab = windowInfo.isCompact && uiState.selectedTab in listOf(
-        ClientDetailTab.USERS,
-        ClientDetailTab.GREENHOUSES,
-        ClientDetailTab.SECTORS,
-        ClientDetailTab.DEVICES,
-        ClientDetailTab.ALERTS,
-        ClientDetailTab.SETTINGS
-    )
+    // Show FAB on compact screens when on Users tab (other tabs have their own add buttons)
+    val showFab = windowInfo.isCompact && uiState.selectedTab == ClientDetailTab.USERS
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .verticalScroll(rememberScrollState())
+            // No verticalScroll here — each tab handles its own scrolling.
+            // This gives bounded height constraints to GreenhouseHierarchicalTab.
         ) {
-            // Header with client info and actions
+            // Header with client info and actions (pinned at top)
             ClientDetailHeader(
                 client = client,
                 onBackClick = onNavigateBack,
@@ -445,7 +423,7 @@ private fun ClientDetailContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Tab bar
+            // Tab bar (pinned at top)
             ClientDetailTabBar(
                 selectedTab = uiState.selectedTab,
                 onTabSelected = { onEvent(ClientDetailEvent.OnTabSelected(it)) }
@@ -453,148 +431,74 @@ private fun ClientDetailContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Tab content
+            // Tab content — each tab fills remaining space and scrolls independently
             when (uiState.selectedTab) {
                 ClientDetailTab.GENERAL -> {
-                    ClientDetailGeneralTab(client = client)
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        ClientDetailGeneralTab(client = client)
+                    }
                 }
 
                 ClientDetailTab.USERS -> {
-                    ClientDetailUsersTab(
-                        users = uiState.users,
-                        isLoading = uiState.isLoadingUsers,
-                        error = uiState.usersError,
-                        onAddUser = { onEvent(ClientDetailEvent.OnAddUserClicked) },
-                        onEditUser = { user -> onEvent(ClientDetailEvent.OnEditUserClicked(user)) },
-                        onDeleteUser = { user -> onEvent(ClientDetailEvent.OnDeleteUserClicked(user)) },
-                        onRetry = { onEvent(ClientDetailEvent.LoadUsers) }
-                    )
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        ClientDetailUsersTab(
+                            users = uiState.users,
+                            isLoading = uiState.isLoadingUsers,
+                            error = uiState.usersError,
+                            onAddUser = { onEvent(ClientDetailEvent.OnAddUserClicked) },
+                            onEditUser = { user -> onEvent(ClientDetailEvent.OnEditUserClicked(user)) },
+                            onDeleteUser = { user -> onEvent(ClientDetailEvent.OnDeleteUserClicked(user)) },
+                            onRetry = { onEvent(ClientDetailEvent.LoadUsers) }
+                        )
+                    }
                 }
 
                 ClientDetailTab.GREENHOUSES -> {
-                    ClientDetailGreenhousesTab(
-                        greenhouses = uiState.greenhouses,
-                        isLoading = uiState.isLoadingGreenhouses,
-                        error = uiState.greenhousesError,
-                        onAddGreenhouse = { onEvent(ClientDetailEvent.OnAddGreenhouseClicked) },
-                        onEditGreenhouse = { greenhouse -> onEvent(ClientDetailEvent.OnEditGreenhouseClicked(greenhouse)) },
-                        onDeleteGreenhouse = { greenhouse ->
-                            onEvent(
-                                ClientDetailEvent.OnDeleteGreenhouseClicked(
-                                    greenhouse
-                                )
-                            )
-                        },
-                        onRetry = { onEvent(ClientDetailEvent.LoadGreenhouses) }
-                    )
-                }
-
-                ClientDetailTab.SECTORS -> {
-                    ClientDetailSectorsTab(
-                        sectors = uiState.sectors,
-                        greenhouses = uiState.greenhouses,
-                        isLoading = uiState.isLoadingSectors,
-                        error = uiState.sectorsError,
-                        onAddSector = { onEvent(ClientDetailEvent.OnAddSectorClicked) },
-                        onEditSector = { sector -> onEvent(ClientDetailEvent.OnEditSectorClicked(sector)) },
-                        onDeleteSector = { sector -> onEvent(ClientDetailEvent.OnDeleteSectorClicked(sector)) },
+                    GreenhouseHierarchicalTab(
+                        uiState = uiState,
+                        onEvent = onEvent,
                         onCopyId = onCopyId,
-                        onRetry = { onEvent(ClientDetailEvent.LoadSectors) }
-                    )
-                }
-
-                ClientDetailTab.DEVICES -> {
-                    ClientDetailDevicesTab(
-                        devices = uiState.devices,
-                        sectors = uiState.sectors,
-                        greenhouses = uiState.greenhouses,
-                        isLoading = uiState.isLoadingDevices,
-                        error = uiState.devicesError,
-                        onAddDevice = { onEvent(ClientDetailEvent.OnAddDeviceClicked) },
-                        onEditDevice = { device -> onEvent(ClientDetailEvent.OnEditDeviceClicked(device)) },
-                        onDeleteDevice = { device -> onEvent(ClientDetailEvent.OnDeleteDeviceClicked(device)) },
-                        onCopyId = onCopyId,
-                        onRetry = { onEvent(ClientDetailEvent.LoadDevices) }
+                        modifier = Modifier.weight(1f)
                     )
                 }
 
                 ClientDetailTab.ALERTS -> {
-                    ClientDetailAlertsTab(
-                        alerts = uiState.alerts,
-                        sectors = uiState.sectors,
-                        greenhouses = uiState.greenhouses,
-                        isLoading = uiState.isLoadingAlerts,
-                        error = uiState.alertsError,
-                        onAddAlert = { onEvent(ClientDetailEvent.OnAddAlertClicked) },
-                        onEditAlert = { alert -> onEvent(ClientDetailEvent.OnEditAlertClicked(alert)) },
-                        onDeleteAlert = { alert -> onEvent(ClientDetailEvent.OnDeleteAlertClicked(alert)) },
-                        onResolveAlert = { alert -> onEvent(ClientDetailEvent.OnResolveAlertClicked(alert)) },
-                        onReopenAlert = { alert -> onEvent(ClientDetailEvent.OnReopenAlertClicked(alert)) },
-                        onCopyId = onCopyId,
-                        onRetry = { onEvent(ClientDetailEvent.LoadAlerts) }
-                    )
-                }
-
-                ClientDetailTab.SETTINGS -> {
-                    ClientDetailSettingsTab(
-                        settings = uiState.settings,
-                        sectors = uiState.sectors,
-                        greenhouses = uiState.greenhouses,
-                        isLoading = uiState.isLoadingSettings,
-                        error = uiState.settingsError,
-                        onAddSetting = { onEvent(ClientDetailEvent.OnAddSettingClicked) },
-                        onEditSetting = { setting -> onEvent(ClientDetailEvent.OnEditSettingClicked(setting)) },
-                        onDeleteSetting = { setting -> onEvent(ClientDetailEvent.OnDeleteSettingClicked(setting)) },
-                        onCopyId = onCopyId,
-                        onRetry = { onEvent(ClientDetailEvent.LoadSettings) }
-                    )
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        ClientDetailAlertsTab(
+                            alerts = uiState.filteredAlerts,
+                            sectors = uiState.sectors,
+                            greenhouses = uiState.greenhouses,
+                            isLoading = uiState.isLoadingAlerts,
+                            error = uiState.alertsError,
+                            onAddAlert = { onEvent(ClientDetailEvent.OnAddAlertClicked) },
+                            onEditAlert = { alert -> onEvent(ClientDetailEvent.OnEditAlertClicked(alert)) },
+                            onDeleteAlert = { alert -> onEvent(ClientDetailEvent.OnDeleteAlertClicked(alert)) },
+                            onResolveAlert = { alert -> onEvent(ClientDetailEvent.OnResolveAlertClicked(alert)) },
+                            onReopenAlert = { alert -> onEvent(ClientDetailEvent.OnReopenAlertClicked(alert)) },
+                            onCopyId = onCopyId,
+                            onRetry = { onEvent(ClientDetailEvent.LoadAlerts) }
+                        )
+                    }
                 }
             }
         }
 
-        // FAB for adding items on compact screens
+        // FAB for adding users on compact screens
         if (showFab) {
-            val fabContentDescription = when (uiState.selectedTab) {
-                ClientDetailTab.USERS -> stringResource(Res.string.new_user)
-                ClientDetailTab.GREENHOUSES -> stringResource(Res.string.new_greenhouse)
-                ClientDetailTab.SECTORS -> stringResource(Res.string.new_sector)
-                ClientDetailTab.DEVICES -> stringResource(Res.string.new_device)
-                ClientDetailTab.ALERTS -> stringResource(Res.string.new_alert)
-                ClientDetailTab.SETTINGS -> stringResource(Res.string.new_setting)
-                else -> ""
-            }
-            val fabOnClick: () -> Unit = when (uiState.selectedTab) {
-                ClientDetailTab.USERS -> {
-                    { onEvent(ClientDetailEvent.OnAddUserClicked) }
-                }
-
-                ClientDetailTab.GREENHOUSES -> {
-                    { onEvent(ClientDetailEvent.OnAddGreenhouseClicked) }
-                }
-
-                ClientDetailTab.SECTORS -> {
-                    { onEvent(ClientDetailEvent.OnAddSectorClicked) }
-                }
-
-                ClientDetailTab.DEVICES -> {
-                    { onEvent(ClientDetailEvent.OnAddDeviceClicked) }
-                }
-
-                ClientDetailTab.ALERTS -> {
-                    { onEvent(ClientDetailEvent.OnAddAlertClicked) }
-                }
-
-                ClientDetailTab.SETTINGS -> {
-                    { onEvent(ClientDetailEvent.OnAddSettingClicked) }
-                }
-
-                else -> {
-                    {}
-                }
-            }
-
             FloatingActionButton(
-                onClick = fabOnClick,
+                onClick = { onEvent(ClientDetailEvent.OnAddUserClicked) },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp),
@@ -603,7 +507,7 @@ private fun ClientDetailContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = fabContentDescription
+                    contentDescription = stringResource(Res.string.new_user)
                 )
             }
         }
@@ -774,14 +678,15 @@ private fun ClientDetailScreenContentGreenhousesTabPreview() {
 
 @Preview
 @Composable
-private fun ClientDetailScreenContentDevicesTabPreview() {
+private fun ClientDetailScreenContentGreenhousesHierarchyPreview() {
     GreenhouseAdminTheme {
         ProvideAppWindowInfo {
             ClientDetailScreenContent(
                 uiState = ClientDetailUiState(
                     isLoading = false,
                     client = ClientDetailScreenPreviewData.sampleClient,
-                    selectedTab = ClientDetailTab.DEVICES,
+                    selectedTab = ClientDetailTab.GREENHOUSES,
+                    greenhouses = ClientDetailScreenPreviewData.sampleGreenhouses,
                     devices = ClientDetailScreenPreviewData.sampleDevices
                 ),
                 onEvent = {},

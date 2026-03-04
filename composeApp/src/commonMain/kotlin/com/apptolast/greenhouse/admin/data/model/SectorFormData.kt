@@ -3,20 +3,20 @@ package com.apptolast.greenhouse.admin.data.model
 /**
  * Form data for creating or editing a sector.
  * Manages form state and validation.
+ * Note: greenhouseId is not part of the form — it comes from the context
+ * (selectedGreenhouseId for create, existing sector for edit).
  */
 data class SectorFormData(
-    val name: String = "",
-    val greenhouseId: Long? = null
+    val name: String = ""
 ) {
     /**
      * Validation errors for each field.
      */
     data class ValidationErrors(
-        val name: String? = null,
-        val greenhouseId: String? = null
+        val name: String? = null
     ) {
         val hasErrors: Boolean
-            get() = name != null || greenhouseId != null
+            get() = name != null
     }
 
     /**
@@ -24,8 +24,7 @@ data class SectorFormData(
      */
     fun validate(): ValidationErrors {
         return ValidationErrors(
-            name = if (name.length < 2) "error_sector_name_min_length" else null,
-            greenhouseId = if (greenhouseId == null) "error_greenhouse_required" else null
+            name = if (name.length < 2) "error_sector_name_min_length" else null
         )
     }
 
@@ -33,5 +32,5 @@ data class SectorFormData(
      * Returns true if all required fields are valid.
      */
     val isValid: Boolean
-        get() = name.length >= 2 && greenhouseId != null
+        get() = name.length >= 2
 }

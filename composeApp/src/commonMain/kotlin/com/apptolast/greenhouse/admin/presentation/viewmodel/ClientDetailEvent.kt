@@ -220,7 +220,6 @@ sealed interface ClientDetailEvent {
      * User submitted the sector form (create or edit).
      */
     data class OnSubmitSectorForm(
-        val greenhouseId: Long?,
         val name: String
     ) : ClientDetailEvent
 
@@ -266,7 +265,6 @@ sealed interface ClientDetailEvent {
      * Note: Devices are associated with sectors, not greenhouses.
      */
     data class OnSubmitDeviceForm(
-        val sectorId: Long?,
         val name: String,
         val categoryId: Short?,
         val typeId: Short?,
@@ -320,7 +318,6 @@ sealed interface ClientDetailEvent {
      * User submitted the alert form (create or edit).
      */
     data class OnSubmitAlertForm(
-        val sectorId: Long?,
         val alertTypeId: Short?,
         val severityId: Short?,
         val message: String?,
@@ -378,11 +375,53 @@ sealed interface ClientDetailEvent {
      * User submitted the setting form (create or edit).
      */
     data class OnSubmitSettingForm(
-        val sectorId: Long?,
         val parameterId: Short,
         val actuatorStateId: Short,
-        val value: String,
         val description: String?,
         val isActive: Boolean
     ) : ClientDetailEvent
+
+    // === Greenhouse Hierarchical View Events ===
+
+    /**
+     * Toggle expand/collapse of a greenhouse in the tree panel.
+     */
+    data class OnGreenhouseExpandToggle(val greenhouseId: Long) : ClientDetailEvent
+
+    /**
+     * User selected a greenhouse in the tree panel.
+     */
+    data class OnGreenhouseSelected(val greenhouseId: Long?) : ClientDetailEvent
+
+    /**
+     * User selected a sector within the tree panel.
+     */
+    data class OnSectorSelected(val sectorId: Long?) : ClientDetailEvent
+
+    /**
+     * User switched sector sub-tab (Devices/Alerts/Settings).
+     */
+    data class OnSectorSubTabSelected(val subTab: SectorSubTab) : ClientDetailEvent
+
+    /**
+     * User navigated back from sector detail to greenhouse list (compact screens).
+     */
+    data object OnBackToGreenhouseList : ClientDetailEvent
+
+    // === Alerts Tab Filter Events ===
+
+    /**
+     * User changed the greenhouse filter in the global Alerts tab.
+     */
+    data class OnAlertsFilterGreenhouseChanged(val greenhouseId: Long?) : ClientDetailEvent
+
+    /**
+     * User changed the sector filter in the global Alerts tab.
+     */
+    data class OnAlertsFilterSectorChanged(val sectorId: Long?) : ClientDetailEvent
+
+    /**
+     * Load all hierarchical data for the Greenhouses tab.
+     */
+    data object LoadGreenhouseHierarchy : ClientDetailEvent
 }
