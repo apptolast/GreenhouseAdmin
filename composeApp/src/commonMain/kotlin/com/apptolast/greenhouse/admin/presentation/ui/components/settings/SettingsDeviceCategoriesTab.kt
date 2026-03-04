@@ -245,7 +245,7 @@ private fun DeviceCategoryFormDialog(
     var name by remember(formMode) { mutableStateOf(existingCategory?.name ?: "") }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {},
         shape = RoundedCornerShape(16.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         title = {

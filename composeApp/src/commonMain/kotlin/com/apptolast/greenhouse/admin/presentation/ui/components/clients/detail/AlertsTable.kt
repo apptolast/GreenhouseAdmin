@@ -1,8 +1,6 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,8 +22,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.ArrowDownward
-import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -57,6 +53,9 @@ import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInf
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.SeverityChip
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.SortDirection
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.SortableColumnHeader
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.TableRowActions
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
@@ -85,17 +84,6 @@ enum class AlertSortColumn {
     ID, MESSAGE, SEVERITY, DATE
 }
 
-/**
- * Enum representing sort direction.
- */
-enum class SortDirection {
-    ASCENDING, DESCENDING;
-
-    fun toggle(): SortDirection = when (this) {
-        ASCENDING -> DESCENDING
-        DESCENDING -> ASCENDING
-    }
-}
 
 /**
  * Adaptive component that shows a table on larger screens and cards on compact screens.
@@ -260,7 +248,7 @@ private fun AlertsTableHeader(
         horizontalArrangement = Arrangement.Start
     ) {
         // ID - Sortable
-        SortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_id),
             column = AlertSortColumn.ID,
             currentSortColumn = sortColumn,
@@ -269,7 +257,7 @@ private fun AlertsTableHeader(
             modifier = Modifier.weight(1f)
         )
         // MESSAGE - Sortable
-        SortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_message),
             column = AlertSortColumn.MESSAGE,
             currentSortColumn = sortColumn,
@@ -292,7 +280,7 @@ private fun AlertsTableHeader(
             modifier = Modifier.weight(0.8f)
         )
         // SEVERITY - Sortable
-        SortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_severity),
             column = AlertSortColumn.SEVERITY,
             currentSortColumn = sortColumn,
@@ -308,7 +296,7 @@ private fun AlertsTableHeader(
             modifier = Modifier.weight(0.6f)
         )
         // DATE - Sortable
-        SortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_date),
             column = AlertSortColumn.DATE,
             currentSortColumn = sortColumn,
@@ -324,58 +312,6 @@ private fun AlertsTableHeader(
             modifier = Modifier.width(120.dp),
             textAlign = TextAlign.Center
         )
-    }
-}
-
-/**
- * Sortable header cell with sort icon.
- */
-@Composable
-private fun SortableHeader(
-    text: String,
-    column: AlertSortColumn,
-    currentSortColumn: AlertSortColumn?,
-    sortDirection: SortDirection,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val isActive = currentSortColumn == column
-
-    Row(
-        modifier = modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            onClick = onClick
-        ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        if (isActive) {
-            Icon(
-                imageVector = if (sortDirection == SortDirection.ASCENDING) {
-                    Icons.Outlined.ArrowUpward
-                } else {
-                    Icons.Outlined.ArrowDownward
-                },
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        } else {
-            // Show a subtle indicator that this column is sortable
-            Icon(
-                imageVector = Icons.Outlined.ArrowUpward,
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-            )
-        }
     }
 }
 
@@ -484,59 +420,32 @@ private fun AlertTableRow(
         )
 
         // ACTIONS
-        Row(
-            modifier = Modifier.width(120.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            // Resolve/Reopen button
-            if (alert.isResolved) {
-                IconButton(
-                    onClick = onReopen,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = stringResource(Res.string.action_reopen),
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            } else {
-                IconButton(
-                    onClick = onResolve,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = stringResource(Res.string.action_resolve),
-                        tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(18.dp)
-                    )
+        TableRowActions(
+            onEdit = onEdit,
+            onDelete = onDelete,
+            width = 120.dp,
+            extraActions = {
+                if (alert.isResolved) {
+                    IconButton(onClick = onReopen, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = stringResource(Res.string.action_reopen),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                } else {
+                    IconButton(onClick = onResolve, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = stringResource(Res.string.action_resolve),
+                            tint = Color(0xFF4CAF50),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
-            IconButton(
-                onClick = onEdit,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(Res.string.action_edit),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(Res.string.action_delete),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
+        )
     }
 }
 

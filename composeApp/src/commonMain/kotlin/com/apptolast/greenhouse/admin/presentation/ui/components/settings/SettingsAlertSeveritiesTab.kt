@@ -279,7 +279,7 @@ private fun AlertSeverityFormDialog(
     var requiresAction by remember(formMode) { mutableStateOf(existing?.requiresAction ?: false) }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {},
         shape = RoundedCornerShape(16.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         title = {

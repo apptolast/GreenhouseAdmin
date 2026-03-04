@@ -1,8 +1,5 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,14 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.outlined.ArrowDownward
-import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -38,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,7 +40,11 @@ import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.InitialAvatar
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.SortDirection
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.SortableColumnHeader
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.TableRowActions
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
@@ -178,7 +175,7 @@ private fun GreenhousesTableHeader(
         horizontalArrangement = Arrangement.Start
     ) {
         // NAME column - Sortable
-        GreenhouseSortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_name),
             column = GreenhouseSortColumn.NAME,
             currentSortColumn = sortColumn,
@@ -218,58 +215,6 @@ private fun GreenhousesTableHeader(
     }
 }
 
-/**
- * Sortable header cell with sort icon for Greenhouses table.
- */
-@Composable
-private fun GreenhouseSortableHeader(
-    text: String,
-    column: GreenhouseSortColumn,
-    currentSortColumn: GreenhouseSortColumn?,
-    sortDirection: SortDirection,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val isActive = currentSortColumn == column
-
-    Row(
-        modifier = modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            onClick = onClick
-        ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        if (isActive) {
-            Icon(
-                imageVector = if (sortDirection == SortDirection.ASCENDING) {
-                    Icons.Outlined.ArrowUpward
-                } else {
-                    Icons.Outlined.ArrowDownward
-                },
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        } else {
-            // Show a subtle indicator that this column is sortable
-            Icon(
-                imageVector = Icons.Outlined.ArrowUpward,
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-            )
-        }
-    }
-}
-
 @Composable
 private fun GreenhouseTableRow(
     greenhouse: Greenhouse,
@@ -289,8 +234,9 @@ private fun GreenhouseTableRow(
             modifier = Modifier.weight(2f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            GreenhouseAvatar(
-                initial = greenhouse.initial,
+            InitialAvatar(
+                initials = greenhouse.initial,
+                color = Color(0xFF4CAF50),
                 modifier = Modifier.size(36.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -331,33 +277,7 @@ private fun GreenhouseTableRow(
         )
 
         // ACTIONS
-        Row(
-            modifier = Modifier.width(80.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            IconButton(
-                onClick = onEdit,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(Res.string.action_edit),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(Res.string.action_delete),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
+        TableRowActions(onEdit = onEdit, onDelete = onDelete)
     }
 }
 
@@ -412,8 +332,9 @@ private fun GreenhouseCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                GreenhouseAvatar(
-                    initial = greenhouse.initial,
+                InitialAvatar(
+                    initials = greenhouse.initial,
+                    color = Color(0xFF4CAF50),
                     modifier = Modifier.size(40.dp)
                 )
 
@@ -499,29 +420,6 @@ private fun GreenhouseCard(
             // Status chip
             StatusChip(isActive = greenhouse.isActive)
         }
-    }
-}
-
-/**
- * Avatar component for greenhouses with colored background.
- */
-@Composable
-fun GreenhouseAvatar(
-    initial: String,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(Color(0xFF4CAF50)), // Green for greenhouses
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = initial,
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.White,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 

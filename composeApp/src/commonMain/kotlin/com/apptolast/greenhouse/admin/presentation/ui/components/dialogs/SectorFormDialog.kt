@@ -17,11 +17,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -35,11 +30,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.SectorFormData
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
-import com.apptolast.greenhouse.admin.presentation.viewmodel.SectorFormMode
+import com.apptolast.greenhouse.admin.presentation.viewmodel.FormMode
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.button_cancel
 import greenhouseadmin.composeapp.generated.resources.button_create_sector
@@ -48,33 +42,30 @@ import greenhouseadmin.composeapp.generated.resources.dialog_edit_sector_subtitl
 import greenhouseadmin.composeapp.generated.resources.dialog_edit_sector_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_sector_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_sector_title
-import greenhouseadmin.composeapp.generated.resources.error_greenhouse_required
 import greenhouseadmin.composeapp.generated.resources.error_sector_name_min_length
-import greenhouseadmin.composeapp.generated.resources.field_greenhouse
 import greenhouseadmin.composeapp.generated.resources.label_sector_name
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Dialog for creating or editing a sector.
+ * The greenhouse context is implicit — determined by the ViewModel from state
+ * (selectedGreenhouseId for create, existing sector for edit).
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SectorFormDialog(
-    mode: SectorFormMode,
-    greenhouses: List<Greenhouse>,
+    mode: FormMode<Sector>,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (greenhouseId: Long?, name: String) -> Unit = { _, _ -> },
+    onSubmit: (name: String) -> Unit = { _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val initialFormData = remember(mode) {
         when (mode) {
-            is SectorFormMode.Create -> SectorFormData()
-            is SectorFormMode.Edit -> SectorFormData(
-                name = mode.sector.name ?: "",
-                greenhouseId = mode.sector.greenhouseId
+            is FormMode.Create -> SectorFormData()
+            is FormMode.Edit -> SectorFormData(
+                name = mode.entity.name ?: ""
             )
         }
     }
@@ -82,21 +73,17 @@ fun SectorFormDialog(
     var formData by remember(mode) { mutableStateOf(initialFormData) }
     var validationErrors by remember { mutableStateOf(SectorFormData.ValidationErrors()) }
     var hasAttemptedSubmit by remember { mutableStateOf(false) }
-    var greenhouseExpanded by remember { mutableStateOf(false) }
 
-    // Get error message strings
     val nameErrorMsg = stringResource(Res.string.error_sector_name_min_length)
-    val greenhouseRequiredMsg = stringResource(Res.string.error_greenhouse_required)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
             "error_sector_name_min_length" -> nameErrorMsg
-            "error_greenhouse_required" -> greenhouseRequiredMsg
             else -> null
         }
     }
 
-    val isEditMode = mode is SectorFormMode.Edit
+    val isEditMode = mode is FormMode.Edit
     val dialogTitle = if (isEditMode) {
         stringResource(Res.string.dialog_edit_sector_title)
     } else {
@@ -113,9 +100,7 @@ fun SectorFormDialog(
         stringResource(Res.string.button_create_sector)
     }
 
-    val selectedGreenhouse = greenhouses.find { it.id == formData.greenhouseId }
-
-    Dialog(onDismissRequest = { if (!isSubmitting) onDismiss() }) {
+    Dialog(onDismissRequest = {}) {
         Card(
             modifier = modifier.width(420.dp),
             colors = CardDefaults.cardColors(
@@ -143,71 +128,6 @@ fun SectorFormDialog(
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
-
-                // Greenhouse dropdown (only for Create mode, or show as read-only in Edit)
-                Column {
-                    Text(
-                        text = stringResource(Res.string.field_greenhouse),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    ExposedDropdownMenuBox(
-                        expanded = greenhouseExpanded,
-                        onExpandedChange = { if (!isSubmitting) greenhouseExpanded = it }
-                    ) {
-                        OutlinedTextField(
-                            value = selectedGreenhouse?.name ?: "",
-                            onValueChange = {},
-                            readOnly = true,
-                            enabled = !isSubmitting,
-                            isError = hasAttemptedSubmit && validationErrors.greenhouseId != null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = greenhouseExpanded)
-                            },
-                            shape = RoundedCornerShape(8.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                                errorBorderColor = MaterialTheme.colorScheme.error,
-                                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                                disabledTextColor = MaterialTheme.colorScheme.onSurface
-                            )
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = greenhouseExpanded,
-                            onDismissRequest = { greenhouseExpanded = false }
-                        ) {
-                            greenhouses.forEach { greenhouse ->
-                                DropdownMenuItem(
-                                    text = { Text(greenhouse.name) },
-                                    onClick = {
-                                        formData = formData.copy(greenhouseId = greenhouse.id)
-                                        greenhouseExpanded = false
-                                        if (hasAttemptedSubmit) validationErrors = formData.validate()
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    if (hasAttemptedSubmit && validationErrors.greenhouseId != null) {
-                        Text(
-                            text = getErrorMessage(validationErrors.greenhouseId) ?: "",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
 
                 // Name field
                 SectorFormTextField(
@@ -253,7 +173,7 @@ fun SectorFormDialog(
                             hasAttemptedSubmit = true
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
-                                onSubmit(formData.greenhouseId, formData.name)
+                                onSubmit(formData.name)
                             }
                         },
                         enabled = !isSubmitting,
@@ -330,43 +250,13 @@ private object SectorFormDialogPreviewData {
         greenhouseId = 1L,
         name = "Tomate Cherry"
     )
-
-    val sampleGreenhouses = listOf(
-        Greenhouse(
-            id = 1L,
-            code = "GRH-00001",
-            name = "Invernadero Principal",
-            tenantId = 1L,
-            location = null,
-            areaM2 = 1500.0,
-            timezone = "Europe/Madrid",
-            isActive = true,
-            createdAt = "2024-01-01T00:00:00Z",
-            updatedAt = "2024-01-01T00:00:00Z"
-        ),
-        Greenhouse(
-            id = 2L,
-            code = "GRH-00002",
-            name = "Invernadero Norte",
-            tenantId = 1L,
-            location = null,
-            areaM2 = 800.0,
-            timezone = "Europe/Madrid",
-            isActive = true,
-            createdAt = "2024-01-01T00:00:00Z",
-            updatedAt = "2024-01-01T00:00:00Z"
-        )
-    )
 }
 
 @Preview
 @Composable
 private fun SectorFormDialogCreatePreview() {
     GreenhouseAdminTheme {
-        SectorFormDialog(
-            mode = SectorFormMode.Create,
-            greenhouses = SectorFormDialogPreviewData.sampleGreenhouses
-        )
+        SectorFormDialog(mode = FormMode.Create)
     }
 }
 
@@ -374,9 +264,6 @@ private fun SectorFormDialogCreatePreview() {
 @Composable
 private fun SectorFormDialogEditPreview() {
     GreenhouseAdminTheme {
-        SectorFormDialog(
-            mode = SectorFormMode.Edit(SectorFormDialogPreviewData.sampleSector),
-            greenhouses = SectorFormDialogPreviewData.sampleGreenhouses
-        )
+        SectorFormDialog(mode = FormMode.Edit(SectorFormDialogPreviewData.sampleSector))
     }
 }

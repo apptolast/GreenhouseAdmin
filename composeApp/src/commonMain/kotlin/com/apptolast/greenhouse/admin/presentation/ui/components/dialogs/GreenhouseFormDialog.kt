@@ -37,7 +37,7 @@ import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.GreenhouseFormData
 import com.apptolast.greenhouse.admin.data.model.Location
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
-import com.apptolast.greenhouse.admin.presentation.viewmodel.GreenhouseFormMode
+import com.apptolast.greenhouse.admin.presentation.viewmodel.FormMode
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.button_cancel
 import greenhouseadmin.composeapp.generated.resources.button_create_greenhouse
@@ -64,7 +64,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
  */
 @Composable
 fun GreenhouseFormDialog(
-    mode: GreenhouseFormMode,
+    mode: FormMode<Greenhouse>,
     isSubmitting: Boolean = false,
     error: String? = null,
     onSubmit: (name: String, location: Location?, areaM2: Double?, timezone: String?, isActive: Boolean) -> Unit = { _, _, _, _, _ -> },
@@ -73,8 +73,8 @@ fun GreenhouseFormDialog(
 ) {
     val initialFormData = remember(mode) {
         when (mode) {
-            is GreenhouseFormMode.Create -> GreenhouseFormData()
-            is GreenhouseFormMode.Edit -> GreenhouseFormData.fromGreenhouse(mode.greenhouse)
+            is FormMode.Create -> GreenhouseFormData()
+            is FormMode.Edit -> GreenhouseFormData.fromGreenhouse(mode.entity)
         }
     }
 
@@ -98,7 +98,7 @@ fun GreenhouseFormDialog(
         }
     }
 
-    val isEditMode = mode is GreenhouseFormMode.Edit
+    val isEditMode = mode is FormMode.Edit
     val dialogTitle = if (isEditMode) {
         stringResource(Res.string.dialog_edit_greenhouse_title)
     } else {
@@ -115,7 +115,7 @@ fun GreenhouseFormDialog(
         stringResource(Res.string.button_create_greenhouse)
     }
 
-    Dialog(onDismissRequest = { if (!isSubmitting) onDismiss() }) {
+    Dialog(onDismissRequest = {}) {
         Card(
             modifier = modifier.width(420.dp),
             colors = CardDefaults.cardColors(
@@ -391,7 +391,7 @@ private object GreenhouseFormDialogPreviewData {
 @Composable
 private fun GreenhouseFormDialogCreatePreview() {
     GreenhouseAdminTheme {
-        GreenhouseFormDialog(mode = GreenhouseFormMode.Create)
+        GreenhouseFormDialog(mode = FormMode.Create)
     }
 }
 
@@ -399,6 +399,6 @@ private fun GreenhouseFormDialogCreatePreview() {
 @Composable
 private fun GreenhouseFormDialogEditPreview() {
     GreenhouseAdminTheme {
-        GreenhouseFormDialog(mode = GreenhouseFormMode.Edit(GreenhouseFormDialogPreviewData.sampleGreenhouse))
+        GreenhouseFormDialog(mode = FormMode.Edit(GreenhouseFormDialogPreviewData.sampleGreenhouse))
     }
 }

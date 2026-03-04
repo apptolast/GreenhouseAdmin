@@ -455,4 +455,29 @@
     <!-- Actuator State Dialogs -->
     <string name="dialog_create_actuator_state">Create Actuator State</string>
     <string name="dialog_edit_actuator_state">Edit Actuator State</string>
+
+    <!-- Greenhouse Hierarchical View -->
+    <string name="greenhouse_tree_title">Greenhouses</string>
+    <string name="select_item_prompt">Select a greenhouse or sector</string>
+    <string name="back_to_greenhouses">Back to greenhouses</string>
+    <string name="greenhouse_details">Greenhouse Details</string>
+    <string name="sub_tab_devices">Devices</string>
+    <string name="sub_tab_alerts">Alerts</string>
+    <string name="sub_tab_settings">Setpoints</string>
+    <string name="sector_no_devices">No devices in this sector.</string>
+    <string name="sector_no_alerts">No alerts in this sector.</string>
+    <string name="sector_no_settings">No setpoints in this sector.</string>
+    <string name="greenhouse_select_sector_hint">Select a sector from the tree to manage its devices, alerts, and setpoints.</string>
+
+    <!-- Greenhouse Info Labels -->
+    <string name="greenhouse_info_code">Code</string>
+    <string name="greenhouse_info_area">Area</string>
+    <string name="greenhouse_info_timezone">Timezone</string>
+    <string name="greenhouse_info_status">Status</string>
+    <string name="greenhouse_info_location">Location</string>
+
+    <!-- Alerts Tab Filters -->
+    <string name="alerts_filter_greenhouse">Filter by greenhouse</string>
+    <string name="alerts_filter_sector">Filter by sector</string>
+    <string name="alerts_filter_all">All</string>
 </resources>

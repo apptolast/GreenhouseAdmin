@@ -90,8 +90,8 @@ class ClientDetailViewModel(
 
             // Users events
             is ClientDetailEvent.LoadUsers -> loadUsers()
-            is ClientDetailEvent.OnAddUserClicked -> showUserFormDialog(UserFormMode.Create)
-            is ClientDetailEvent.OnEditUserClicked -> showUserFormDialog(UserFormMode.Edit(event.user))
+            is ClientDetailEvent.OnAddUserClicked -> showUserFormDialog(FormMode.Create)
+            is ClientDetailEvent.OnEditUserClicked -> showUserFormDialog(FormMode.Edit(event.user))
             is ClientDetailEvent.OnDeleteUserClicked -> showDeleteUserConfirmation(event.user)
             is ClientDetailEvent.OnConfirmDeleteUser -> confirmDeleteUser()
             is ClientDetailEvent.OnCancelDeleteUser -> cancelDeleteUser()
@@ -106,8 +106,8 @@ class ClientDetailViewModel(
 
             // Greenhouses events
             is ClientDetailEvent.LoadGreenhouses -> loadGreenhouses()
-            is ClientDetailEvent.OnAddGreenhouseClicked -> showGreenhouseFormDialog(GreenhouseFormMode.Create)
-            is ClientDetailEvent.OnEditGreenhouseClicked -> showGreenhouseFormDialog(GreenhouseFormMode.Edit(event.greenhouse))
+            is ClientDetailEvent.OnAddGreenhouseClicked -> showGreenhouseFormDialog(FormMode.Create)
+            is ClientDetailEvent.OnEditGreenhouseClicked -> showGreenhouseFormDialog(FormMode.Edit(event.greenhouse))
             is ClientDetailEvent.OnDeleteGreenhouseClicked -> showDeleteGreenhouseConfirmation(event.greenhouse)
             is ClientDetailEvent.OnConfirmDeleteGreenhouse -> confirmDeleteGreenhouse()
             is ClientDetailEvent.OnCancelDeleteGreenhouse -> cancelDeleteGreenhouse()
@@ -122,27 +122,23 @@ class ClientDetailViewModel(
 
             // Sectors events
             is ClientDetailEvent.LoadSectors -> loadSectors()
-            is ClientDetailEvent.OnAddSectorClicked -> showSectorFormDialog(SectorFormMode.Create)
-            is ClientDetailEvent.OnEditSectorClicked -> showSectorFormDialog(SectorFormMode.Edit(event.sector))
+            is ClientDetailEvent.OnAddSectorClicked -> showSectorFormDialog(FormMode.Create)
+            is ClientDetailEvent.OnEditSectorClicked -> showSectorFormDialog(FormMode.Edit(event.sector))
             is ClientDetailEvent.OnDeleteSectorClicked -> showDeleteSectorConfirmation(event.sector)
             is ClientDetailEvent.OnConfirmDeleteSector -> confirmDeleteSector()
             is ClientDetailEvent.OnCancelDeleteSector -> cancelDeleteSector()
             is ClientDetailEvent.OnDismissSectorFormDialog -> dismissSectorFormDialog()
-            is ClientDetailEvent.OnSubmitSectorForm -> submitSectorForm(
-                event.greenhouseId,
-                event.name
-            )
+            is ClientDetailEvent.OnSubmitSectorForm -> submitSectorForm(event.name)
 
             // Devices events
             is ClientDetailEvent.LoadDevices -> loadDevices()
-            is ClientDetailEvent.OnAddDeviceClicked -> showDeviceFormDialog(DeviceFormMode.Create)
-            is ClientDetailEvent.OnEditDeviceClicked -> showDeviceFormDialog(DeviceFormMode.Edit(event.device))
+            is ClientDetailEvent.OnAddDeviceClicked -> showDeviceFormDialog(FormMode.Create)
+            is ClientDetailEvent.OnEditDeviceClicked -> showDeviceFormDialog(FormMode.Edit(event.device))
             is ClientDetailEvent.OnDeleteDeviceClicked -> showDeleteDeviceConfirmation(event.device)
             is ClientDetailEvent.OnConfirmDeleteDevice -> confirmDeleteDevice()
             is ClientDetailEvent.OnCancelDeleteDevice -> cancelDeleteDevice()
             is ClientDetailEvent.OnDismissDeviceFormDialog -> dismissDeviceFormDialog()
             is ClientDetailEvent.OnSubmitDeviceForm -> submitDeviceForm(
-                event.sectorId,
                 event.name,
                 event.categoryId,
                 event.typeId,
@@ -155,14 +151,13 @@ class ClientDetailViewModel(
 
             // Alerts events
             is ClientDetailEvent.LoadAlerts -> loadAlerts()
-            is ClientDetailEvent.OnAddAlertClicked -> showAlertFormDialog(AlertFormMode.Create)
-            is ClientDetailEvent.OnEditAlertClicked -> showAlertFormDialog(AlertFormMode.Edit(event.alert))
+            is ClientDetailEvent.OnAddAlertClicked -> showAlertFormDialog(FormMode.Create)
+            is ClientDetailEvent.OnEditAlertClicked -> showAlertFormDialog(FormMode.Edit(event.alert))
             is ClientDetailEvent.OnDeleteAlertClicked -> showDeleteAlertConfirmation(event.alert)
             is ClientDetailEvent.OnConfirmDeleteAlert -> confirmDeleteAlert()
             is ClientDetailEvent.OnCancelDeleteAlert -> cancelDeleteAlert()
             is ClientDetailEvent.OnDismissAlertFormDialog -> dismissAlertFormDialog()
             is ClientDetailEvent.OnSubmitAlertForm -> submitAlertForm(
-                event.sectorId,
                 event.alertTypeId,
                 event.severityId,
                 event.message,
@@ -174,20 +169,28 @@ class ClientDetailViewModel(
 
             // Settings events
             is ClientDetailEvent.LoadSettings -> loadSettings()
-            is ClientDetailEvent.OnAddSettingClicked -> showSettingFormDialog(SettingFormMode.Create)
-            is ClientDetailEvent.OnEditSettingClicked -> showSettingFormDialog(SettingFormMode.Edit(event.setting))
+            is ClientDetailEvent.OnAddSettingClicked -> showSettingFormDialog(FormMode.Create)
+            is ClientDetailEvent.OnEditSettingClicked -> showSettingFormDialog(FormMode.Edit(event.setting))
             is ClientDetailEvent.OnDeleteSettingClicked -> showDeleteSettingConfirmation(event.setting)
             is ClientDetailEvent.OnConfirmDeleteSetting -> confirmDeleteSetting()
             is ClientDetailEvent.OnCancelDeleteSetting -> cancelDeleteSetting()
             is ClientDetailEvent.OnDismissSettingFormDialog -> dismissSettingFormDialog()
             is ClientDetailEvent.OnSubmitSettingForm -> submitSettingForm(
-                event.sectorId,
                 event.parameterId,
                 event.actuatorStateId,
-                event.value,
                 event.description,
                 event.isActive
             )
+
+            // Greenhouse hierarchical view events
+            is ClientDetailEvent.OnGreenhouseExpandToggle -> toggleGreenhouseExpand(event.greenhouseId)
+            is ClientDetailEvent.OnGreenhouseSelected -> selectGreenhouse(event.greenhouseId)
+            is ClientDetailEvent.OnSectorSelected -> selectSector(event.sectorId)
+            is ClientDetailEvent.OnSectorSubTabSelected -> selectSectorSubTab(event.subTab)
+            is ClientDetailEvent.OnBackToGreenhouseList -> backToGreenhouseList()
+            is ClientDetailEvent.OnAlertsFilterGreenhouseChanged -> updateAlertsGreenhouseFilter(event.greenhouseId)
+            is ClientDetailEvent.OnAlertsFilterSectorChanged -> updateAlertsSectorFilter(event.sectorId)
+            is ClientDetailEvent.LoadGreenhouseHierarchy -> loadGreenhouseHierarchy()
         }
     }
 
@@ -290,8 +293,6 @@ class ClientDetailViewModel(
 
     private fun selectTab(tab: ClientDetailTab) {
         _uiState.update { it.copy(selectedTab = tab) }
-        // Load tab-specific data when tab is selected and not already loaded
-        // Note: Greenhouses and catalogs are preloaded at ViewModel init
         when (tab) {
             ClientDetailTab.USERS -> {
                 if (_uiState.value.users.isEmpty() && !_uiState.value.isLoadingUsers) {
@@ -300,33 +301,21 @@ class ClientDetailViewModel(
             }
 
             ClientDetailTab.GREENHOUSES -> {
-                // Greenhouses already loaded at init, but allow manual refresh
-                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
-                    loadGreenhouses()
-                }
-            }
-
-            ClientDetailTab.SECTORS -> {
-                if (_uiState.value.sectors.isEmpty() && !_uiState.value.isLoadingSectors) {
-                    loadSectors()
-                }
-            }
-
-            ClientDetailTab.DEVICES -> {
-                if (_uiState.value.devices.isEmpty() && !_uiState.value.isLoadingDevices) {
-                    loadDevices()
-                }
+                // Load all hierarchical data when entering the Greenhouses tab
+                loadGreenhouseHierarchy()
             }
 
             ClientDetailTab.ALERTS -> {
+                // Load alerts and supporting data for the global alerts view
                 if (_uiState.value.alerts.isEmpty() && !_uiState.value.isLoadingAlerts) {
                     loadAlerts()
                 }
-            }
-
-            ClientDetailTab.SETTINGS -> {
-                if (_uiState.value.settings.isEmpty() && !_uiState.value.isLoadingSettings) {
-                    loadSettings()
+                // Also ensure greenhouses and sectors are loaded for filters
+                if (_uiState.value.greenhouses.isEmpty() && !_uiState.value.isLoadingGreenhouses) {
+                    loadGreenhouses()
+                }
+                if (_uiState.value.sectors.isEmpty() && !_uiState.value.isLoadingSectors) {
+                    loadSectors()
                 }
             }
 
@@ -489,7 +478,7 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun showUserFormDialog(mode: UserFormMode) {
+    private fun showUserFormDialog(mode: FormMode<User>) {
         _uiState.update {
             it.copy(
                 showUserFormDialog = true,
@@ -516,7 +505,7 @@ class ClientDetailViewModel(
             _uiState.update { it.copy(isSubmittingUser = true, submitUserError = null) }
 
             val result = when (mode) {
-                is UserFormMode.Create -> {
+                is FormMode.Create -> {
                     usersRepository.createUser(
                         tenantId = clientId,
                         username = username.trim(),
@@ -527,10 +516,10 @@ class ClientDetailViewModel(
                     )
                 }
 
-                is UserFormMode.Edit -> {
+                is FormMode.Edit -> {
                     usersRepository.updateUser(
                         tenantId = clientId,
-                        userId = mode.user.id,
+                        userId = mode.entity.id,
                         username = username.trim(),
                         email = email.trim(),
                         password = password?.takeIf { it.isNotBlank() },
@@ -635,7 +624,7 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun showGreenhouseFormDialog(mode: GreenhouseFormMode) {
+    private fun showGreenhouseFormDialog(mode: FormMode<Greenhouse>) {
         _uiState.update {
             it.copy(
                 showGreenhouseFormDialog = true,
@@ -668,7 +657,7 @@ class ClientDetailViewModel(
             _uiState.update { it.copy(isSubmittingGreenhouse = true, submitGreenhouseError = null) }
 
             val result = when (mode) {
-                is GreenhouseFormMode.Create -> {
+                is FormMode.Create -> {
                     greenhousesRepository.createGreenhouse(
                         tenantId = clientId,
                         name = name.trim(),
@@ -679,10 +668,10 @@ class ClientDetailViewModel(
                     )
                 }
 
-                is GreenhouseFormMode.Edit -> {
+                is FormMode.Edit -> {
                     greenhousesRepository.updateGreenhouse(
                         tenantId = clientId,
-                        greenhouseId = mode.greenhouse.id,
+                        greenhouseId = mode.entity.id,
                         name = name.trim(),
                         location = location,
                         areaM2 = areaM2,
@@ -787,7 +776,7 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun showSectorFormDialog(mode: SectorFormMode) {
+    private fun showSectorFormDialog(mode: FormMode<Sector>) {
         _uiState.update {
             it.copy(
                 showSectorFormDialog = true,
@@ -807,16 +796,23 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun submitSectorForm(greenhouseId: Long?, name: String) {
-        if (greenhouseId == null) return
-
+    private fun submitSectorForm(name: String) {
         val mode = _uiState.value.sectorFormMode
+
+        // Resolve greenhouseId from context:
+        // - Create: from the currently selected greenhouse in the tree panel
+        // - Edit: from the existing sector being edited
+        val greenhouseId = when (mode) {
+            is FormMode.Create -> _uiState.value.selectedGreenhouseId
+            is FormMode.Edit -> mode.entity.greenhouseId
+        }
+        if (greenhouseId == null) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingSector = true, submitSectorError = null) }
 
             val result = when (mode) {
-                is SectorFormMode.Create -> {
+                is FormMode.Create -> {
                     sectorsRepository.createSector(
                         tenantId = clientId,
                         greenhouseId = greenhouseId,
@@ -824,10 +820,10 @@ class ClientDetailViewModel(
                     )
                 }
 
-                is SectorFormMode.Edit -> {
+                is FormMode.Edit -> {
                     sectorsRepository.updateSector(
                         tenantId = clientId,
-                        sectorId = mode.sector.id,
+                        sectorId = mode.entity.id,
                         greenhouseId = greenhouseId,
                         name = name.trim().takeIf { it.isNotBlank() }
                     )
@@ -929,7 +925,7 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun showDeviceFormDialog(mode: DeviceFormMode) {
+    private fun showDeviceFormDialog(mode: FormMode<Device>) {
         _uiState.update {
             it.copy(
                 showDeviceFormDialog = true,
@@ -951,23 +947,29 @@ class ClientDetailViewModel(
     }
 
     private fun submitDeviceForm(
-        sectorId: Long?,
         name: String,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
         isActive: Boolean
     ) {
-        if (sectorId == null) return
-
         val mode = _uiState.value.deviceFormMode
+
+        // Resolve sectorId from context:
+        // - Create: from the currently selected sector in the tree panel
+        // - Edit: from the existing device being edited
+        val sectorId = when (mode) {
+            is FormMode.Create -> _uiState.value.selectedSectorId
+            is FormMode.Edit -> mode.entity.sectorId
+        }
+        if (sectorId == null) return
         val deviceName = name.ifBlank { null } // Convert empty string to null
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingDevice = true, submitDeviceError = null) }
 
             val result = when (mode) {
-                is DeviceFormMode.Create -> {
+                is FormMode.Create -> {
                     devicesRepository.createDevice(
                         tenantId = clientId,
                         sectorId = sectorId,
@@ -979,10 +981,10 @@ class ClientDetailViewModel(
                     )
                 }
 
-                is DeviceFormMode.Edit -> {
+                is FormMode.Edit -> {
                     devicesRepository.updateDevice(
                         tenantId = clientId,
-                        deviceId = mode.device.id,
+                        deviceId = mode.entity.id,
                         sectorId = sectorId,
                         name = deviceName,
                         categoryId = categoryId,
@@ -1089,7 +1091,7 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun showAlertFormDialog(mode: AlertFormMode) {
+    private fun showAlertFormDialog(mode: FormMode<Alert>) {
         _uiState.update {
             it.copy(
                 showAlertFormDialog = true,
@@ -1111,21 +1113,27 @@ class ClientDetailViewModel(
     }
 
     private fun submitAlertForm(
-        sectorId: Long?,
         alertTypeId: Short?,
         severityId: Short?,
         message: String?,
         description: String?
     ) {
-        if (sectorId == null) return
-
         val mode = _uiState.value.alertFormMode
+
+        // Resolve sectorId from context:
+        // - Create: from the currently selected sector in the tree panel
+        // - Edit: from the existing alert being edited
+        val sectorId = when (mode) {
+            is FormMode.Create -> _uiState.value.selectedSectorId
+            is FormMode.Edit -> mode.entity.sectorId
+        }
+        if (sectorId == null) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingAlert = true, submitAlertError = null) }
 
             val result = when (mode) {
-                is AlertFormMode.Create -> {
+                is FormMode.Create -> {
                     val request = AlertCreateRequest(
                         sectorId = sectorId,
                         alertTypeId = alertTypeId,
@@ -1136,7 +1144,7 @@ class ClientDetailViewModel(
                     alertsRepository.createAlert(clientId, request)
                 }
 
-                is AlertFormMode.Edit -> {
+                is FormMode.Edit -> {
                     val request = AlertUpdateRequest(
                         sectorId = sectorId,
                         alertTypeId = alertTypeId,
@@ -1144,7 +1152,7 @@ class ClientDetailViewModel(
                         message = message?.trim()?.ifBlank { null },
                         description = description?.trim()?.ifBlank { null }
                     )
-                    alertsRepository.updateAlert(clientId, mode.alert.id, request)
+                    alertsRepository.updateAlert(clientId, mode.entity.id, request)
                 }
             }
 
@@ -1291,7 +1299,7 @@ class ClientDetailViewModel(
         }
     }
 
-    private fun showSettingFormDialog(mode: SettingFormMode) {
+    private fun showSettingFormDialog(mode: FormMode<Setting>) {
         _uiState.update {
             it.copy(
                 showSettingFormDialog = true,
@@ -1314,43 +1322,48 @@ class ClientDetailViewModel(
     }
 
     private fun submitSettingForm(
-        sectorId: Long?,
         parameterId: Short,
         actuatorStateId: Short,
-        value: String,
         description: String?,
         isActive: Boolean
     ) {
-        if (sectorId == null) return
-
         val mode = _uiState.value.settingFormMode
+
+        // Resolve sectorId from context:
+        // - Create: from the currently selected sector in the tree panel
+        // - Edit: from the existing setting being edited
+        val sectorId = when (mode) {
+            is FormMode.Create -> _uiState.value.selectedSectorId
+            is FormMode.Edit -> mode.entity.sectorId
+        }
+        if (sectorId == null) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingSetting = true, submitSettingError = null) }
 
             val result = when (mode) {
-                is SettingFormMode.Create -> {
+                is FormMode.Create -> {
                     val request = SettingCreateRequest(
                         sectorId = sectorId,
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
-                        value = value.ifBlank { null },
+                        value = null,
                         description = description?.ifBlank { null },
                         isActive = isActive
                     )
                     settingsRepository.createSetting(clientId, request)
                 }
 
-                is SettingFormMode.Edit -> {
+                is FormMode.Edit -> {
                     val request = SettingUpdateRequest(
                         sectorId = sectorId,
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
-                        value = value.ifBlank { null },
+                        value = null,
                         description = description?.ifBlank { null },
                         isActive = isActive
                     )
-                    settingsRepository.updateSetting(clientId, mode.setting.id, request)
+                    settingsRepository.updateSetting(clientId, mode.entity.id, request)
                 }
             }
 
@@ -1421,5 +1434,85 @@ class ClientDetailViewModel(
                     }
                 }
         }
+    }
+
+    // === Greenhouse Hierarchical View Functions ===
+
+    private fun loadGreenhouseHierarchy() {
+        // Load greenhouses, sectors, devices, alerts, and settings in parallel
+        val state = _uiState.value
+        if (state.greenhouses.isEmpty() && !state.isLoadingGreenhouses) {
+            loadGreenhouses()
+        }
+        if (state.sectors.isEmpty() && !state.isLoadingSectors) {
+            loadSectors()
+        }
+        if (state.devices.isEmpty() && !state.isLoadingDevices) {
+            loadDevices()
+        }
+        if (state.alerts.isEmpty() && !state.isLoadingAlerts) {
+            loadAlerts()
+        }
+        if (state.settings.isEmpty() && !state.isLoadingSettings) {
+            loadSettings()
+        }
+    }
+
+    private fun toggleGreenhouseExpand(greenhouseId: Long) {
+        _uiState.update { state ->
+            val expanded = state.expandedGreenhouseIds.toMutableSet()
+            if (greenhouseId in expanded) {
+                expanded.remove(greenhouseId)
+            } else {
+                expanded.add(greenhouseId)
+            }
+            state.copy(expandedGreenhouseIds = expanded)
+        }
+    }
+
+    private fun selectGreenhouse(greenhouseId: Long?) {
+        _uiState.update { state ->
+            state.copy(
+                selectedGreenhouseId = greenhouseId,
+                selectedSectorId = null // Reset sector selection when changing greenhouse
+            )
+        }
+    }
+
+    private fun selectSector(sectorId: Long?) {
+        _uiState.update { state ->
+            val sector = sectorId?.let { id -> state.sectors.find { it.id == id } }
+            state.copy(
+                selectedSectorId = sectorId,
+                selectedGreenhouseId = sector?.greenhouseId ?: state.selectedGreenhouseId,
+                sectorSubTab = SectorSubTab.DEVICES // Reset to devices when selecting a new sector
+            )
+        }
+    }
+
+    private fun selectSectorSubTab(subTab: SectorSubTab) {
+        _uiState.update { it.copy(sectorSubTab = subTab) }
+    }
+
+    private fun backToGreenhouseList() {
+        _uiState.update { state ->
+            state.copy(
+                selectedSectorId = null,
+                selectedGreenhouseId = null
+            )
+        }
+    }
+
+    private fun updateAlertsGreenhouseFilter(greenhouseId: Long?) {
+        _uiState.update { state ->
+            state.copy(
+                alertsFilterGreenhouseId = greenhouseId,
+                alertsFilterSectorId = null // Reset sector filter when changing greenhouse filter
+            )
+        }
+    }
+
+    private fun updateAlertsSectorFilter(sectorId: Long?) {
+        _uiState.update { it.copy(alertsFilterSectorId = sectorId) }
     }
 }

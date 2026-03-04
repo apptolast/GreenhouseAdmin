@@ -237,7 +237,7 @@ private fun PeriodFormDialog(
     var name by remember(formMode) { mutableStateOf(existingPeriod?.name ?: "") }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {},
         shape = RoundedCornerShape(16.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         title = {

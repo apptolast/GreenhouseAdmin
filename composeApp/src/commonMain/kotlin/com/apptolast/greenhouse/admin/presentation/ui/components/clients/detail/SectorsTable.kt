@@ -1,8 +1,5 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,14 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.outlined.ArrowDownward
-import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -36,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -46,6 +39,10 @@ import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.InitialAvatar
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.SortDirection
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.SortableColumnHeader
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.TableRowActions
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
@@ -197,7 +194,7 @@ private fun SectorsTableHeader(
         horizontalArrangement = Arrangement.Start
     ) {
         // ID column - Sortable
-        SectorSortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_id),
             column = SectorSortColumn.ID,
             currentSortColumn = sortColumn,
@@ -206,7 +203,7 @@ private fun SectorsTableHeader(
             modifier = Modifier.weight(0.8f)
         )
         // NAME column - Sortable
-        SectorSortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_sector_name),
             column = SectorSortColumn.NAME,
             currentSortColumn = sortColumn,
@@ -229,58 +226,6 @@ private fun SectorsTableHeader(
             modifier = Modifier.width(80.dp),
             textAlign = TextAlign.Center
         )
-    }
-}
-
-/**
- * Sortable header cell with sort icon for Sectors table.
- */
-@Composable
-private fun SectorSortableHeader(
-    text: String,
-    column: SectorSortColumn,
-    currentSortColumn: SectorSortColumn?,
-    sortDirection: SortDirection,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val isActive = currentSortColumn == column
-
-    Row(
-        modifier = modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            onClick = onClick
-        ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        if (isActive) {
-            Icon(
-                imageVector = if (sortDirection == SortDirection.ASCENDING) {
-                    Icons.Outlined.ArrowUpward
-                } else {
-                    Icons.Outlined.ArrowDownward
-                },
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        } else {
-            // Show a subtle indicator that this column is sortable
-            Icon(
-                imageVector = Icons.Outlined.ArrowUpward,
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-            )
-        }
     }
 }
 
@@ -329,33 +274,7 @@ private fun SectorTableRow(
         )
 
         // ACTIONS
-        Row(
-            modifier = Modifier.width(80.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            IconButton(
-                onClick = onEdit,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(Res.string.action_edit),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(Res.string.action_delete),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
+        TableRowActions(onEdit = onEdit, onDelete = onDelete)
     }
 }
 
@@ -418,8 +337,9 @@ private fun SectorCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                SectorAvatar(
+                InitialAvatar(
                     initials = sector.initial,
+                    color = Color(0xFF2196F3),
                     modifier = Modifier.size(40.dp)
                 )
 
@@ -499,29 +419,6 @@ private fun SectorCard(
     }
 }
 
-/**
- * Avatar component for sectors with colored background based on initials.
- */
-@Composable
-fun SectorAvatar(
-    initials: String,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(Color(0xFF2196F3)), // Blue for sectors
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = initials,
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.White,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
 private object SectorsTablePreviewData {
     val sampleSectors = listOf(
         Sector(
@@ -586,10 +483,3 @@ private fun SectorsTablePreview() {
     }
 }
 
-@Preview
-@Composable
-private fun SectorAvatarPreview() {
-    GreenhouseAdminTheme {
-        SectorAvatar(initials = "T")
-    }
-}

@@ -1,7 +1,5 @@
 package com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,8 +17,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Sensors
-import androidx.compose.material.icons.outlined.ArrowDownward
-import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -42,11 +38,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.apptolast.greenhouse.admin.data.model.Device
-import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.CopyableIdCell
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.SortDirection
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.SortableColumnHeader
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.table.TableRowActions
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.action_delete
@@ -55,7 +52,6 @@ import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_category
 import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_name
-import greenhouseadmin.composeapp.generated.resources.header_sector
 import greenhouseadmin.composeapp.generated.resources.header_status
 import greenhouseadmin.composeapp.generated.resources.header_type
 import greenhouseadmin.composeapp.generated.resources.header_unit
@@ -75,8 +71,6 @@ private enum class DeviceSortColumn {
 @Composable
 fun DevicesTableOrCards(
     devices: List<Device>,
-    sectors: List<Sector> = emptyList(),
-    greenhouses: List<Greenhouse> = emptyList(),
     onEditDevice: (Device) -> Unit = {},
     onDeleteDevice: (Device) -> Unit = {},
     onCopyId: (String) -> Unit = {},
@@ -87,8 +81,6 @@ fun DevicesTableOrCards(
     if (windowInfo.isCompact) {
         DevicesCardList(
             devices = devices,
-            sectors = sectors,
-            greenhouses = greenhouses,
             onEditDevice = onEditDevice,
             onDeleteDevice = onDeleteDevice,
             onCopyId = onCopyId,
@@ -97,8 +89,6 @@ fun DevicesTableOrCards(
     } else {
         DevicesTable(
             devices = devices,
-            sectors = sectors,
-            greenhouses = greenhouses,
             onEditDevice = onEditDevice,
             onDeleteDevice = onDeleteDevice,
             onCopyId = onCopyId,
@@ -109,14 +99,12 @@ fun DevicesTableOrCards(
 
 /**
  * Table displaying list of devices with headers and rows.
- * Columns: ID | NAME | SECTOR | CATEGORY | TYPE | UNIT | STATUS | ACTIONS
+ * Columns: ID | NAME | CATEGORY | TYPE | UNIT | STATUS | ACTIONS
  * Sortable columns: ID, NAME
  */
 @Composable
 fun DevicesTable(
     devices: List<Device>,
-    sectors: List<Sector> = emptyList(),
-    greenhouses: List<Greenhouse> = emptyList(),
     onEditDevice: (Device) -> Unit = {},
     onDeleteDevice: (Device) -> Unit = {},
     onCopyId: (String) -> Unit = {},
@@ -175,12 +163,8 @@ fun DevicesTable(
 
             // Device rows
             sortedDevices.forEach { device ->
-                val sector = sectors.find { it.id == device.sectorId }
-                val greenhouse = sector?.let { s -> greenhouses.find { it.id == s.greenhouseId } }
                 DeviceTableRow(
                     device = device,
-                    sectorName = sector?.displayName,
-                    greenhouseName = greenhouse?.name,
                     onEdit = { onEditDevice(device) },
                     onDelete = { onDeleteDevice(device) },
                     onCopyId = { onCopyId(device.code) }
@@ -206,7 +190,7 @@ private fun DevicesTableHeader(
         horizontalArrangement = Arrangement.Start
     ) {
         // ID column - Sortable
-        DeviceSortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_id),
             column = DeviceSortColumn.ID,
             currentSortColumn = sortColumn,
@@ -216,21 +200,13 @@ private fun DevicesTableHeader(
         )
 
         // NAME column - Sortable
-        DeviceSortableHeader(
+        SortableColumnHeader(
             text = stringResource(Res.string.header_name),
             column = DeviceSortColumn.NAME,
             currentSortColumn = sortColumn,
             sortDirection = sortDirection,
             onClick = { onSortClick(DeviceSortColumn.NAME) },
             modifier = Modifier.weight(0.9f)
-        )
-
-        // SECTOR column - Not sortable
-        Text(
-            text = stringResource(Res.string.header_sector),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.8f)
         )
 
         // CATEGORY column - Not sortable
@@ -276,63 +252,9 @@ private fun DevicesTableHeader(
     }
 }
 
-/**
- * Sortable header cell with sort icon for Devices table.
- */
-@Composable
-private fun DeviceSortableHeader(
-    text: String,
-    column: DeviceSortColumn,
-    currentSortColumn: DeviceSortColumn?,
-    sortDirection: SortDirection,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val isActive = currentSortColumn == column
-
-    Row(
-        modifier = modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            onClick = onClick
-        ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        if (isActive) {
-            Icon(
-                imageVector = if (sortDirection == SortDirection.ASCENDING) {
-                    Icons.Outlined.ArrowUpward
-                } else {
-                    Icons.Outlined.ArrowDownward
-                },
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        } else {
-            // Show a subtle indicator that this column is sortable
-            Icon(
-                imageVector = Icons.Outlined.ArrowUpward,
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-            )
-        }
-    }
-}
-
 @Composable
 private fun DeviceTableRow(
     device: Device,
-    sectorName: String? = null,
-    greenhouseName: String? = null,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onCopyId: (String) -> Unit,
@@ -362,26 +284,6 @@ private fun DeviceTableRow(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
-
-        // SECTOR - Sector name with greenhouse in subtitle
-        Column(modifier = Modifier.weight(0.8f)) {
-            Text(
-                text = sectorName ?: "-",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            greenhouseName?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
 
         // CATEGORY - Plain text
         Text(
@@ -420,33 +322,7 @@ private fun DeviceTableRow(
         )
 
         // ACTIONS
-        Row(
-            modifier = Modifier.width(80.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            IconButton(
-                onClick = onEdit,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(Res.string.action_edit),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(Res.string.action_delete),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
+        TableRowActions(onEdit = onEdit, onDelete = onDelete)
     }
 }
 
@@ -456,8 +332,6 @@ private fun DeviceTableRow(
 @Composable
 private fun DevicesCardList(
     devices: List<Device>,
-    sectors: List<Sector> = emptyList(),
-    greenhouses: List<Greenhouse> = emptyList(),
     modifier: Modifier = Modifier,
     onEditDevice: (Device) -> Unit = {},
     onDeleteDevice: (Device) -> Unit = {},
@@ -468,12 +342,8 @@ private fun DevicesCardList(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         devices.forEach { device ->
-            val sector = sectors.find { it.id == device.sectorId }
-            val greenhouse = sector?.let { s -> greenhouses.find { it.id == s.greenhouseId } }
             DeviceCard(
                 device = device,
-                sectorName = sector?.displayName,
-                greenhouseName = greenhouse?.name,
                 onEdit = { onEditDevice(device) },
                 onDelete = { onDeleteDevice(device) },
                 onCopyId = { onCopyId(device.code) }
@@ -488,8 +358,6 @@ private fun DevicesCardList(
 @Composable
 private fun DeviceCard(
     device: Device,
-    sectorName: String? = null,
-    greenhouseName: String? = null,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onCopyId: () -> Unit,
@@ -587,32 +455,11 @@ private fun DeviceCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Info row: Sector | Category | Type | Unit
+            // Info row: Category | Type | Unit
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (sectorName != null) {
-                    Column {
-                        Text(
-                            text = stringResource(Res.string.header_sector),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = sectorName,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        greenhouseName?.let {
-                            Text(
-                                text = it,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
                 Column {
                     Text(
                         text = stringResource(Res.string.header_category),

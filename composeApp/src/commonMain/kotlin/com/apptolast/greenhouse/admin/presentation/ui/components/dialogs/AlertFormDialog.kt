@@ -44,9 +44,8 @@ import com.apptolast.greenhouse.admin.data.model.Alert
 import com.apptolast.greenhouse.admin.data.model.AlertFormData
 import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
 import com.apptolast.greenhouse.admin.data.model.AlertType
-import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
-import com.apptolast.greenhouse.admin.presentation.viewmodel.AlertFormMode
+import com.apptolast.greenhouse.admin.presentation.viewmodel.FormMode
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.button_cancel
 import greenhouseadmin.composeapp.generated.resources.button_create_alert
@@ -56,15 +55,12 @@ import greenhouseadmin.composeapp.generated.resources.dialog_edit_alert_title
 import greenhouseadmin.composeapp.generated.resources.dialog_new_alert_subtitle
 import greenhouseadmin.composeapp.generated.resources.dialog_new_alert_title
 import greenhouseadmin.composeapp.generated.resources.error_content_required
-import greenhouseadmin.composeapp.generated.resources.error_sector_required
 import greenhouseadmin.composeapp.generated.resources.field_alert_type
 import greenhouseadmin.composeapp.generated.resources.field_message
-import greenhouseadmin.composeapp.generated.resources.field_sector
 import greenhouseadmin.composeapp.generated.resources.field_severity
 import greenhouseadmin.composeapp.generated.resources.label_description
 import greenhouseadmin.composeapp.generated.resources.label_loading
 import greenhouseadmin.composeapp.generated.resources.label_none
-import greenhouseadmin.composeapp.generated.resources.label_select
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -75,26 +71,24 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlertFormDialog(
-    mode: AlertFormMode,
-    sectors: List<Sector> = emptyList(),
+    mode: FormMode<Alert>,
     alertTypes: List<AlertType> = emptyList(),
     severities: List<AlertSeverityCatalog> = emptyList(),
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (sectorId: Long?, alertTypeId: Short?, severityId: Short?, message: String?, description: String?) -> Unit = { _, _, _, _, _ -> },
+    onSubmit: (alertTypeId: Short?, severityId: Short?, message: String?, description: String?) -> Unit = { _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val initialFormData = remember(mode) {
         when (mode) {
-            is AlertFormMode.Create -> AlertFormData()
-            is AlertFormMode.Edit -> AlertFormData(
-                sectorId = mode.alert.sectorId,
-                alertTypeId = mode.alert.alertTypeId,
-                severityId = mode.alert.severityId,
-                message = mode.alert.message ?: "",
-                description = mode.alert.description ?: ""
+            is FormMode.Create -> AlertFormData()
+            is FormMode.Edit -> AlertFormData(
+                alertTypeId = mode.entity.alertTypeId,
+                severityId = mode.entity.severityId,
+                message = mode.entity.message ?: "",
+                description = mode.entity.description ?: ""
             )
         }
     }
@@ -102,22 +96,19 @@ fun AlertFormDialog(
     var formData by remember(mode) { mutableStateOf(initialFormData) }
     var validationErrors by remember { mutableStateOf(AlertFormData.ValidationErrors()) }
     var hasAttemptedSubmit by remember { mutableStateOf(false) }
-    var sectorExpanded by remember { mutableStateOf(false) }
     var alertTypeExpanded by remember { mutableStateOf(false) }
     var severityExpanded by remember { mutableStateOf(false) }
 
-    val sectorRequiredMsg = stringResource(Res.string.error_sector_required)
     val contentRequiredMsg = stringResource(Res.string.error_content_required)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
-            "error_sector_required" -> sectorRequiredMsg
             "error_content_required" -> contentRequiredMsg
             else -> null
         }
     }
 
-    val isEditMode = mode is AlertFormMode.Edit
+    val isEditMode = mode is FormMode.Edit
     val dialogTitle = if (isEditMode) {
         stringResource(Res.string.dialog_edit_alert_title)
     } else {
@@ -134,17 +125,15 @@ fun AlertFormDialog(
         stringResource(Res.string.button_create_alert)
     }
 
-    val selectText = stringResource(Res.string.label_select)
     val noneText = stringResource(Res.string.label_none)
     val loadingText = stringResource(Res.string.label_loading)
     val descriptionLabel = stringResource(Res.string.label_description)
 
     // Find selected items for display
-    val selectedSector = sectors.find { it.id == formData.sectorId }
     val selectedAlertType = alertTypes.find { it.id == formData.alertTypeId }
     val selectedSeverity = severities.find { it.id == formData.severityId }
 
-    Dialog(onDismissRequest = { if (!isSubmitting) onDismiss() }) {
+    Dialog(onDismissRequest = {}) {
         Card(
             modifier = modifier.width(480.dp),
             colors = CardDefaults.cardColors(
@@ -172,32 +161,6 @@ fun AlertFormDialog(
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
-
-                // Sector dropdown (required)
-                AlertFormDropdown(
-                    label = stringResource(Res.string.field_sector),
-                    expanded = sectorExpanded,
-                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) sectorExpanded = it },
-                    selectedText = selectedSector?.let { it.name ?: it.code ?: "Sector ${it.id}" } ?: selectText,
-                    isLoading = isLoadingCatalog,
-                    loadingText = loadingText,
-                    enabled = !isSubmitting,
-                    isError = validationErrors.sectorId != null,
-                    errorMessage = getErrorMessage(validationErrors.sectorId)
-                ) {
-                    sectors.forEach { sector ->
-                        DropdownMenuItem(
-                            text = { Text(sector.name ?: sector.code ?: "Sector ${sector.id}") },
-                            onClick = {
-                                formData = formData.copy(sectorId = sector.id)
-                                sectorExpanded = false
-                                if (hasAttemptedSubmit) validationErrors = formData.validate()
-                            }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
 
                 // Alert Type dropdown (optional)
                 AlertFormDropdown(
@@ -356,7 +319,6 @@ fun AlertFormDialog(
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
                                 onSubmit(
-                                    formData.sectorId,
                                     formData.alertTypeId,
                                     formData.severityId,
                                     formData.message.ifBlank { null },
@@ -537,11 +499,7 @@ private fun parseColor(hexColor: String): Color {
 private fun AlertFormDialogCreatePreview() {
     GreenhouseAdminTheme {
         AlertFormDialog(
-            mode = AlertFormMode.Create,
-            sectors = listOf(
-                Sector(id = 1L, code = "SEC-00001", tenantId = 1L, greenhouseId = 1L, name = "Tomato"),
-                Sector(id = 2L, code = "SEC-00002", tenantId = 1L, greenhouseId = 1L, name = "Pepper")
-            ),
+            mode = FormMode.Create,
             alertTypes = listOf(
                 AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),
                 AlertType(id = 2, name = "Humidity", description = "Humidity alerts")
@@ -581,7 +539,7 @@ private fun AlertFormDialogCreatePreview() {
 private fun AlertFormDialogEditPreview() {
     GreenhouseAdminTheme {
         AlertFormDialog(
-            mode = AlertFormMode.Edit(
+            mode = FormMode.Edit(
                 Alert(
                     id = 1L,
                     code = "ALT-00001",
@@ -600,10 +558,6 @@ private fun AlertFormDialogEditPreview() {
                     resolvedByUserName = null,
                     createdAt = "2024-01-15T10:30:00Z"
                 )
-            ),
-            sectors = listOf(
-                Sector(id = 1L, code = "SEC-00001", tenantId = 1L, greenhouseId = 1L, name = "Tomato"),
-                Sector(id = 2L, code = "SEC-00002", tenantId = 1L, greenhouseId = 1L, name = "Pepper")
             ),
             alertTypes = listOf(
                 AlertType(id = 1, name = "Temperature", description = "Temperature alerts"),

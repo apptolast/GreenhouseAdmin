@@ -49,7 +49,7 @@ import com.apptolast.greenhouse.admin.data.model.User
 import com.apptolast.greenhouse.admin.data.model.UserFormData
 import com.apptolast.greenhouse.admin.data.model.UserRole
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
-import com.apptolast.greenhouse.admin.presentation.viewmodel.UserFormMode
+import com.apptolast.greenhouse.admin.presentation.viewmodel.FormMode
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.button_cancel
 import greenhouseadmin.composeapp.generated.resources.button_create_user
@@ -76,18 +76,18 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
  */
 @Composable
 fun UserFormDialog(
-    mode: UserFormMode,
+    mode: FormMode<User>,
     isSubmitting: Boolean = false,
     error: String? = null,
     onSubmit: (username: String, email: String, password: String?, role: UserRole, isActive: Boolean) -> Unit = { _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val isEditMode = mode is UserFormMode.Edit
+    val isEditMode = mode is FormMode.Edit
     val initialFormData = remember(mode) {
         when (mode) {
-            is UserFormMode.Create -> UserFormData()
-            is UserFormMode.Edit -> UserFormData.fromUser(mode.user)
+            is FormMode.Create -> UserFormData()
+            is FormMode.Edit -> UserFormData.fromUser(mode.entity)
         }
     }
 
@@ -124,7 +124,7 @@ fun UserFormDialog(
         stringResource(Res.string.button_create_user)
     }
 
-    Dialog(onDismissRequest = { if (!isSubmitting) onDismiss() }) {
+    Dialog(onDismissRequest = {}) {
         Card(
             modifier = modifier.width(420.dp),
             colors = CardDefaults.cardColors(
@@ -500,7 +500,7 @@ private object UserFormDialogPreviewData {
 @Composable
 private fun UserFormDialogCreatePreview() {
     GreenhouseAdminTheme {
-        UserFormDialog(mode = UserFormMode.Create)
+        UserFormDialog(mode = FormMode.Create)
     }
 }
 
@@ -508,6 +508,6 @@ private fun UserFormDialogCreatePreview() {
 @Composable
 private fun UserFormDialogEditPreview() {
     GreenhouseAdminTheme {
-        UserFormDialog(mode = UserFormMode.Edit(UserFormDialogPreviewData.sampleUser))
+        UserFormDialog(mode = FormMode.Edit(UserFormDialogPreviewData.sampleUser))
     }
 }

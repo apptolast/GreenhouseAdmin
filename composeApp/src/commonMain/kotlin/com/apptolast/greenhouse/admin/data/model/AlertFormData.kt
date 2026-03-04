@@ -4,7 +4,6 @@ package com.apptolast.greenhouse.admin.data.model
  * Form data for creating or editing an alert.
  */
 data class AlertFormData(
-    val sectorId: Long? = null,
     val alertTypeId: Short? = null,
     val severityId: Short? = null,
     val message: String = "",
@@ -14,11 +13,10 @@ data class AlertFormData(
      * Validation errors for alert form fields.
      */
     data class ValidationErrors(
-        val sectorId: String? = null,
         val content: String? = null
     ) {
         val hasErrors: Boolean
-            get() = sectorId != null || content != null
+            get() = content != null
     }
 
     /**
@@ -27,7 +25,6 @@ data class AlertFormData(
      */
     fun validate(): ValidationErrors {
         return ValidationErrors(
-            sectorId = if (sectorId == null) "error_sector_required" else null,
             content = if (message.isBlank() && description.isBlank()) "error_content_required" else null
         )
     }

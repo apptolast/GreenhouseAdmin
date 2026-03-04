@@ -246,7 +246,7 @@ private fun AlertTypeFormDialog(
     var description by remember(formMode) { mutableStateOf(existing?.description ?: "") }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {},
         shape = RoundedCornerShape(16.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         title = {

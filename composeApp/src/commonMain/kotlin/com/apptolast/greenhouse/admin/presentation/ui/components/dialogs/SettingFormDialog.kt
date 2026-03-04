@@ -40,12 +40,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.apptolast.greenhouse.admin.data.model.ActuatorState
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
-import com.apptolast.greenhouse.admin.data.model.Greenhouse
-import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.SettingFormData
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
-import com.apptolast.greenhouse.admin.presentation.viewmodel.SettingFormMode
+import com.apptolast.greenhouse.admin.presentation.viewmodel.FormMode
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.button_cancel
 import greenhouseadmin.composeapp.generated.resources.button_create_setting
@@ -56,15 +54,12 @@ import greenhouseadmin.composeapp.generated.resources.dialog_new_setting_subtitl
 import greenhouseadmin.composeapp.generated.resources.dialog_new_setting_title
 import greenhouseadmin.composeapp.generated.resources.error_actuator_state_required
 import greenhouseadmin.composeapp.generated.resources.error_parameter_required
-import greenhouseadmin.composeapp.generated.resources.error_sector_required
-import greenhouseadmin.composeapp.generated.resources.field_sector
 import greenhouseadmin.composeapp.generated.resources.label_actuator_state
 import greenhouseadmin.composeapp.generated.resources.label_description
 import greenhouseadmin.composeapp.generated.resources.label_loading
 import greenhouseadmin.composeapp.generated.resources.label_parameter
 import greenhouseadmin.composeapp.generated.resources.label_select
 import greenhouseadmin.composeapp.generated.resources.label_status
-import greenhouseadmin.composeapp.generated.resources.label_value
 import greenhouseadmin.composeapp.generated.resources.status_active
 import greenhouseadmin.composeapp.generated.resources.status_inactive
 import org.jetbrains.compose.resources.stringResource
@@ -77,28 +72,24 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingFormDialog(
-    mode: SettingFormMode,
-    sectors: List<Sector> = emptyList(),
-    greenhouses: List<Greenhouse> = emptyList(),
+    mode: FormMode<Setting>,
     parameters: List<DeviceCatalogType> = emptyList(),
     actuatorStates: List<ActuatorState> = emptyList(),
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (sectorId: Long?, parameterId: Short, actuatorStateId: Short, value: String, description: String?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
+    onSubmit: (parameterId: Short, actuatorStateId: Short, description: String?, isActive: Boolean) -> Unit = { _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val initialFormData = remember(mode) {
         when (mode) {
-            is SettingFormMode.Create -> SettingFormData()
-            is SettingFormMode.Edit -> SettingFormData(
-                sectorId = mode.setting.sectorId,
-                parameterId = mode.setting.parameterId,
-                actuatorStateId = mode.setting.actuatorStateId,
-                value = mode.setting.value ?: "",
-                description = mode.setting.description ?: "",
-                isActive = mode.setting.isActive
+            is FormMode.Create -> SettingFormData()
+            is FormMode.Edit -> SettingFormData(
+                parameterId = mode.entity.parameterId,
+                actuatorStateId = mode.entity.actuatorStateId,
+                description = mode.entity.description ?: "",
+                isActive = mode.entity.isActive
             )
         }
     }
@@ -106,24 +97,23 @@ fun SettingFormDialog(
     var formData by remember(mode) { mutableStateOf(initialFormData) }
     var validationErrors by remember { mutableStateOf(SettingFormData.ValidationErrors()) }
     var hasAttemptedSubmit by remember { mutableStateOf(false) }
-    var sectorExpanded by remember { mutableStateOf(false) }
     var parameterExpanded by remember { mutableStateOf(false) }
+    var parameterSearchQuery by remember { mutableStateOf("") }
     var actuatorStateExpanded by remember { mutableStateOf(false) }
+    var actuatorStateSearchQuery by remember { mutableStateOf("") }
 
-    val sectorRequiredMsg = stringResource(Res.string.error_sector_required)
     val parameterRequiredMsg = stringResource(Res.string.error_parameter_required)
     val actuatorStateRequiredMsg = stringResource(Res.string.error_actuator_state_required)
 
     fun getErrorMessage(errorKey: String?): String? {
         return when (errorKey) {
-            "error_sector_required" -> sectorRequiredMsg
             "error_parameter_required" -> parameterRequiredMsg
             "error_actuator_state_required" -> actuatorStateRequiredMsg
             else -> null
         }
     }
 
-    val isEditMode = mode is SettingFormMode.Edit
+    val isEditMode = mode is FormMode.Edit
     val dialogTitle = if (isEditMode) {
         stringResource(Res.string.dialog_edit_setting_title)
     } else {
@@ -145,17 +135,10 @@ fun SettingFormDialog(
     val descriptionLabel = stringResource(Res.string.label_description)
 
     // Find selected items for display
-    val selectedSector = sectors.find { it.id == formData.sectorId }
     val selectedParameter = parameters.find { it.id == formData.parameterId }
     val selectedActuatorState = actuatorStates.find { it.id == formData.actuatorStateId }
 
-    // Helper function to get sector display text with greenhouse name
-    fun getSectorDisplayText(sector: Sector): String {
-        val greenhouse = greenhouses.find { it.id == sector.greenhouseId }
-        return "${sector.displayName} (${greenhouse?.name ?: "Unknown"})"
-    }
-
-    Dialog(onDismissRequest = { if (!isSubmitting) onDismiss() }) {
+    Dialog(onDismissRequest = {}) {
         Card(
             modifier = modifier.width(480.dp),
             colors = CardDefaults.cardColors(
@@ -184,61 +167,32 @@ fun SettingFormDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Sector dropdown (required)
-                SettingFormDropdown(
-                    label = stringResource(Res.string.field_sector),
-                    expanded = sectorExpanded,
-                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) sectorExpanded = it },
-                    selectedText = selectedSector?.let { getSectorDisplayText(it) } ?: selectText,
-                    isLoading = isLoadingCatalog,
-                    loadingText = loadingText,
-                    enabled = !isSubmitting && !isEditMode, // Sector not editable in edit mode
-                    isError = validationErrors.sectorId != null,
-                    errorMessage = getErrorMessage(validationErrors.sectorId)
-                ) {
-                    sectors.forEach { sector ->
-                        DropdownMenuItem(
-                            text = {
-                                Column {
-                                    Text(sector.displayName)
-                                    val greenhouse = greenhouses.find { it.id == sector.greenhouseId }
-                                    greenhouse?.let {
-                                        Text(
-                                            text = it.name,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                            },
-                            onClick = {
-                                formData = formData.copy(sectorId = sector.id)
-                                sectorExpanded = false
-                                if (hasAttemptedSubmit) validationErrors = formData.validate()
-                            }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Parameter dropdown (required) - uses DeviceCatalogType
-                SettingFormDropdown(
+                // Parameter searchable dropdown (required) - uses DeviceCatalogType
+                SearchableDropdown(
                     label = stringResource(Res.string.label_parameter),
                     expanded = parameterExpanded,
                     onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) parameterExpanded = it },
                     selectedText = selectedParameter?.name ?: selectText,
+                    searchQuery = parameterSearchQuery,
+                    onSearchQueryChange = {
+                        parameterSearchQuery = it
+                        if (!parameterExpanded) parameterExpanded = true
+                    },
                     isLoading = isLoadingCatalog,
                     loadingText = loadingText,
                     enabled = !isSubmitting,
                     isError = validationErrors.parameterId != null,
                     errorMessage = getErrorMessage(validationErrors.parameterId)
                 ) {
-                    parameters.forEach { parameter ->
+                    val filteredParameters = parameters.filter {
+                        it.name.contains(parameterSearchQuery, ignoreCase = true)
+                    }
+                    filteredParameters.forEach { parameter ->
                         DropdownMenuItem(
                             text = { Text(parameter.name) },
                             onClick = {
                                 formData = formData.copy(parameterId = parameter.id)
+                                parameterSearchQuery = ""
                                 parameterExpanded = false
                                 if (hasAttemptedSubmit) validationErrors = formData.validate()
                             }
@@ -248,39 +202,38 @@ fun SettingFormDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Actuator State dropdown (required)
-                SettingFormDropdown(
+                // Actuator State searchable dropdown (required)
+                SearchableDropdown(
                     label = stringResource(Res.string.label_actuator_state),
                     expanded = actuatorStateExpanded,
                     onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) actuatorStateExpanded = it },
                     selectedText = selectedActuatorState?.name ?: selectText,
+                    searchQuery = actuatorStateSearchQuery,
+                    onSearchQueryChange = {
+                        actuatorStateSearchQuery = it
+                        if (!actuatorStateExpanded) actuatorStateExpanded = true
+                    },
                     isLoading = isLoadingCatalog,
                     loadingText = loadingText,
                     enabled = !isSubmitting,
                     isError = validationErrors.actuatorStateId != null,
                     errorMessage = getErrorMessage(validationErrors.actuatorStateId)
                 ) {
-                    actuatorStates.forEach { actuatorState ->
+                    val filteredActuatorStates = actuatorStates.filter {
+                        it.name.contains(actuatorStateSearchQuery, ignoreCase = true)
+                    }
+                    filteredActuatorStates.forEach { actuatorState ->
                         DropdownMenuItem(
                             text = { Text(actuatorState.name) },
                             onClick = {
                                 formData = formData.copy(actuatorStateId = actuatorState.id)
+                                actuatorStateSearchQuery = ""
                                 actuatorStateExpanded = false
                                 if (hasAttemptedSubmit) validationErrors = formData.validate()
                             }
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Value field
-                SettingFormTextField(
-                    value = formData.value,
-                    onValueChange = { formData = formData.copy(value = it) },
-                    label = stringResource(Res.string.label_value),
-                    enabled = !isSubmitting
-                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -337,10 +290,8 @@ fun SettingFormDialog(
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
                                 onSubmit(
-                                    formData.sectorId,
                                     formData.parameterId!!,
                                     formData.actuatorStateId!!,
-                                    formData.value,
                                     formData.description.ifBlank { null },
                                     formData.isActive
                                 )
@@ -369,15 +320,18 @@ fun SettingFormDialog(
 }
 
 /**
- * Dropdown field component for setting forms.
+ * Searchable dropdown field component for setting forms.
+ * Allows typing to filter items in the dropdown list.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SettingFormDropdown(
+private fun SearchableDropdown(
     label: String,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     selectedText: String,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     isLoading: Boolean,
     loadingText: String,
     enabled: Boolean,
@@ -400,14 +354,14 @@ private fun SettingFormDropdown(
             onExpandedChange = onExpandedChange
         ) {
             OutlinedTextField(
-                value = if (isLoading) loadingText else selectedText,
-                onValueChange = {},
-                readOnly = true,
+                value = if (isLoading) loadingText else if (expanded) searchQuery else selectedText,
+                onValueChange = { onSearchQueryChange(it) },
+                readOnly = isLoading,
                 enabled = enabled && !isLoading,
                 isError = isError,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
                 trailingIcon = {
                     if (isLoading) {
                         CircularProgressIndicator(
@@ -418,6 +372,13 @@ private fun SettingFormDropdown(
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                     }
                 },
+                placeholder = {
+                    Text(
+                        text = selectedText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
+                },
+                singleLine = true,
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -430,7 +391,10 @@ private fun SettingFormDropdown(
 
             ExposedDropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { onExpandedChange(false) }
+                onDismissRequest = {
+                    onSearchQueryChange("")
+                    onExpandedChange(false)
+                }
             ) {
                 menuContent()
             }
@@ -544,11 +508,7 @@ private fun SettingStatusSwitch(
 private fun SettingFormDialogCreatePreview() {
     GreenhouseAdminTheme {
         SettingFormDialog(
-            mode = SettingFormMode.Create,
-            sectors = listOf(
-                Sector(id = 1L, code = "SEC-00001", tenantId = 1L, greenhouseId = 1L, name = "Tomato"),
-                Sector(id = 2L, code = "SEC-00002", tenantId = 1L, greenhouseId = 1L, name = "Pepper")
-            ),
+            mode = FormMode.Create,
             parameters = listOf(
                 DeviceCatalogType(
                     id = 1,
@@ -604,7 +564,7 @@ private fun SettingFormDialogCreatePreview() {
 private fun SettingFormDialogEditPreview() {
     GreenhouseAdminTheme {
         SettingFormDialog(
-            mode = SettingFormMode.Edit(
+            mode = FormMode.Edit(
                 Setting(
                     id = 1L,
                     code = "SET-00001",
@@ -620,10 +580,6 @@ private fun SettingFormDialogEditPreview() {
                     isActive = true,
                     createdAt = "2024-01-15T10:30:00Z"
                 )
-            ),
-            sectors = listOf(
-                Sector(id = 1L, code = "SEC-00001", tenantId = 1L, greenhouseId = 1L, name = "Tomato"),
-                Sector(id = 2L, code = "SEC-00002", tenantId = 1L, greenhouseId = 1L, name = "Pepper")
             ),
             parameters = listOf(
                 DeviceCatalogType(
