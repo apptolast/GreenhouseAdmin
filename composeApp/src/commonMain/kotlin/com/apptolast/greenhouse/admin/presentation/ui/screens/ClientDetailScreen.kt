@@ -362,14 +362,16 @@ private fun ClientDetailScreenContent(
             mode = uiState.settingFormMode,
             parameters = uiState.deviceTypes,
             actuatorStates = uiState.actuatorStates,
+            dataTypes = uiState.dataTypes,
             isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingSetting,
             error = uiState.submitSettingError,
-            onSubmit = { parameterId, actuatorStateId, description, isActive ->
+            onSubmit = { parameterId, actuatorStateId, dataTypeId, description, isActive ->
                 onEvent(
                     ClientDetailEvent.OnSubmitSettingForm(
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
+                        dataTypeId = dataTypeId,
                         description = description,
                         isActive = isActive
                     )

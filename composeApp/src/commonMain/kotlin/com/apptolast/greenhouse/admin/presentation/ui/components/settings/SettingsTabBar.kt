@@ -25,6 +25,7 @@ import greenhouseadmin.composeapp.generated.resources.settings_tab_account
 import greenhouseadmin.composeapp.generated.resources.settings_tab_actuator_states
 import greenhouseadmin.composeapp.generated.resources.settings_tab_alert_severities
 import greenhouseadmin.composeapp.generated.resources.settings_tab_alert_types
+import greenhouseadmin.composeapp.generated.resources.settings_tab_data_types
 import greenhouseadmin.composeapp.generated.resources.settings_tab_device_categories
 import greenhouseadmin.composeapp.generated.resources.settings_tab_device_types
 import greenhouseadmin.composeapp.generated.resources.settings_tab_device_units
@@ -106,6 +107,7 @@ private fun getTabText(tab: SettingsTab): String {
         SettingsTab.ALERT_SEVERITIES -> stringResource(Res.string.settings_tab_alert_severities)
         SettingsTab.PERIODS -> stringResource(Res.string.settings_tab_periods)
         SettingsTab.ACTUATOR_STATES -> stringResource(Res.string.settings_tab_actuator_states)
+        SettingsTab.DATA_TYPES -> stringResource(Res.string.settings_tab_data_types)
     }
 }
 

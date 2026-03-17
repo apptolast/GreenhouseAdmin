@@ -1,6 +1,7 @@
 package com.apptolast.greenhouse.admin.data.remote.api
 
 import com.apptolast.greenhouse.admin.data.model.ActuatorStateResponse
+import com.apptolast.greenhouse.admin.data.model.DataTypeResponse
 import com.apptolast.greenhouse.admin.data.model.PeriodResponse
 import com.apptolast.greenhouse.admin.data.model.SettingCreateRequest
 import com.apptolast.greenhouse.admin.data.model.SettingResponse
@@ -36,6 +37,14 @@ class SettingsApiService(private val httpClient: HttpClient) {
      */
     suspend fun getActuatorStates(): List<ActuatorStateResponse> {
         return httpClient.get("catalog/actuator-states").body()
+    }
+
+    /**
+     * Get all data types from the catalog.
+     * Data types define the kind of data associated with setpoints.
+     */
+    suspend fun getDataTypes(): List<DataTypeResponse> {
+        return httpClient.get("catalog/data-types").body()
     }
 
     // ==================== CRUD ENDPOINTS (with tenantId) ====================

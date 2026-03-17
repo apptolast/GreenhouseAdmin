@@ -53,10 +53,10 @@ import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_actuator_state
+import greenhouseadmin.composeapp.generated.resources.header_data_type
 import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_parameter
 import greenhouseadmin.composeapp.generated.resources.header_status
-import greenhouseadmin.composeapp.generated.resources.header_value
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -206,9 +206,9 @@ private fun SettingsTableHeader(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.6f)
         )
-        // VALUE - Not sortable
+        // DATA TYPE - Not sortable
         Text(
-            text = stringResource(Res.string.header_value),
+            text = stringResource(Res.string.header_data_type),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.5f)
@@ -270,9 +270,9 @@ private fun SettingTableRow(
             modifier = Modifier.weight(0.6f).wrapContentWidth(align = Alignment.Start),
         )
 
-        // VALUE
+        // DATA TYPE
         Text(
-            text = setting.valueDisplay,
+            text = setting.dataTypeDisplayName,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.5f),
@@ -403,7 +403,7 @@ private fun SettingCard(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = setting.valueDisplay,
+                        text = setting.dataTypeDisplayName,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -483,6 +483,8 @@ private object SettingsTablePreviewData {
             parameterName = "Temperature",
             actuatorStateId = 1,
             actuatorStateName = "ON",
+            dataTypeId = 3,
+            dataTypeName = "DOUBLE",
             value = "25",
             description = null,
             isActive = true,
@@ -498,6 +500,8 @@ private object SettingsTablePreviewData {
             parameterName = "Humidity",
             actuatorStateId = 2,
             actuatorStateName = "OFF",
+            dataTypeId = 1,
+            dataTypeName = "INTEGER",
             value = "80",
             description = "Max humidity threshold",
             isActive = true,
@@ -513,6 +517,8 @@ private object SettingsTablePreviewData {
             parameterName = "Temperature",
             actuatorStateId = 3,
             actuatorStateName = "AUTO",
+            dataTypeId = null,
+            dataTypeName = null,
             value = null,
             description = null,
             isActive = false,

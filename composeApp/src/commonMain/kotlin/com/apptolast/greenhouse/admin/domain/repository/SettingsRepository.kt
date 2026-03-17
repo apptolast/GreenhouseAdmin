@@ -1,6 +1,7 @@
 package com.apptolast.greenhouse.admin.domain.repository
 
 import com.apptolast.greenhouse.admin.data.model.ActuatorState
+import com.apptolast.greenhouse.admin.data.model.DataType
 import com.apptolast.greenhouse.admin.data.model.Period
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.SettingCreateRequest
@@ -27,6 +28,13 @@ interface SettingsRepository {
      * @return Result containing list of actuator states or error
      */
     suspend fun getActuatorStates(): Result<List<ActuatorState>>
+
+    /**
+     * Retrieves all data types from the catalog.
+     * Data types define the kind of data associated with setpoints.
+     * @return Result containing list of data types or error
+     */
+    suspend fun getDataTypes(): Result<List<DataType>>
 
     // ==================== CRUD ====================
 

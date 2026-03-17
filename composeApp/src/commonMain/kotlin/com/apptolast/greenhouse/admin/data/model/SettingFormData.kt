@@ -7,6 +7,7 @@ package com.apptolast.greenhouse.admin.data.model
 data class SettingFormData(
     val parameterId: Short? = null,
     val actuatorStateId: Short? = null,
+    val dataTypeId: Short? = null,
     val description: String = "",
     val isActive: Boolean = true
 ) {

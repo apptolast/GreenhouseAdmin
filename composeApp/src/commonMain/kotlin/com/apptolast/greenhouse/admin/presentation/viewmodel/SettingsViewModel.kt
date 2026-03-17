@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.apptolast.greenhouse.admin.data.model.ActuatorState
 import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
 import com.apptolast.greenhouse.admin.data.model.AlertType
+import com.apptolast.greenhouse.admin.data.model.DataType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
@@ -119,6 +120,15 @@ class SettingsViewModel(
             is SettingsEvent.OnConfirmDeleteActuatorState -> confirmDeleteActuatorState()
             is SettingsEvent.OnCancelDeleteActuatorState -> cancelDeleteActuatorState()
 
+            // Data Types events
+            is SettingsEvent.OnAddDataTypeClicked -> showDataTypeDialog(DataTypeFormMode.Create)
+            is SettingsEvent.OnEditDataTypeClicked -> showDataTypeDialog(DataTypeFormMode.Edit(event.dataType))
+            is SettingsEvent.OnDeleteDataTypeClicked -> showDeleteDataTypeConfirmation(event.dataType)
+            is SettingsEvent.OnSubmitDataType -> submitDataType(event.name, event.description)
+            is SettingsEvent.OnDismissDataTypeDialog -> dismissDataTypeDialog()
+            is SettingsEvent.OnConfirmDeleteDataType -> confirmDeleteDataType()
+            is SettingsEvent.OnCancelDeleteDataType -> cancelDeleteDataType()
+
             // Refresh events
             is SettingsEvent.OnRefreshCatalogs -> loadAllCatalogs()
         }
@@ -193,21 +203,23 @@ class SettingsViewModel(
             val severitiesResult = catalogRepository.getAlertSeverities()
             val periodsResult = catalogRepository.getPeriods()
             val actuatorStatesResult = catalogRepository.getActuatorStates()
+            val dataTypesResult = catalogRepository.getDataTypes()
 
             _uiState.update { state ->
                 state.copy(
                     isCatalogsLoading = false,
-                    deviceCategories = categoriesResult.getOrDefault(emptyList()).sortedBy { it.id },
-                    deviceTypes = typesResult.getOrDefault(emptyList()).sortedBy { it.id },
-                    deviceUnits = unitsResult.getOrDefault(emptyList()).sortedBy { it.id },
-                    alertTypes = alertTypesResult.getOrDefault(emptyList()).sortedBy { it.id },
-                    alertSeverities = severitiesResult.getOrDefault(emptyList()).sortedBy { it.id },
-                    periods = periodsResult.getOrDefault(emptyList()).sortedBy { it.id },
-                    actuatorStates = actuatorStatesResult.getOrDefault(emptyList()).sortedBy { it.displayOrder },
+                    deviceCategories = categoriesResult.getOrDefault(emptyList()).sortedBy { it.name },
+                    deviceTypes = typesResult.getOrDefault(emptyList()).sortedBy { it.name },
+                    deviceUnits = unitsResult.getOrDefault(emptyList()).sortedBy { it.name },
+                    alertTypes = alertTypesResult.getOrDefault(emptyList()).sortedBy { it.name },
+                    alertSeverities = severitiesResult.getOrDefault(emptyList()).sortedBy { it.name },
+                    periods = periodsResult.getOrDefault(emptyList()).sortedBy { it.name },
+                    actuatorStates = actuatorStatesResult.getOrDefault(emptyList()).sortedBy { it.name },
+                    dataTypes = dataTypesResult.getOrDefault(emptyList()).sortedBy { it.name },
                     catalogsError = if (categoriesResult.isFailure || typesResult.isFailure ||
                         unitsResult.isFailure || alertTypesResult.isFailure ||
                         severitiesResult.isFailure || periodsResult.isFailure ||
-                        actuatorStatesResult.isFailure
+                        actuatorStatesResult.isFailure || dataTypesResult.isFailure
                     ) "Failed to load some catalogs" else null
                 )
             }
@@ -316,7 +328,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getDeviceCategories()
                 .onSuccess { categories ->
-                    _uiState.update { it.copy(deviceCategories = categories.sortedBy { c -> c.id }) }
+                    _uiState.update { it.copy(deviceCategories = categories.sortedBy { c -> c.name }) }
                 }
         }
     }
@@ -459,7 +471,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getDeviceTypes()
                 .onSuccess { types ->
-                    _uiState.update { it.copy(deviceTypes = types.sortedBy { t -> t.id }) }
+                    _uiState.update { it.copy(deviceTypes = types.sortedBy { t -> t.name }) }
                 }
         }
     }
@@ -566,7 +578,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getAlertTypes()
                 .onSuccess { types ->
-                    _uiState.update { it.copy(alertTypes = types.sortedBy { t -> t.id }) }
+                    _uiState.update { it.copy(alertTypes = types.sortedBy { t -> t.name }) }
                 }
         }
     }
@@ -689,7 +701,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getAlertSeverities()
                 .onSuccess { severities ->
-                    _uiState.update { it.copy(alertSeverities = severities.sortedBy { s -> s.id }) }
+                    _uiState.update { it.copy(alertSeverities = severities.sortedBy { s -> s.name }) }
                 }
         }
     }
@@ -796,7 +808,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getPeriods()
                 .onSuccess { periods ->
-                    _uiState.update { it.copy(periods = periods.sortedBy { p -> p.id }) }
+                    _uiState.update { it.copy(periods = periods.sortedBy { p -> p.name }) }
                 }
         }
     }
@@ -929,7 +941,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getDeviceUnits()
                 .onSuccess { units ->
-                    _uiState.update { it.copy(deviceUnits = units.sortedBy { u -> u.id }) }
+                    _uiState.update { it.copy(deviceUnits = units.sortedBy { u -> u.name }) }
                 }
         }
     }
@@ -1050,7 +1062,114 @@ class SettingsViewModel(
         viewModelScope.launch {
             catalogRepository.getActuatorStates()
                 .onSuccess { states ->
-                    _uiState.update { it.copy(actuatorStates = states.sortedBy { s -> s.displayOrder }) }
+                    _uiState.update { it.copy(actuatorStates = states.sortedBy { s -> s.name }) }
+                }
+        }
+    }
+
+    // ==================== DATA TYPES CRUD ====================
+
+    private fun showDataTypeDialog(mode: DataTypeFormMode) {
+        _uiState.update {
+            it.copy(
+                showDataTypeDialog = true,
+                dataTypeFormMode = mode,
+                submitDataTypeError = null
+            )
+        }
+    }
+
+    private fun dismissDataTypeDialog() {
+        _uiState.update {
+            it.copy(
+                showDataTypeDialog = false,
+                submitDataTypeError = null
+            )
+        }
+    }
+
+    private fun showDeleteDataTypeConfirmation(dataType: DataType) {
+        _uiState.update {
+            it.copy(
+                showDeleteDataTypeConfirmation = true,
+                dataTypeToDelete = dataType
+            )
+        }
+    }
+
+    private fun cancelDeleteDataType() {
+        _uiState.update {
+            it.copy(
+                showDeleteDataTypeConfirmation = false,
+                dataTypeToDelete = null
+            )
+        }
+    }
+
+    private fun submitDataType(name: String, description: String?) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingDataType = true, submitDataTypeError = null) }
+
+            val result = when (val mode = _uiState.value.dataTypeFormMode) {
+                is DataTypeFormMode.Create -> catalogRepository.createDataType(name, description)
+                is DataTypeFormMode.Edit -> catalogRepository.updateDataType(mode.dataType.id, name, description)
+            }
+
+            result
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingDataType = false,
+                            showDataTypeDialog = false
+                        )
+                    }
+                    loadDataTypes()
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingDataType = false,
+                            submitDataTypeError = error.message ?: "Failed to save data type"
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun confirmDeleteDataType() {
+        val dataTypeToDelete = _uiState.value.dataTypeToDelete ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingDataType = true) }
+
+            catalogRepository.deleteDataType(dataTypeToDelete.id)
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isDeletingDataType = false,
+                            showDeleteDataTypeConfirmation = false,
+                            dataTypeToDelete = null
+                        )
+                    }
+                    loadDataTypes()
+                }
+                .onFailure {
+                    _uiState.update {
+                        it.copy(
+                            isDeletingDataType = false,
+                            showDeleteDataTypeConfirmation = false,
+                            dataTypeToDelete = null
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun loadDataTypes() {
+        viewModelScope.launch {
+            catalogRepository.getDataTypes()
+                .onSuccess { dataTypes ->
+                    _uiState.update { it.copy(dataTypes = dataTypes.sortedBy { d -> d.name }) }
                 }
         }
     }
@@ -1144,7 +1263,17 @@ data class SettingsUiState(
     val submitActuatorStateError: String? = null,
     val showDeleteActuatorStateConfirmation: Boolean = false,
     val actuatorStateToDelete: ActuatorState? = null,
-    val isDeletingActuatorState: Boolean = false
+    val isDeletingActuatorState: Boolean = false,
+
+    // Data Types state
+    val dataTypes: List<DataType> = emptyList(),
+    val showDataTypeDialog: Boolean = false,
+    val dataTypeFormMode: DataTypeFormMode = DataTypeFormMode.Create,
+    val isSubmittingDataType: Boolean = false,
+    val submitDataTypeError: String? = null,
+    val showDeleteDataTypeConfirmation: Boolean = false,
+    val dataTypeToDelete: DataType? = null,
+    val isDeletingDataType: Boolean = false
 )
 
 // ==================== ENUMS AND SEALED INTERFACES ====================
@@ -1160,7 +1289,8 @@ enum class SettingsTab {
     ALERT_TYPES,
     ALERT_SEVERITIES,
     PERIODS,
-    ACTUATOR_STATES
+    ACTUATOR_STATES,
+    DATA_TYPES
 }
 
 /**
@@ -1217,6 +1347,14 @@ sealed interface DeviceUnitFormMode {
 sealed interface ActuatorStateFormMode {
     data object Create : ActuatorStateFormMode
     data class Edit(val actuatorState: ActuatorState) : ActuatorStateFormMode
+}
+
+/**
+ * Mode for the data type form dialog.
+ */
+sealed interface DataTypeFormMode {
+    data object Create : DataTypeFormMode
+    data class Edit(val dataType: DataType) : DataTypeFormMode
 }
 
 // ==================== EVENTS ====================
@@ -1332,6 +1470,15 @@ sealed interface SettingsEvent {
     data object OnDismissActuatorStateDialog : SettingsEvent
     data object OnConfirmDeleteActuatorState : SettingsEvent
     data object OnCancelDeleteActuatorState : SettingsEvent
+
+    // Data Types events
+    data object OnAddDataTypeClicked : SettingsEvent
+    data class OnEditDataTypeClicked(val dataType: DataType) : SettingsEvent
+    data class OnDeleteDataTypeClicked(val dataType: DataType) : SettingsEvent
+    data class OnSubmitDataType(val name: String, val description: String?) : SettingsEvent
+    data object OnDismissDataTypeDialog : SettingsEvent
+    data object OnConfirmDeleteDataType : SettingsEvent
+    data object OnCancelDeleteDataType : SettingsEvent
 
     // Refresh events
     data object OnRefreshCatalogs : SettingsEvent

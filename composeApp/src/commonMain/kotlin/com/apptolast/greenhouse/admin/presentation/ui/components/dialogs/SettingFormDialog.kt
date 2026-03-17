@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.apptolast.greenhouse.admin.data.model.ActuatorState
+import com.apptolast.greenhouse.admin.data.model.DataType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.SettingFormData
@@ -55,6 +56,7 @@ import greenhouseadmin.composeapp.generated.resources.dialog_new_setting_title
 import greenhouseadmin.composeapp.generated.resources.error_actuator_state_required
 import greenhouseadmin.composeapp.generated.resources.error_parameter_required
 import greenhouseadmin.composeapp.generated.resources.label_actuator_state
+import greenhouseadmin.composeapp.generated.resources.label_data_type
 import greenhouseadmin.composeapp.generated.resources.label_description
 import greenhouseadmin.composeapp.generated.resources.label_loading
 import greenhouseadmin.composeapp.generated.resources.label_parameter
@@ -75,10 +77,11 @@ fun SettingFormDialog(
     mode: FormMode<Setting>,
     parameters: List<DeviceCatalogType> = emptyList(),
     actuatorStates: List<ActuatorState> = emptyList(),
+    dataTypes: List<DataType> = emptyList(),
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (parameterId: Short, actuatorStateId: Short, description: String?, isActive: Boolean) -> Unit = { _, _, _, _ -> },
+    onSubmit: (parameterId: Short, actuatorStateId: Short, dataTypeId: Short?, description: String?, isActive: Boolean) -> Unit = { _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -88,6 +91,7 @@ fun SettingFormDialog(
             is FormMode.Edit -> SettingFormData(
                 parameterId = mode.entity.parameterId,
                 actuatorStateId = mode.entity.actuatorStateId,
+                dataTypeId = mode.entity.dataTypeId,
                 description = mode.entity.description ?: "",
                 isActive = mode.entity.isActive
             )
@@ -101,6 +105,8 @@ fun SettingFormDialog(
     var parameterSearchQuery by remember { mutableStateOf("") }
     var actuatorStateExpanded by remember { mutableStateOf(false) }
     var actuatorStateSearchQuery by remember { mutableStateOf("") }
+    var dataTypeExpanded by remember { mutableStateOf(false) }
+    var dataTypeSearchQuery by remember { mutableStateOf("") }
 
     val parameterRequiredMsg = stringResource(Res.string.error_parameter_required)
     val actuatorStateRequiredMsg = stringResource(Res.string.error_actuator_state_required)
@@ -137,6 +143,7 @@ fun SettingFormDialog(
     // Find selected items for display
     val selectedParameter = parameters.find { it.id == formData.parameterId }
     val selectedActuatorState = actuatorStates.find { it.id == formData.actuatorStateId }
+    val selectedDataType = dataTypes.find { it.id == formData.dataTypeId }
 
     Dialog(onDismissRequest = {}) {
         Card(
@@ -237,6 +244,38 @@ fun SettingFormDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Data Type searchable dropdown (optional)
+                SearchableDropdown(
+                    label = stringResource(Res.string.label_data_type),
+                    expanded = dataTypeExpanded,
+                    onExpandedChange = { if (!isSubmitting && !isLoadingCatalog) dataTypeExpanded = it },
+                    selectedText = selectedDataType?.name ?: selectText,
+                    searchQuery = dataTypeSearchQuery,
+                    onSearchQueryChange = {
+                        dataTypeSearchQuery = it
+                        if (!dataTypeExpanded) dataTypeExpanded = true
+                    },
+                    isLoading = isLoadingCatalog,
+                    loadingText = loadingText,
+                    enabled = !isSubmitting
+                ) {
+                    val filteredDataTypes = dataTypes.filter {
+                        it.name.contains(dataTypeSearchQuery, ignoreCase = true)
+                    }
+                    filteredDataTypes.forEach { dataType ->
+                        DropdownMenuItem(
+                            text = { Text(dataType.name) },
+                            onClick = {
+                                formData = formData.copy(dataTypeId = dataType.id)
+                                dataTypeSearchQuery = ""
+                                dataTypeExpanded = false
+                            }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Description field (optional)
                 SettingFormTextField(
                     value = formData.description,
@@ -292,6 +331,7 @@ fun SettingFormDialog(
                                 onSubmit(
                                     formData.parameterId!!,
                                     formData.actuatorStateId!!,
+                                    formData.dataTypeId,
                                     formData.description.ifBlank { null },
                                     formData.isActive
                                 )
@@ -575,6 +615,8 @@ private fun SettingFormDialogEditPreview() {
                     parameterName = "Temperature",
                     actuatorStateId = 2,
                     actuatorStateName = "ON",
+                    dataTypeId = 1,
+                    dataTypeName = "INTEGER",
                     value = "25",
                     description = null,
                     isActive = true,

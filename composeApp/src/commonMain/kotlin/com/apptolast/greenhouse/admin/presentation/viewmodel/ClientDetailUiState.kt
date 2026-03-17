@@ -5,6 +5,7 @@ import com.apptolast.greenhouse.admin.data.model.Alert
 import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
 import com.apptolast.greenhouse.admin.data.model.AlertType
 import com.apptolast.greenhouse.admin.data.model.Client
+import com.apptolast.greenhouse.admin.data.model.DataType
 import com.apptolast.greenhouse.admin.data.model.Device
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
@@ -163,6 +164,7 @@ data class ClientDetailUiState(
 
     // Setting catalog state (preloaded at init)
     val actuatorStates: List<ActuatorState> = emptyList(),
+    val dataTypes: List<DataType> = emptyList(),
 
     // === Greenhouse hierarchical view state ===
 

@@ -350,10 +350,12 @@
     <string name="header_parameter">PARAMETER</string>
     <string name="header_actuator_state">ACTUATOR STATE</string>
     <string name="header_value">VALUE</string>
+    <string name="header_data_type">DATA TYPE</string>
 
     <!-- Setting Form Labels -->
     <string name="label_parameter">Parameter</string>
     <string name="label_actuator_state">Actuator State</string>
+    <string name="label_data_type">Data Type</string>
     <string name="label_value">Value</string>
 
     <!-- Setpoint Dialogs -->
@@ -397,6 +399,7 @@
     <string name="settings_tab_alert_severities">Severities</string>
     <string name="settings_tab_periods">Periods</string>
     <string name="settings_tab_actuator_states">Actuator States</string>
+    <string name="settings_tab_data_types">Data Types</string>
 
     <!-- Catalog Management -->
     <string name="button_add">Add</string>
@@ -455,6 +458,10 @@
     <!-- Actuator State Dialogs -->
     <string name="dialog_create_actuator_state">Create Actuator State</string>
     <string name="dialog_edit_actuator_state">Edit Actuator State</string>
+
+    <!-- Data Type Dialogs -->
+    <string name="dialog_create_data_type">Create Data Type</string>
+    <string name="dialog_edit_data_type">Edit Data Type</string>
 
     <!-- Greenhouse Hierarchical View -->
     <string name="greenhouse_tree_title">Greenhouses</string>

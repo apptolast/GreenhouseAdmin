@@ -178,6 +178,7 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnSubmitSettingForm -> submitSettingForm(
                 event.parameterId,
                 event.actuatorStateId,
+                event.dataTypeId,
                 event.description,
                 event.isActive
             )
@@ -241,6 +242,7 @@ class ClientDetailViewModel(
 
                     // Settings catalogs
                     val actuatorStatesDeferred = async { settingsRepository.getActuatorStates() }
+                    val dataTypesDeferred = async { settingsRepository.getDataTypes() }
 
                     // Greenhouses (tenant-specific but used across all tabs)
                     val greenhousesDeferred = async { greenhousesRepository.getGreenhousesByTenantId(clientId) }
@@ -255,6 +257,7 @@ class ClientDetailViewModel(
                     val alertTypes = alertTypesDeferred.await()
                     val severities = severitiesDeferred.await()
                     val actuatorStates = actuatorStatesDeferred.await()
+                    val dataTypes = dataTypesDeferred.await()
                     val greenhouses = greenhousesDeferred.await()
                     val sectors = sectorsDeferred.await()
 
@@ -270,6 +273,7 @@ class ClientDetailViewModel(
                             alertSeverities = severities.getOrDefault(emptyList()),
                             // Settings catalogs
                             actuatorStates = actuatorStates.getOrDefault(emptyList()).sortedBy { it.displayOrder },
+                            dataTypes = dataTypes.getOrDefault(emptyList()).sortedBy { it.name },
                             // Greenhouses
                             greenhouses = greenhouses.getOrDefault(emptyList()),
                             // Sectors
@@ -1324,6 +1328,7 @@ class ClientDetailViewModel(
     private fun submitSettingForm(
         parameterId: Short,
         actuatorStateId: Short,
+        dataTypeId: Short?,
         description: String?,
         isActive: Boolean
     ) {
@@ -1347,6 +1352,7 @@ class ClientDetailViewModel(
                         sectorId = sectorId,
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
+                        dataTypeId = dataTypeId,
                         value = null,
                         description = description?.ifBlank { null },
                         isActive = isActive
@@ -1359,6 +1365,7 @@ class ClientDetailViewModel(
                         sectorId = sectorId,
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
+                        dataTypeId = dataTypeId,
                         value = null,
                         description = description?.ifBlank { null },
                         isActive = isActive

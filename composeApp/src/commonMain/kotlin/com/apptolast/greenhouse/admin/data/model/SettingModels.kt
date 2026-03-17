@@ -31,6 +31,8 @@ data class SettingResponse(
     val parameterName: String? = null,
     val actuatorStateId: Short? = null,
     val actuatorStateName: String? = null,
+    val dataTypeId: Short? = null,
+    val dataTypeName: String? = null,
     val value: String? = null,
     val description: String? = null,
     val isActive: Boolean = true,
@@ -46,6 +48,7 @@ data class SettingCreateRequest(
     val sectorId: Long,
     val parameterId: Short,
     val actuatorStateId: Short? = null,
+    val dataTypeId: Short? = null,
     val value: String? = null,
     val description: String? = null,
     val isActive: Boolean = true
@@ -60,6 +63,7 @@ data class SettingUpdateRequest(
     val sectorId: Long? = null,
     val parameterId: Short? = null,
     val actuatorStateId: Short? = null,
+    val dataTypeId: Short? = null,
     val value: String? = null,
     val description: String? = null,
     val isActive: Boolean? = null
@@ -101,6 +105,8 @@ data class Setting(
     val parameterName: String?,
     val actuatorStateId: Short?,
     val actuatorStateName: String?,
+    val dataTypeId: Short?,
+    val dataTypeName: String?,
     val value: String?,
     val description: String?,
     val isActive: Boolean,
@@ -129,6 +135,12 @@ data class Setting(
      */
     val actuatorStateDisplayName: String
         get() = actuatorStateName ?: (actuatorStateId?.let { "State $it" } ?: "-")
+
+    /**
+     * Display name for the data type.
+     */
+    val dataTypeDisplayName: String
+        get() = dataTypeName ?: (dataTypeId?.let { "Type $it" } ?: "-")
 }
 
 // ==================== EXTENSION FUNCTIONS ====================
@@ -154,6 +166,8 @@ fun SettingResponse.toDomain() = Setting(
     parameterName = parameterName,
     actuatorStateId = actuatorStateId,
     actuatorStateName = actuatorStateName,
+    dataTypeId = dataTypeId,
+    dataTypeName = dataTypeName,
     value = value,
     description = description,
     isActive = isActive,
@@ -177,4 +191,53 @@ data class PeriodCreateRequest(
 @Serializable
 data class PeriodUpdateRequest(
     val name: String? = null
+)
+
+// ==================== DATA TYPE DTOs (Catalog) ====================
+
+/**
+ * Response DTO for DataType from catalog API.
+ * Data types define the kind of data associated with setpoints (consignas).
+ */
+@Serializable
+data class DataTypeResponse(
+    val id: Short,
+    val name: String,
+    val description: String? = null
+)
+
+/**
+ * Request DTO for creating a DataType.
+ */
+@Serializable
+data class DataTypeCreateRequest(
+    val name: String,
+    val description: String? = null
+)
+
+/**
+ * Request DTO for updating a DataType.
+ */
+@Serializable
+data class DataTypeUpdateRequest(
+    val name: String? = null,
+    val description: String? = null
+)
+
+/**
+ * Domain model for DataType catalog entry.
+ */
+data class DataType(
+    val id: Short,
+    val name: String,
+    val description: String?
+)
+
+/**
+ * Converts DataTypeResponse DTO to DataType domain model.
+ */
+fun DataTypeResponse.toDomain() = DataType(
+    id = id,
+    name = name,
+    description = description
 )

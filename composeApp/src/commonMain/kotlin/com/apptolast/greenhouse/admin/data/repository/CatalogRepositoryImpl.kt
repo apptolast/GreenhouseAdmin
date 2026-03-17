@@ -9,6 +9,9 @@ import com.apptolast.greenhouse.admin.data.model.AlertSeverityUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.AlertType
 import com.apptolast.greenhouse.admin.data.model.AlertTypeCreateRequest
 import com.apptolast.greenhouse.admin.data.model.AlertTypeUpdateRequest
+import com.apptolast.greenhouse.admin.data.model.DataType
+import com.apptolast.greenhouse.admin.data.model.DataTypeCreateRequest
+import com.apptolast.greenhouse.admin.data.model.DataTypeUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
@@ -314,5 +317,32 @@ class CatalogRepositoryImpl(
 
     override suspend fun deleteActuatorState(id: Short): Result<Unit> = runCatching {
         catalogApi.deleteActuatorState(id)
+    }
+
+    // ==================== DATA TYPES ====================
+
+    override suspend fun getDataTypes(): Result<List<DataType>> = runCatching {
+        catalogApi.getDataTypes().map { it.toDomain() }
+    }
+
+    override suspend fun createDataType(
+        name: String,
+        description: String?
+    ): Result<DataType> = runCatching {
+        val request = DataTypeCreateRequest(name = name, description = description)
+        catalogApi.createDataType(request).toDomain()
+    }
+
+    override suspend fun updateDataType(
+        id: Short,
+        name: String?,
+        description: String?
+    ): Result<DataType> = runCatching {
+        val request = DataTypeUpdateRequest(name = name, description = description)
+        catalogApi.updateDataType(id, request).toDomain()
+    }
+
+    override suspend fun deleteDataType(id: Short): Result<Unit> = runCatching {
+        catalogApi.deleteDataType(id)
     }
 }

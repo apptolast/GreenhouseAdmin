@@ -377,6 +377,7 @@ sealed interface ClientDetailEvent {
     data class OnSubmitSettingForm(
         val parameterId: Short,
         val actuatorStateId: Short,
+        val dataTypeId: Short?,
         val description: String?,
         val isActive: Boolean
     ) : ClientDetailEvent

@@ -3,6 +3,7 @@ package com.apptolast.greenhouse.admin.domain.repository
 import com.apptolast.greenhouse.admin.data.model.ActuatorState
 import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
 import com.apptolast.greenhouse.admin.data.model.AlertType
+import com.apptolast.greenhouse.admin.data.model.DataType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogCategory
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogType
 import com.apptolast.greenhouse.admin.data.model.DeviceCatalogUnit
@@ -363,4 +364,36 @@ interface CatalogRepository {
      * @return Result containing success or error
      */
     suspend fun deleteActuatorState(id: Short): Result<Unit>
+
+    // ==================== DATA TYPES ====================
+
+    /**
+     * Fetches all data types from the catalog.
+     * @return Result containing list of DataType or error
+     */
+    suspend fun getDataTypes(): Result<List<DataType>>
+
+    /**
+     * Creates a new data type.
+     * @param name The data type name
+     * @param description Optional description
+     * @return Result containing the created DataType or error
+     */
+    suspend fun createDataType(name: String, description: String?): Result<DataType>
+
+    /**
+     * Updates an existing data type.
+     * @param id The data type ID to update
+     * @param name Optional new name
+     * @param description Optional new description
+     * @return Result containing the updated DataType or error
+     */
+    suspend fun updateDataType(id: Short, name: String?, description: String?): Result<DataType>
+
+    /**
+     * Deletes a data type.
+     * @param id The data type ID to delete
+     * @return Result containing success or error
+     */
+    suspend fun deleteDataType(id: Short): Result<Unit>
 }

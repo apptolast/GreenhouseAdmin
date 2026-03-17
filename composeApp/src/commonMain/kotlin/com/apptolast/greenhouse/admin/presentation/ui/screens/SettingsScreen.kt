@@ -32,6 +32,7 @@ import com.apptolast.greenhouse.admin.presentation.ui.components.settings.Settin
 import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsActuatorStatesTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsAlertSeveritiesTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsAlertTypesTab
+import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsDataTypesTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsDeviceCategoriesTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsDeviceTypesTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.settings.SettingsDeviceUnitsTab
@@ -153,6 +154,15 @@ private fun SettingsScreenContent(
             onConfirm = { onEvent(SettingsEvent.OnConfirmDeleteActuatorState) },
             onDismiss = { onEvent(SettingsEvent.OnCancelDeleteActuatorState) },
             isDeleting = uiState.isDeletingActuatorState
+        )
+    }
+
+    if (uiState.showDeleteDataTypeConfirmation) {
+        DeleteConfirmationDialog(
+            clientName = uiState.dataTypeToDelete?.name ?: "",
+            onConfirm = { onEvent(SettingsEvent.OnConfirmDeleteDataType) },
+            onDismiss = { onEvent(SettingsEvent.OnCancelDeleteDataType) },
+            isDeleting = uiState.isDeletingDataType
         )
     }
 
@@ -335,6 +345,21 @@ private fun SettingsScreenContent(
                                 )
                             },
                             onDismissDialog = { onEvent(SettingsEvent.OnDismissActuatorStateDialog) }
+                        )
+                    }
+
+                    SettingsTab.DATA_TYPES -> {
+                        SettingsDataTypesTab(
+                            dataTypes = uiState.dataTypes,
+                            showDialog = uiState.showDataTypeDialog,
+                            formMode = uiState.dataTypeFormMode,
+                            isSubmitting = uiState.isSubmittingDataType,
+                            submitError = uiState.submitDataTypeError,
+                            onAddClicked = { onEvent(SettingsEvent.OnAddDataTypeClicked) },
+                            onEditClicked = { onEvent(SettingsEvent.OnEditDataTypeClicked(it)) },
+                            onDeleteClicked = { onEvent(SettingsEvent.OnDeleteDataTypeClicked(it)) },
+                            onSubmit = { name, desc -> onEvent(SettingsEvent.OnSubmitDataType(name, desc)) },
+                            onDismissDialog = { onEvent(SettingsEvent.OnDismissDataTypeDialog) }
                         )
                     }
                 }

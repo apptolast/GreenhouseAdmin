@@ -389,6 +389,7 @@
     <string name="settings_tab_alert_types">Tipos de Alerta</string>
     <string name="settings_tab_alert_severities">Severidades</string>
     <string name="settings_tab_periods">Períodos</string>
+    <string name="settings_tab_data_types">Tipos de Dato</string>
 
     <!-- Catalog Management -->
     <string name="button_add">Añadir</string>
@@ -430,6 +431,10 @@
     <!-- Period Dialogs -->
     <string name="dialog_create_period">Crear Período</string>
     <string name="dialog_edit_period">Editar Período</string>
+
+    <!-- Data Type Dialogs -->
+    <string name="dialog_create_data_type">Crear Tipo de Dato</string>
+    <string name="dialog_edit_data_type">Editar Tipo de Dato</string>
 
     <!-- Vista Jerárquica de Invernaderos -->
     <string name="greenhouse_tree_title">Invernaderos</string>
@@ -476,7 +481,9 @@
     <string name="no_province">Sin provincia</string>
     <string name="header_actuator_state">ESTADO ACTUADOR</string>
     <string name="header_value">VALOR</string>
+    <string name="header_data_type">TIPO DE DATO</string>
     <string name="label_actuator_state">Estado Actuador</string>
+    <string name="label_data_type">Tipo de Dato</string>
     <string name="label_value">Valor</string>
     <string name="error_actuator_state_required">El estado actuador es obligatorio</string>
 </resources>

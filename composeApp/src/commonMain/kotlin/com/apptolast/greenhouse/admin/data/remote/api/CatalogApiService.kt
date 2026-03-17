@@ -9,6 +9,9 @@ import com.apptolast.greenhouse.admin.data.model.AlertSeverityUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.AlertTypeCreateRequest
 import com.apptolast.greenhouse.admin.data.model.AlertTypeResponse
 import com.apptolast.greenhouse.admin.data.model.AlertTypeUpdateRequest
+import com.apptolast.greenhouse.admin.data.model.DataTypeCreateRequest
+import com.apptolast.greenhouse.admin.data.model.DataTypeResponse
+import com.apptolast.greenhouse.admin.data.model.DataTypeUpdateRequest
 import com.apptolast.greenhouse.admin.data.model.DeviceCategoryCreateRequest
 import com.apptolast.greenhouse.admin.data.model.DeviceCategoryResponse
 import com.apptolast.greenhouse.admin.data.model.DeviceCategoryUpdateRequest
@@ -379,5 +382,46 @@ class CatalogApiService(private val httpClient: HttpClient) {
      */
     suspend fun deleteActuatorState(id: Short) {
         httpClient.delete("catalog/actuator-states/$id")
+    }
+
+    // ==================== DATA TYPES ====================
+
+    /**
+     * Get all data types from the catalog.
+     */
+    suspend fun getDataTypes(): List<DataTypeResponse> {
+        return httpClient.get("catalog/data-types").body()
+    }
+
+    /**
+     * Get a specific data type by ID.
+     */
+    suspend fun getDataType(id: Short): DataTypeResponse {
+        return httpClient.get("catalog/data-types/$id").body()
+    }
+
+    /**
+     * Create a new data type.
+     */
+    suspend fun createDataType(request: DataTypeCreateRequest): DataTypeResponse {
+        return httpClient.post("catalog/data-types") {
+            setBody(request)
+        }.body()
+    }
+
+    /**
+     * Update an existing data type.
+     */
+    suspend fun updateDataType(id: Short, request: DataTypeUpdateRequest): DataTypeResponse {
+        return httpClient.put("catalog/data-types/$id") {
+            setBody(request)
+        }.body()
+    }
+
+    /**
+     * Delete a data type.
+     */
+    suspend fun deleteDataType(id: Short) {
+        httpClient.delete("catalog/data-types/$id")
     }
 }
