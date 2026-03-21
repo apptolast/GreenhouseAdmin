@@ -3,6 +3,9 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 import com.apptolast.greenhouse.admin.data.model.Client
 import com.apptolast.greenhouse.admin.data.model.ClientStatusFilter
 import com.apptolast.greenhouse.admin.data.model.PaginationInfo
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchNavigationTarget
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchResult
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchResultCategory
 
 /**
  * Represents the complete UI state for the Clients screen.
@@ -95,4 +98,28 @@ data class ClientsUiState(
      */
     val isError: Boolean
         get() = error != null && !hasContent
+
+    /**
+     * Search results for the top bar autocomplete.
+     * Searches clients by name, email, or code.
+     */
+    val topBarSearchResults: List<SearchResult>
+        get() {
+            if (topBarSearchQuery.length < 2) return emptyList()
+            val query = topBarSearchQuery
+            return clients.filter { client ->
+                client.name.contains(query, ignoreCase = true) ||
+                        client.email.contains(query, ignoreCase = true) ||
+                        client.code.contains(query, ignoreCase = true)
+            }.take(10).map { client ->
+                SearchResult(
+                    id = "client-${client.id}",
+                    category = SearchResultCategory.CLIENT,
+                    title = client.name,
+                    subtitle = client.email,
+                    code = client.code,
+                    navigationTarget = SearchNavigationTarget.ToClient(client.id)
+                )
+            }
+        }
 }

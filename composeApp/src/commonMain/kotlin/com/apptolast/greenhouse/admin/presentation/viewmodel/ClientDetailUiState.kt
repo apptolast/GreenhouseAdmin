@@ -14,6 +14,9 @@ import com.apptolast.greenhouse.admin.data.model.Greenhouse
 import com.apptolast.greenhouse.admin.data.model.Sector
 import com.apptolast.greenhouse.admin.data.model.Setting
 import com.apptolast.greenhouse.admin.data.model.User
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchNavigationTarget
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchResult
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchResultCategory
 
 /**
  * Represents the complete UI state for the Client Detail screen.
@@ -36,7 +39,7 @@ data class ClientDetailUiState(
     val client: Client? = null,
 
     // Tab state
-    val selectedTab: ClientDetailTab = ClientDetailTab.GENERAL,
+    val selectedTab: ClientDetailTab = ClientDetailTab.GREENHOUSES,
 
     // Edit dialog states
     val showEditClientDialog: Boolean = false,
@@ -200,7 +203,7 @@ data class ClientDetailUiState(
      * Sectors belonging to the selected greenhouse.
      */
     fun sectorsForGreenhouse(greenhouseId: Long): List<Sector> =
-        sectors.filter { it.greenhouseId == greenhouseId }
+        sectors.filter { it.greenhouseId == greenhouseId }.sortedBy { it.name }
 
     /**
      * Devices belonging to a specific sector.
@@ -247,6 +250,122 @@ data class ClientDetailUiState(
      */
     val selectedSector: Sector?
         get() = selectedSectorId?.let { id -> sectors.find { it.id == id } }
+
+    /**
+     * Search results for the top bar autocomplete.
+     * Searches across all entity types within the current client.
+     */
+    val topBarSearchResults: List<SearchResult>
+        get() {
+            if (topBarSearchQuery.length < 2) return emptyList()
+            val query = topBarSearchQuery
+            val clientId = client?.id ?: return emptyList()
+            val results = mutableListOf<SearchResult>()
+
+            // Greenhouses
+            greenhouses.filter {
+                it.name.contains(query, ignoreCase = true) || it.code.contains(query, ignoreCase = true)
+            }.take(5).mapTo(results) { gh ->
+                SearchResult(
+                    id = "gh-${gh.id}",
+                    category = SearchResultCategory.GREENHOUSE,
+                    title = gh.name,
+                    subtitle = gh.code,
+                    code = gh.code,
+                    navigationTarget = SearchNavigationTarget.ToGreenhouseTab(clientId, gh.id)
+                )
+            }
+
+            // Sectors
+            sectors.filter {
+                it.displayName.contains(query, ignoreCase = true) || it.code.contains(query, ignoreCase = true)
+            }.take(5).mapTo(results) { sector ->
+                SearchResult(
+                    id = "sector-${sector.id}",
+                    category = SearchResultCategory.SECTOR,
+                    title = sector.displayName,
+                    subtitle = sector.code,
+                    code = sector.code,
+                    navigationTarget = SearchNavigationTarget.ToSector(
+                        clientId, sector.greenhouseId, sector.id
+                    )
+                )
+            }
+
+            // Devices
+            devices.filter {
+                it.displayName.contains(query, ignoreCase = true) ||
+                        it.code.contains(query, ignoreCase = true) ||
+                        (it.typeName?.contains(query, ignoreCase = true) == true)
+            }.take(5).mapTo(results) { device ->
+                val greenhouseId = sectors.find { it.id == device.sectorId }?.greenhouseId ?: 0L
+                SearchResult(
+                    id = "device-${device.id}",
+                    category = SearchResultCategory.DEVICE,
+                    title = device.displayName,
+                    subtitle = device.typeName ?: device.code,
+                    code = device.code,
+                    navigationTarget = SearchNavigationTarget.ToSector(
+                        clientId, greenhouseId, device.sectorId, "devices"
+                    )
+                )
+            }
+
+            // Alerts
+            alerts.filter {
+                (it.message?.contains(query, ignoreCase = true) == true) ||
+                        it.code.contains(query, ignoreCase = true) ||
+                        (it.severityName?.contains(query, ignoreCase = true) == true)
+            }.take(5).mapTo(results) { alert ->
+                val greenhouseId = sectors.find { it.id == alert.sectorId }?.greenhouseId ?: 0L
+                SearchResult(
+                    id = "alert-${alert.id}",
+                    category = SearchResultCategory.ALERT,
+                    title = alert.displayText,
+                    subtitle = alert.severityName,
+                    code = alert.code,
+                    navigationTarget = SearchNavigationTarget.ToSector(
+                        clientId, greenhouseId, alert.sectorId, "alerts"
+                    )
+                )
+            }
+
+            // Settings
+            settings.filter {
+                (it.parameterName?.contains(query, ignoreCase = true) == true) ||
+                        it.code.contains(query, ignoreCase = true)
+            }.take(3).mapTo(results) { setting ->
+                val greenhouseId = sectors.find { it.id == setting.sectorId }?.greenhouseId ?: 0L
+                SearchResult(
+                    id = "setting-${setting.id}",
+                    category = SearchResultCategory.SETTING,
+                    title = setting.displayName,
+                    subtitle = setting.code,
+                    code = setting.code,
+                    navigationTarget = SearchNavigationTarget.ToSector(
+                        clientId, greenhouseId, setting.sectorId, "settings"
+                    )
+                )
+            }
+
+            // Users
+            users.filter {
+                it.username.contains(query, ignoreCase = true) ||
+                        it.email.contains(query, ignoreCase = true) ||
+                        it.code.contains(query, ignoreCase = true)
+            }.take(5).mapTo(results) { user ->
+                SearchResult(
+                    id = "user-${user.id}",
+                    category = SearchResultCategory.USER,
+                    title = user.username,
+                    subtitle = user.email,
+                    code = user.code,
+                    navigationTarget = SearchNavigationTarget.ToUsersTab(clientId)
+                )
+            }
+
+            return results
+        }
 }
 
 /**

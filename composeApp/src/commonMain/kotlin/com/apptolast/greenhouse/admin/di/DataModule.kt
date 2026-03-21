@@ -1,5 +1,6 @@
 package com.apptolast.greenhouse.admin.di
 
+import com.apptolast.greenhouse.admin.data.local.LocaleManager
 import com.apptolast.greenhouse.admin.data.local.TokenStorage
 import com.apptolast.greenhouse.admin.data.remote.api.AlertsApiService
 import com.apptolast.greenhouse.admin.data.remote.api.AuthApiService
@@ -43,6 +44,9 @@ import org.koin.dsl.module
 val dataModule = module {
     // Token Storage (platform-specific)
     singleOf(::TokenStorage)
+
+    // Locale Manager
+    singleOf(::LocaleManager)
 
     // Auth Event Manager (for session expiration events)
     singleOf(::AuthEventManager)

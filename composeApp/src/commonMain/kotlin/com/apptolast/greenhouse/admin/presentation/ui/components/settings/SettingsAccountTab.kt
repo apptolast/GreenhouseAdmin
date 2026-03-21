@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -34,14 +35,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.apptolast.greenhouse.admin.data.local.SupportedLanguage
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.logout_button
 import greenhouseadmin.composeapp.generated.resources.settings_account_section
+import greenhouseadmin.composeapp.generated.resources.settings_language_section
 import greenhouseadmin.composeapp.generated.resources.settings_logged_in_as
 import greenhouseadmin.composeapp.generated.resources.settings_role
 import org.jetbrains.compose.resources.stringResource
@@ -49,13 +53,15 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Account tab content for the Settings screen.
- * Displays user info and logout functionality.
+ * Displays user info, language selector, and logout functionality.
  */
 @Composable
 fun SettingsAccountTab(
     username: String,
     roles: List<String>,
+    selectedLanguage: SupportedLanguage,
     isLoggingOut: Boolean,
+    onLanguageSelected: (SupportedLanguage) -> Unit,
     onLogoutClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -83,6 +89,14 @@ fun SettingsAccountTab(
             AccountSectionCard(
                 username = username,
                 roles = roles
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Language Section Card
+            LanguageSectionCard(
+                currentLanguage = selectedLanguage,
+                onLanguageSelected = onLanguageSelected
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -198,6 +212,96 @@ private fun AccountSectionCard(
 }
 
 @Composable
+private fun LanguageSectionCard(
+    currentLanguage: SupportedLanguage,
+    onLanguageSelected: (SupportedLanguage) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                text = stringResource(Res.string.settings_language_section),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SupportedLanguage.entries.forEach { language ->
+                    LanguageChip(
+                        language = language,
+                        isSelected = language == currentLanguage,
+                        onClick = { onLanguageSelected(language) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LanguageChip(
+    language: SupportedLanguage,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.height(48.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = if (isSelected) {
+            ButtonDefaults.outlinedButtonColors(
+                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                contentColor = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
+            brush = SolidColor(
+                if (isSelected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
+        )
+    ) {
+        if (isSelected) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+        Text(
+            text = language.displayName,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+        )
+    }
+}
+
+@Composable
 private fun RoleChip(role: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
@@ -239,7 +343,7 @@ private fun LogoutButton(
             contentColor = Color(0xFFE53935) // Red color for logout
         ),
         border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
-            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFE53935).copy(alpha = 0.5f))
+            brush = SolidColor(Color(0xFFE53935).copy(alpha = 0.5f))
         )
     ) {
         if (isLoading) {
@@ -272,7 +376,9 @@ private fun SettingsAccountTabPreview() {
             SettingsAccountTab(
                 username = "admin@greenhouse.com",
                 roles = listOf("ROLE_ADMIN"),
+                selectedLanguage = SupportedLanguage.ENGLISH,
                 isLoggingOut = false,
+                onLanguageSelected = {},
                 onLogoutClicked = {}
             )
         }
@@ -281,13 +387,15 @@ private fun SettingsAccountTabPreview() {
 
 @Preview
 @Composable
-private fun SettingsAccountTabLoadingPreview() {
+private fun SettingsAccountTabSpanishPreview() {
     GreenhouseAdminTheme {
         ProvideAppWindowInfo {
             SettingsAccountTab(
                 username = "admin@greenhouse.com",
                 roles = listOf("ROLE_ADMIN"),
-                isLoggingOut = true,
+                selectedLanguage = SupportedLanguage.SPANISH,
+                isLoggingOut = false,
+                onLanguageSelected = {},
                 onLogoutClicked = {}
             )
         }

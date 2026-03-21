@@ -56,6 +56,8 @@ class ClientDetailViewModel(
         loadClient()
         // Preload all catalogs for form dropdowns
         loadAllCatalogs()
+        // Load greenhouse hierarchy data (devices, alerts, settings) since GREENHOUSES is the default tab
+        loadGreenhouseHierarchy()
     }
 
     /**
@@ -275,9 +277,9 @@ class ClientDetailViewModel(
                             actuatorStates = actuatorStates.getOrDefault(emptyList()).sortedBy { it.displayOrder },
                             dataTypes = dataTypes.getOrDefault(emptyList()).sortedBy { it.name },
                             // Greenhouses
-                            greenhouses = greenhouses.getOrDefault(emptyList()),
+                            greenhouses = greenhouses.getOrDefault(emptyList()).sortedBy { it.name },
                             // Sectors
-                            sectors = sectors.getOrDefault(emptyList()),
+                            sectors = sectors.getOrDefault(emptyList()).sortedBy { it.name },
                             // Loading state
                             isCatalogsLoading = false,
                             catalogsError = null
@@ -613,7 +615,7 @@ class ClientDetailViewModel(
                     _uiState.update {
                         it.copy(
                             isLoadingGreenhouses = false,
-                            greenhouses = greenhouses
+                            greenhouses = greenhouses.sortedBy { gh -> gh.name }
                         )
                     }
                 }
@@ -765,7 +767,7 @@ class ClientDetailViewModel(
                     _uiState.update {
                         it.copy(
                             isLoadingSectors = false,
-                            sectors = sectors
+                            sectors = sectors.sortedBy { s -> s.name }
                         )
                     }
                 }
@@ -1491,8 +1493,7 @@ class ClientDetailViewModel(
             val sector = sectorId?.let { id -> state.sectors.find { it.id == id } }
             state.copy(
                 selectedSectorId = sectorId,
-                selectedGreenhouseId = sector?.greenhouseId ?: state.selectedGreenhouseId,
-                sectorSubTab = SectorSubTab.DEVICES // Reset to devices when selecting a new sector
+                selectedGreenhouseId = sector?.greenhouseId ?: state.selectedGreenhouseId
             )
         }
     }

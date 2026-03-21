@@ -214,7 +214,9 @@ private fun SettingsScreenContent(
                         SettingsAccountTab(
                             username = uiState.username,
                             roles = uiState.roles,
+                            selectedLanguage = uiState.selectedLanguage,
                             isLoggingOut = uiState.isLoggingOut,
+                            onLanguageSelected = { onEvent(SettingsEvent.OnLanguageSelected(it)) },
                             onLogoutClicked = { onEvent(SettingsEvent.OnLogoutClicked) }
                         )
                     }

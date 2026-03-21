@@ -43,9 +43,10 @@ import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailTabBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.ClientDetailUsersTab
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.detail.greenhouse.GreenhouseHierarchicalTab
-import com.apptolast.greenhouse.admin.presentation.ui.components.common.DashboardTopBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.LoadingContent
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchNavigationTarget
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchableTopBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.AlertFormDialog
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.ClientFormDialog
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.ClientFormMode
@@ -60,6 +61,7 @@ import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailEvent
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailTab
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailUiState
 import com.apptolast.greenhouse.admin.presentation.viewmodel.ClientDetailViewModel
+import com.apptolast.greenhouse.admin.presentation.viewmodel.SectorSubTab
 import greenhouseadmin.composeapp.generated.resources.Res
 import greenhouseadmin.composeapp.generated.resources.app_name
 import greenhouseadmin.composeapp.generated.resources.breadcrumb_clients
@@ -144,11 +146,13 @@ private fun ClientDetailScreenContent(
             stringResource(Res.string.breadcrumb_clients)
         }
 
-        DashboardTopBar(
+            SearchableTopBar(
             title = stringResource(Res.string.app_name),
             subtitle = breadcrumb,
             searchQuery = uiState.topBarSearchQuery,
-            onSearchQueryChange = { onEvent(ClientDetailEvent.OnTopBarSearchQueryChanged(it)) }
+                onSearchQueryChange = { onEvent(ClientDetailEvent.OnTopBarSearchQueryChanged(it)) },
+                searchResults = uiState.topBarSearchResults,
+                onResultSelected = { target -> handleSearchNavigation(target, onEvent) }
         )
 
         // Content area
@@ -512,6 +516,47 @@ private fun ClientDetailContent(
                     contentDescription = stringResource(Res.string.new_user)
                 )
             }
+        }
+    }
+}
+
+/**
+ * Handles deep navigation from search results within the client detail screen.
+ * Uses existing ViewModel events to expand the correct greenhouse, select the sector, and switch tabs.
+ */
+private fun handleSearchNavigation(
+    target: SearchNavigationTarget,
+    onEvent: (ClientDetailEvent) -> Unit
+) {
+    when (target) {
+        is SearchNavigationTarget.ToGreenhouseTab -> {
+            onEvent(ClientDetailEvent.OnTabSelected(ClientDetailTab.GREENHOUSES))
+            onEvent(ClientDetailEvent.OnGreenhouseExpandToggle(target.greenhouseId))
+            onEvent(ClientDetailEvent.OnGreenhouseSelected(target.greenhouseId))
+        }
+
+        is SearchNavigationTarget.ToSector -> {
+            onEvent(ClientDetailEvent.OnTabSelected(ClientDetailTab.GREENHOUSES))
+            onEvent(ClientDetailEvent.OnGreenhouseExpandToggle(target.greenhouseId))
+            onEvent(ClientDetailEvent.OnGreenhouseSelected(target.greenhouseId))
+            onEvent(ClientDetailEvent.OnSectorSelected(target.sectorId))
+            target.subTab?.let { subTab ->
+                val sectorSubTab = when (subTab) {
+                    "devices" -> SectorSubTab.DEVICES
+                    "alerts" -> SectorSubTab.ALERTS
+                    "settings" -> SectorSubTab.SETTINGS
+                    else -> return@let
+                }
+                onEvent(ClientDetailEvent.OnSectorSubTabSelected(sectorSubTab))
+            }
+        }
+
+        is SearchNavigationTarget.ToUsersTab -> {
+            onEvent(ClientDetailEvent.OnTabSelected(ClientDetailTab.USERS))
+        }
+
+        is SearchNavigationTarget.ToClient -> {
+            // Already on client detail — no-op
         }
     }
 }

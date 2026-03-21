@@ -25,9 +25,10 @@ import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowI
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientsFilters
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientsPagination
 import com.apptolast.greenhouse.admin.presentation.ui.components.clients.list.ClientsTableOrCards
-import com.apptolast.greenhouse.admin.presentation.ui.components.common.DashboardTopBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.LoadingContent
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchNavigationTarget
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchableTopBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.ClientFormDialog
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.ClientFormMode
 import com.apptolast.greenhouse.admin.presentation.ui.components.dialogs.DeleteConfirmationDialog
@@ -53,6 +54,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ClientsScreen(
     onNavigate: (String) -> Unit,
+    onSearchNavigate: (SearchNavigationTarget) -> Unit = {},
     viewModel: ClientsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -60,7 +62,8 @@ fun ClientsScreen(
     ClientsScreenContent(
         uiState = uiState,
         onEvent = viewModel::onEvent,
-        onNavigate = onNavigate
+        onNavigate = onNavigate,
+        onSearchNavigate = onSearchNavigate
     )
 }
 
@@ -71,19 +74,22 @@ fun ClientsScreen(
 private fun ClientsScreenContent(
     uiState: ClientsUiState,
     onEvent: (ClientsEvent) -> Unit,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    onSearchNavigate: (SearchNavigationTarget) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Top bar with breadcrumb
-        DashboardTopBar(
+        // Top bar with search autocomplete
+        SearchableTopBar(
             title = stringResource(Res.string.app_name),
             subtitle = stringResource(Res.string.breadcrumb_clients),
             searchQuery = uiState.topBarSearchQuery,
-            onSearchQueryChange = { onEvent(ClientsEvent.OnTopBarSearchQueryChanged(it)) }
+            onSearchQueryChange = { onEvent(ClientsEvent.OnTopBarSearchQueryChanged(it)) },
+            searchResults = uiState.topBarSearchResults,
+            onResultSelected = { onSearchNavigate(it) }
         )
 
         // Clients content area

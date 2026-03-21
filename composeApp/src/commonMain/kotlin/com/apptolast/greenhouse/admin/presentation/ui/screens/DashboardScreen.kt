@@ -45,10 +45,10 @@ import com.apptolast.greenhouse.admin.data.model.StatCardSubtitleColor
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveDimens
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.LocalAppWindowInfo
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.ProvideAppWindowInfo
-import com.apptolast.greenhouse.admin.presentation.ui.components.common.DashboardTopBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.ErrorContent
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.LoadingContent
 import com.apptolast.greenhouse.admin.presentation.ui.components.common.StatusChip
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchableTopBar
 import com.apptolast.greenhouse.admin.presentation.ui.components.dashboard.StatsCard
 import com.apptolast.greenhouse.admin.presentation.ui.theme.GreenhouseAdminTheme
 import com.apptolast.greenhouse.admin.presentation.viewmodel.DashboardEvent
@@ -94,7 +94,7 @@ private fun DashboardContent(
             .background(MaterialTheme.colorScheme.background)
     ) {
         // Top bar
-        DashboardTopBar(
+        SearchableTopBar(
             title = stringResource(Res.string.app_name),
             subtitle = stringResource(Res.string.dashboard_overview),
             searchQuery = uiState.searchQuery,

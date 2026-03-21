@@ -2,6 +2,8 @@ package com.apptolast.greenhouse.admin.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.apptolast.greenhouse.admin.data.local.LocaleManager
+import com.apptolast.greenhouse.admin.data.local.SupportedLanguage
 import com.apptolast.greenhouse.admin.data.model.ActuatorState
 import com.apptolast.greenhouse.admin.data.model.AlertSeverityCatalog
 import com.apptolast.greenhouse.admin.data.model.AlertType
@@ -24,7 +26,8 @@ import kotlinx.coroutines.launch
  */
 class SettingsViewModel(
     private val authRepository: AuthRepository,
-    private val catalogRepository: CatalogRepository
+    private val catalogRepository: CatalogRepository,
+    private val localeManager: LocaleManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -37,6 +40,7 @@ class SettingsViewModel(
     init {
         loadUserInfo()
         loadAllCatalogs()
+        syncLocale()
     }
 
     /**
@@ -45,6 +49,7 @@ class SettingsViewModel(
     fun onEvent(event: SettingsEvent) {
         when (event) {
             // Account events
+            is SettingsEvent.OnLanguageSelected -> localeManager.changeLanguage(event.language)
             is SettingsEvent.OnLogoutClicked -> showLogoutConfirmation()
             is SettingsEvent.OnConfirmLogout -> performLogout()
             is SettingsEvent.OnCancelLogout -> cancelLogout()
@@ -131,6 +136,16 @@ class SettingsViewModel(
 
             // Refresh events
             is SettingsEvent.OnRefreshCatalogs -> loadAllCatalogs()
+        }
+    }
+
+    // ==================== LOCALE METHODS ====================
+
+    private fun syncLocale() {
+        viewModelScope.launch {
+            localeManager.currentLanguage.collect { language ->
+                _uiState.update { it.copy(selectedLanguage = language) }
+            }
         }
     }
 
@@ -1184,6 +1199,7 @@ data class SettingsUiState(
     // Account tab state
     val username: String = "",
     val roles: List<String> = emptyList(),
+    val selectedLanguage: SupportedLanguage = SupportedLanguage.ENGLISH,
     val showLogoutConfirmation: Boolean = false,
     val isLoggingOut: Boolean = false,
     val isLogoutSuccessful: Boolean = false,
@@ -1364,6 +1380,7 @@ sealed interface DataTypeFormMode {
  */
 sealed interface SettingsEvent {
     // Account events
+    data class OnLanguageSelected(val language: SupportedLanguage) : SettingsEvent
     data object OnLogoutClicked : SettingsEvent
     data object OnConfirmLogout : SettingsEvent
     data object OnCancelLogout : SettingsEvent

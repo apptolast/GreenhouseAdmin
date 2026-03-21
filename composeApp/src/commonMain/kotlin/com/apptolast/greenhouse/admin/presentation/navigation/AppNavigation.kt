@@ -9,11 +9,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.apptolast.greenhouse.admin.data.local.TokenStorage
 import com.apptolast.greenhouse.admin.data.model.MenuIcon
 import com.apptolast.greenhouse.admin.data.model.MenuItem
 import com.apptolast.greenhouse.admin.domain.auth.AuthEvent
 import com.apptolast.greenhouse.admin.domain.auth.AuthEventManager
 import com.apptolast.greenhouse.admin.presentation.ui.adaptive.AdaptiveScaffold
+import com.apptolast.greenhouse.admin.presentation.ui.components.common.search.SearchNavigationTarget
 import com.apptolast.greenhouse.admin.presentation.ui.screens.ClientDetailScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.ClientsScreen
 import com.apptolast.greenhouse.admin.presentation.ui.screens.DashboardScreen
@@ -112,9 +114,12 @@ fun AppNavigation() {
 
 @Composable
 private fun AppNavHost(navController: NavHostController) {
+    val tokenStorage: TokenStorage = koinInject()
+    val startDestination = if (tokenStorage.isAuthenticated()) DashboardRoute else LoginRoute
+
     NavHost(
         navController = navController,
-        startDestination = LoginRoute
+        startDestination = startDestination
     ) {
         composable<LoginRoute> {
             LoginScreen(
@@ -139,6 +144,9 @@ private fun AppNavHost(navController: NavHostController) {
                             navController.navigate(ClientDetailRoute(clientId))
                         }
                     }
+                },
+                onSearchNavigate = { target ->
+                    handleSearchNavigation(navController, target)
                 }
             )
         }
@@ -160,5 +168,24 @@ private fun AppNavHost(navController: NavHostController) {
                 }
             )
         }
+    }
+}
+
+private fun handleSearchNavigation(
+    navController: NavHostController,
+    target: SearchNavigationTarget
+) {
+    when (target) {
+        is SearchNavigationTarget.ToClient ->
+            navController.navigate(ClientDetailRoute(target.clientId.toString()))
+
+        is SearchNavigationTarget.ToGreenhouseTab ->
+            navController.navigate(ClientDetailRoute(target.clientId.toString()))
+
+        is SearchNavigationTarget.ToSector ->
+            navController.navigate(ClientDetailRoute(target.clientId.toString()))
+
+        is SearchNavigationTarget.ToUsersTab ->
+            navController.navigate(ClientDetailRoute(target.clientId.toString()))
     }
 }

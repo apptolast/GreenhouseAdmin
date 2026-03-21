@@ -374,6 +374,7 @@
     <string name="settings_account_section">Cuenta</string>
     <string name="settings_logged_in_as">Conectado como</string>
     <string name="settings_role">Rol</string>
+    <string name="settings_language_section">Idioma</string>
 
     <!-- Logout -->
     <string name="logout_button">Cerrar Sesión</string>
@@ -435,6 +436,16 @@
     <!-- Data Type Dialogs -->
     <string name="dialog_create_data_type">Crear Tipo de Dato</string>
     <string name="dialog_edit_data_type">Editar Tipo de Dato</string>
+
+    <!-- Search Autocomplete -->
+    <string name="search_no_results">Sin resultados</string>
+    <string name="search_category_clients">Clientes</string>
+    <string name="search_category_greenhouses">Invernaderos</string>
+    <string name="search_category_sectors">Sectores</string>
+    <string name="search_category_devices">Dispositivos</string>
+    <string name="search_category_alerts">Alertas</string>
+    <string name="search_category_settings">Consignas</string>
+    <string name="search_category_users">Usuarios</string>
 
     <!-- Vista Jerárquica de Invernaderos -->
     <string name="greenhouse_tree_title">Invernaderos</string>

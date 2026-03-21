@@ -15,6 +15,18 @@
                           repeatCount="indefinite"/>
     </circle>
 </svg>
+<script>
+    // Override navigator.languages to support runtime locale switching
+    var originalLanguages = Object.getOwnPropertyDescriptor(Navigator.prototype, "languages");
+    Object.defineProperty(Navigator.prototype, "languages", Object.assign({}, originalLanguages, {
+        get: function () {
+            if (window.__customLocale) {
+                return [window.__customLocale];
+            }
+            return originalLanguages.get.apply(this);
+        }
+    }));
+</script>
 <script type="application/javascript" src="composeApp.js"></script>
 </body>
 </html>

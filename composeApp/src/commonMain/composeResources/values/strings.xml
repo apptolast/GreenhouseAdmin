@@ -383,6 +383,7 @@
     <string name="settings_account_section">Account</string>
     <string name="settings_logged_in_as">Logged in as</string>
     <string name="settings_role">Role</string>
+    <string name="settings_language_section">Language</string>
 
     <!-- Logout -->
     <string name="logout_button">Log Out</string>
@@ -462,6 +463,16 @@
     <!-- Data Type Dialogs -->
     <string name="dialog_create_data_type">Create Data Type</string>
     <string name="dialog_edit_data_type">Edit Data Type</string>
+
+    <!-- Search Autocomplete -->
+    <string name="search_no_results">No results found</string>
+    <string name="search_category_clients">Clients</string>
+    <string name="search_category_greenhouses">Greenhouses</string>
+    <string name="search_category_sectors">Sectors</string>
+    <string name="search_category_devices">Devices</string>
+    <string name="search_category_alerts">Alerts</string>
+    <string name="search_category_settings">Setpoints</string>
+    <string name="search_category_users">Users</string>
 
     <!-- Greenhouse Hierarchical View -->
     <string name="greenhouse_tree_title">Greenhouses</string>
