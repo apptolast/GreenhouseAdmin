@@ -266,6 +266,7 @@ sealed interface ClientDetailEvent {
      */
     data class OnSubmitDeviceForm(
         val name: String,
+        val clientName: String,
         val categoryId: Short?,
         val typeId: Short?,
         val unitId: Short?,
@@ -318,6 +319,7 @@ sealed interface ClientDetailEvent {
      * User submitted the alert form (create or edit).
      */
     data class OnSubmitAlertForm(
+        val clientName: String?,
         val alertTypeId: Short?,
         val severityId: Short?,
         val message: String?,
@@ -375,6 +377,7 @@ sealed interface ClientDetailEvent {
      * User submitted the setting form (create or edit).
      */
     data class OnSubmitSettingForm(
+        val clientName: String?,
         val parameterId: Short,
         val actuatorStateId: Short,
         val dataTypeId: Short?,

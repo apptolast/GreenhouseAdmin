@@ -315,8 +315,8 @@ private fun ClientDetailScreenContent(
             isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingDevice,
             error = uiState.submitDeviceError,
-            onSubmit = { name, categoryId, typeId, unitId, isActive ->
-                onEvent(ClientDetailEvent.OnSubmitDeviceForm(name, categoryId, typeId, unitId, isActive))
+            onSubmit = { name, clientName, categoryId, typeId, unitId, isActive ->
+                onEvent(ClientDetailEvent.OnSubmitDeviceForm(name, clientName, categoryId, typeId, unitId, isActive))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissDeviceFormDialog) }
         )
@@ -342,8 +342,8 @@ private fun ClientDetailScreenContent(
             isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingAlert,
             error = uiState.submitAlertError,
-            onSubmit = { alertTypeId, severityId, message, description ->
-                onEvent(ClientDetailEvent.OnSubmitAlertForm(alertTypeId, severityId, message, description))
+            onSubmit = { clientName, alertTypeId, severityId, message, description ->
+                onEvent(ClientDetailEvent.OnSubmitAlertForm(clientName, alertTypeId, severityId, message, description))
             },
             onDismiss = { onEvent(ClientDetailEvent.OnDismissAlertFormDialog) }
         )
@@ -370,9 +370,10 @@ private fun ClientDetailScreenContent(
             isLoadingCatalog = uiState.isCatalogsLoading,
             isSubmitting = uiState.isSubmittingSetting,
             error = uiState.submitSettingError,
-            onSubmit = { parameterId, actuatorStateId, dataTypeId, description, isActive ->
+            onSubmit = { clientName, parameterId, actuatorStateId, dataTypeId, description, isActive ->
                 onEvent(
                     ClientDetailEvent.OnSubmitSettingForm(
+                        clientName = clientName,
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
                         dataTypeId = dataTypeId,

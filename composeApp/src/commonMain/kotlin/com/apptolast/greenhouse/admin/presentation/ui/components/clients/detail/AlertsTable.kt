@@ -66,6 +66,7 @@ import greenhouseadmin.composeapp.generated.resources.alert_active
 import greenhouseadmin.composeapp.generated.resources.alert_resolved
 import greenhouseadmin.composeapp.generated.resources.copy_id
 import greenhouseadmin.composeapp.generated.resources.header_actions
+import greenhouseadmin.composeapp.generated.resources.header_client_name
 import greenhouseadmin.composeapp.generated.resources.header_date
 import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_message
@@ -265,6 +266,13 @@ private fun AlertsTableHeader(
             onClick = { onSortClick(AlertSortColumn.MESSAGE) },
             modifier = Modifier.weight(1f)
         )
+        // CLIENT NAME - Not sortable
+        Text(
+            text = stringResource(Res.string.header_client_name),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.9f)
+        )
         // SECTOR - Not sortable
         Text(
             text = stringResource(Res.string.header_sector),
@@ -350,12 +358,6 @@ private fun AlertTableRow(
             modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-//            AlertAvatar(
-//                initials = alert.initials,
-//                severityLevel = alert.severityLevel,
-//                modifier = Modifier.size(32.dp)
-//            )
-//            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = alert.displayText,
                 style = MaterialTheme.typography.bodyMedium,
@@ -365,6 +367,17 @@ private fun AlertTableRow(
                 overflow = TextOverflow.Ellipsis
             )
         }
+
+        // CLIENT NAME - Display name for end users
+        Text(
+            text = alert.clientName ?: "-",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = if (alert.clientName != null) FontWeight.Medium else FontWeight.Normal,
+            modifier = Modifier.weight(0.9f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
 
         // SECTOR - Sector name with greenhouse in subtitle
         Column(modifier = Modifier.weight(0.9f)) {

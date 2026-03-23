@@ -7,6 +7,7 @@ package com.apptolast.greenhouse.admin.data.model
  */
 data class DeviceFormData(
     val name: String = "",
+    val clientName: String = "",
     val categoryId: Short? = Device.CATEGORY_SENSOR,
     val typeId: Short? = null,
     val unitId: Short? = null,
@@ -43,5 +44,6 @@ data class DeviceFormData(
 
     companion object {
         const val MAX_NAME_LENGTH = 100
+        const val MAX_CLIENT_NAME_LENGTH = 255
     }
 }

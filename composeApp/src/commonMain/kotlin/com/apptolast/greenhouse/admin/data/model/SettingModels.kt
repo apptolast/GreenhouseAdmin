@@ -27,6 +27,7 @@ data class SettingResponse(
     val sectorId: Long,
     val sectorCode: String? = null,
     val tenantId: Long,
+    val clientName: String? = null,
     val parameterId: Short,
     val parameterName: String? = null,
     val actuatorStateId: Short? = null,
@@ -46,6 +47,7 @@ data class SettingResponse(
 @Serializable
 data class SettingCreateRequest(
     val sectorId: Long,
+    val clientName: String? = null,
     val parameterId: Short,
     val actuatorStateId: Short? = null,
     val dataTypeId: Short? = null,
@@ -61,6 +63,7 @@ data class SettingCreateRequest(
 @Serializable
 data class SettingUpdateRequest(
     val sectorId: Long? = null,
+    val clientName: String? = null,
     val parameterId: Short? = null,
     val actuatorStateId: Short? = null,
     val dataTypeId: Short? = null,
@@ -101,6 +104,7 @@ data class Setting(
     val sectorId: Long,
     val sectorCode: String? = null,
     val tenantId: Long,
+    val clientName: String? = null,
     val parameterId: Short,
     val parameterName: String?,
     val actuatorStateId: Short?,
@@ -162,6 +166,7 @@ fun SettingResponse.toDomain() = Setting(
     sectorId = sectorId,
     sectorCode = sectorCode,
     tenantId = tenantId,
+    clientName = clientName,
     parameterId = parameterId,
     parameterName = parameterName,
     actuatorStateId = actuatorStateId,

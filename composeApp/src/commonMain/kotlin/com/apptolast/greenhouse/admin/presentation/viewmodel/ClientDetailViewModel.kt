@@ -142,6 +142,7 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnDismissDeviceFormDialog -> dismissDeviceFormDialog()
             is ClientDetailEvent.OnSubmitDeviceForm -> submitDeviceForm(
                 event.name,
+                event.clientName,
                 event.categoryId,
                 event.typeId,
                 event.unitId,
@@ -160,6 +161,7 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnCancelDeleteAlert -> cancelDeleteAlert()
             is ClientDetailEvent.OnDismissAlertFormDialog -> dismissAlertFormDialog()
             is ClientDetailEvent.OnSubmitAlertForm -> submitAlertForm(
+                event.clientName,
                 event.alertTypeId,
                 event.severityId,
                 event.message,
@@ -178,6 +180,7 @@ class ClientDetailViewModel(
             is ClientDetailEvent.OnCancelDeleteSetting -> cancelDeleteSetting()
             is ClientDetailEvent.OnDismissSettingFormDialog -> dismissSettingFormDialog()
             is ClientDetailEvent.OnSubmitSettingForm -> submitSettingForm(
+                event.clientName,
                 event.parameterId,
                 event.actuatorStateId,
                 event.dataTypeId,
@@ -954,6 +957,7 @@ class ClientDetailViewModel(
 
     private fun submitDeviceForm(
         name: String,
+        clientName: String,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
@@ -970,6 +974,7 @@ class ClientDetailViewModel(
         }
         if (sectorId == null) return
         val deviceName = name.ifBlank { null } // Convert empty string to null
+        val deviceClientName = clientName.ifBlank { null }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingDevice = true, submitDeviceError = null) }
@@ -980,6 +985,7 @@ class ClientDetailViewModel(
                         tenantId = clientId,
                         sectorId = sectorId,
                         name = deviceName,
+                        clientName = deviceClientName,
                         categoryId = categoryId,
                         typeId = typeId,
                         unitId = unitId,
@@ -993,6 +999,7 @@ class ClientDetailViewModel(
                         deviceId = mode.entity.id,
                         sectorId = sectorId,
                         name = deviceName,
+                        clientName = deviceClientName,
                         categoryId = categoryId,
                         typeId = typeId,
                         unitId = unitId,
@@ -1119,6 +1126,7 @@ class ClientDetailViewModel(
     }
 
     private fun submitAlertForm(
+        clientName: String?,
         alertTypeId: Short?,
         severityId: Short?,
         message: String?,
@@ -1138,10 +1146,13 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingAlert = true, submitAlertError = null) }
 
+            val alertClientName = clientName?.trim()?.ifBlank { null }
+
             val result = when (mode) {
                 is FormMode.Create -> {
                     val request = AlertCreateRequest(
                         sectorId = sectorId,
+                        clientName = alertClientName,
                         alertTypeId = alertTypeId,
                         severityId = severityId,
                         message = message?.trim()?.ifBlank { null },
@@ -1153,6 +1164,7 @@ class ClientDetailViewModel(
                 is FormMode.Edit -> {
                     val request = AlertUpdateRequest(
                         sectorId = sectorId,
+                        clientName = alertClientName,
                         alertTypeId = alertTypeId,
                         severityId = severityId,
                         message = message?.trim()?.ifBlank { null },
@@ -1328,6 +1340,7 @@ class ClientDetailViewModel(
     }
 
     private fun submitSettingForm(
+        clientName: String?,
         parameterId: Short,
         actuatorStateId: Short,
         dataTypeId: Short?,
@@ -1348,10 +1361,13 @@ class ClientDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingSetting = true, submitSettingError = null) }
 
+            val settingClientName = clientName?.trim()?.ifBlank { null }
+
             val result = when (mode) {
                 is FormMode.Create -> {
                     val request = SettingCreateRequest(
                         sectorId = sectorId,
+                        clientName = settingClientName,
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
                         dataTypeId = dataTypeId,
@@ -1365,6 +1381,7 @@ class ClientDetailViewModel(
                 is FormMode.Edit -> {
                     val request = SettingUpdateRequest(
                         sectorId = sectorId,
+                        clientName = settingClientName,
                         parameterId = parameterId,
                         actuatorStateId = actuatorStateId,
                         dataTypeId = dataTypeId,

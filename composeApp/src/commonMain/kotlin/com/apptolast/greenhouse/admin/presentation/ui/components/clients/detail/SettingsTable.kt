@@ -53,6 +53,7 @@ import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_actuator_state
+import greenhouseadmin.composeapp.generated.resources.header_client_name
 import greenhouseadmin.composeapp.generated.resources.header_data_type
 import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_parameter
@@ -199,6 +200,13 @@ private fun SettingsTableHeader(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(0.9f)
         )
+        // CLIENT NAME - Not sortable
+        Text(
+            text = stringResource(Res.string.header_client_name),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.9f)
+        )
         // ACTUATOR STATE - Not sortable
         Text(
             text = stringResource(Res.string.header_actuator_state),
@@ -259,6 +267,17 @@ private fun SettingTableRow(
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(0.9f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        // CLIENT NAME - Display name for end users
+        Text(
+            text = setting.clientName ?: "-",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = if (setting.clientName != null) FontWeight.Medium else FontWeight.Normal,
             modifier = Modifier.weight(0.9f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

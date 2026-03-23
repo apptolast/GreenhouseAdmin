@@ -58,6 +58,7 @@ import greenhouseadmin.composeapp.generated.resources.error_content_required
 import greenhouseadmin.composeapp.generated.resources.field_alert_type
 import greenhouseadmin.composeapp.generated.resources.field_message
 import greenhouseadmin.composeapp.generated.resources.field_severity
+import greenhouseadmin.composeapp.generated.resources.label_client_name
 import greenhouseadmin.composeapp.generated.resources.label_description
 import greenhouseadmin.composeapp.generated.resources.label_loading
 import greenhouseadmin.composeapp.generated.resources.label_none
@@ -77,7 +78,7 @@ fun AlertFormDialog(
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (alertTypeId: Short?, severityId: Short?, message: String?, description: String?) -> Unit = { _, _, _, _ -> },
+    onSubmit: (clientName: String?, alertTypeId: Short?, severityId: Short?, message: String?, description: String?) -> Unit = { _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -85,6 +86,7 @@ fun AlertFormDialog(
         when (mode) {
             is FormMode.Create -> AlertFormData()
             is FormMode.Edit -> AlertFormData(
+                clientName = mode.entity.clientName ?: "",
                 alertTypeId = mode.entity.alertTypeId,
                 severityId = mode.entity.severityId,
                 message = mode.entity.message ?: "",
@@ -161,6 +163,17 @@ fun AlertFormDialog(
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
+
+                // Client Name text field (optional - display name for end users)
+                AlertFormTextField(
+                    value = formData.clientName,
+                    onValueChange = { formData = formData.copy(clientName = it) },
+                    label = stringResource(Res.string.label_client_name),
+                    error = null,
+                    enabled = !isSubmitting
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Alert Type dropdown (optional)
                 AlertFormDropdown(
@@ -319,6 +332,7 @@ fun AlertFormDialog(
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
                                 onSubmit(
+                                    formData.clientName.ifBlank { null },
                                     formData.alertTypeId,
                                     formData.severityId,
                                     formData.message.ifBlank { null },

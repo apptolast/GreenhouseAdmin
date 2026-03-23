@@ -26,6 +26,7 @@ class DevicesRepositoryImpl(
         tenantId: Long,
         sectorId: Long,
         name: String?,
+        clientName: String?,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
@@ -34,6 +35,7 @@ class DevicesRepositoryImpl(
         val request = DeviceCreateRequest(
             sectorId = sectorId,
             name = name,
+            clientName = clientName,
             categoryId = categoryId,
             typeId = typeId,
             unitId = unitId,
@@ -47,6 +49,7 @@ class DevicesRepositoryImpl(
         deviceId: Long,
         sectorId: Long?,
         name: String?,
+        clientName: String?,
         categoryId: Short?,
         typeId: Short?,
         unitId: Short?,
@@ -55,6 +58,7 @@ class DevicesRepositoryImpl(
         val request = DeviceUpdateRequest(
             sectorId = sectorId,
             name = name,
+            clientName = clientName,
             categoryId = categoryId,
             typeId = typeId,
             unitId = unitId,

@@ -56,6 +56,7 @@ import greenhouseadmin.composeapp.generated.resources.dialog_new_setting_title
 import greenhouseadmin.composeapp.generated.resources.error_actuator_state_required
 import greenhouseadmin.composeapp.generated.resources.error_parameter_required
 import greenhouseadmin.composeapp.generated.resources.label_actuator_state
+import greenhouseadmin.composeapp.generated.resources.label_client_name
 import greenhouseadmin.composeapp.generated.resources.label_data_type
 import greenhouseadmin.composeapp.generated.resources.label_description
 import greenhouseadmin.composeapp.generated.resources.label_loading
@@ -81,7 +82,7 @@ fun SettingFormDialog(
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (parameterId: Short, actuatorStateId: Short, dataTypeId: Short?, description: String?, isActive: Boolean) -> Unit = { _, _, _, _, _ -> },
+    onSubmit: (clientName: String?, parameterId: Short, actuatorStateId: Short, dataTypeId: Short?, description: String?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -89,6 +90,7 @@ fun SettingFormDialog(
         when (mode) {
             is FormMode.Create -> SettingFormData()
             is FormMode.Edit -> SettingFormData(
+                clientName = mode.entity.clientName ?: "",
                 parameterId = mode.entity.parameterId,
                 actuatorStateId = mode.entity.actuatorStateId,
                 dataTypeId = mode.entity.dataTypeId,
@@ -173,6 +175,16 @@ fun SettingFormDialog(
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
+
+                // Client Name text field (optional - display name for end users)
+                SettingFormTextField(
+                    value = formData.clientName,
+                    onValueChange = { formData = formData.copy(clientName = it) },
+                    label = stringResource(Res.string.label_client_name),
+                    enabled = !isSubmitting
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Parameter searchable dropdown (required) - uses DeviceCatalogType
                 SearchableDropdown(
@@ -329,6 +341,7 @@ fun SettingFormDialog(
                             validationErrors = formData.validate()
                             if (!validationErrors.hasErrors) {
                                 onSubmit(
+                                    formData.clientName.ifBlank { null },
                                     formData.parameterId!!,
                                     formData.actuatorStateId!!,
                                     formData.dataTypeId,

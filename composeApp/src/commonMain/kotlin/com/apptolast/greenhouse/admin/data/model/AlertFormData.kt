@@ -4,6 +4,7 @@ package com.apptolast.greenhouse.admin.data.model
  * Form data for creating or editing an alert.
  */
 data class AlertFormData(
+    val clientName: String = "",
     val alertTypeId: Short? = null,
     val severityId: Short? = null,
     val message: String = "",

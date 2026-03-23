@@ -245,6 +245,8 @@
     <string name="label_unit">Unidad</string>
     <string name="label_is_active">Activo</string>
     <string name="label_device_name">Nombre del Dispositivo</string>
+    <string name="label_client_name">Nombre de Cliente</string>
+    <string name="header_client_name">NOMBRE CLIENTE</string>
     <string name="error_type_required">El tipo de dispositivo es obligatorio</string>
     <string name="error_sector_required">Por favor, selecciona un sector</string>
     <string name="error_name_max_length">El nombre no puede exceder 100 caracteres</string>

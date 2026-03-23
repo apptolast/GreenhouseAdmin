@@ -57,6 +57,7 @@ import greenhouseadmin.composeapp.generated.resources.dialog_new_device_title
 import greenhouseadmin.composeapp.generated.resources.error_name_max_length
 import greenhouseadmin.composeapp.generated.resources.error_type_required
 import greenhouseadmin.composeapp.generated.resources.label_category
+import greenhouseadmin.composeapp.generated.resources.label_client_name
 import greenhouseadmin.composeapp.generated.resources.label_device_name
 import greenhouseadmin.composeapp.generated.resources.label_device_type
 import greenhouseadmin.composeapp.generated.resources.label_is_active
@@ -80,7 +81,7 @@ fun DeviceFormDialog(
     isLoadingCatalog: Boolean = false,
     isSubmitting: Boolean = false,
     error: String? = null,
-    onSubmit: (name: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _ -> },
+    onSubmit: (name: String, clientName: String, categoryId: Short?, typeId: Short?, unitId: Short?, isActive: Boolean) -> Unit = { _, _, _, _, _, _ -> },
     onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -89,6 +90,7 @@ fun DeviceFormDialog(
             is FormMode.Create -> DeviceFormData()
             is FormMode.Edit -> DeviceFormData(
                 name = mode.entity.name ?: "",
+                clientName = mode.entity.clientName ?: "",
                 categoryId = mode.entity.categoryId,
                 typeId = mode.entity.typeId,
                 unitId = mode.entity.unitId,
@@ -254,6 +256,49 @@ fun DeviceFormDialog(
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Client Name text field (optional - display name for end users)
+                Column {
+                    Text(
+                        text = stringResource(Res.string.label_client_name),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    OutlinedTextField(
+                        value = formData.clientName,
+                        onValueChange = {
+                            if (it.length <= DeviceFormData.MAX_CLIENT_NAME_LENGTH) {
+                                formData = formData.copy(clientName = it)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSubmitting,
+                        singleLine = true,
+                        placeholder = {
+                            Text(
+                                text = "e.g., Velocidad del viento interior",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                        },
+                        supportingText = {
+                            Text(
+                                text = "${formData.clientName.length}/${DeviceFormData.MAX_CLIENT_NAME_LENGTH}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        )
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -521,6 +566,7 @@ fun DeviceFormDialog(
                             if (!validationErrors.hasErrors) {
                                 onSubmit(
                                     formData.name,
+                                    formData.clientName,
                                     formData.categoryId,
                                     formData.typeId,
                                     formData.unitId,

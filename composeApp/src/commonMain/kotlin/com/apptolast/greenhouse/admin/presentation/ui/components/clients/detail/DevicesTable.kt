@@ -50,6 +50,7 @@ import greenhouseadmin.composeapp.generated.resources.action_delete
 import greenhouseadmin.composeapp.generated.resources.action_edit
 import greenhouseadmin.composeapp.generated.resources.header_actions
 import greenhouseadmin.composeapp.generated.resources.header_category
+import greenhouseadmin.composeapp.generated.resources.header_client_name
 import greenhouseadmin.composeapp.generated.resources.header_id
 import greenhouseadmin.composeapp.generated.resources.header_name
 import greenhouseadmin.composeapp.generated.resources.header_status
@@ -209,6 +210,14 @@ private fun DevicesTableHeader(
             modifier = Modifier.weight(0.9f)
         )
 
+        // CLIENT NAME column - Not sortable
+        Text(
+            text = stringResource(Res.string.header_client_name),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.9f)
+        )
+
         // CATEGORY column - Not sortable
         Text(
             text = stringResource(Res.string.header_category),
@@ -280,6 +289,17 @@ private fun DeviceTableRow(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             fontWeight = if (device.name != null) FontWeight.Medium else FontWeight.Normal,
+            modifier = Modifier.weight(0.9f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        // CLIENT NAME - Display name for end users
+        Text(
+            text = device.clientName ?: "-",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = if (device.clientName != null) FontWeight.Medium else FontWeight.Normal,
             modifier = Modifier.weight(0.9f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

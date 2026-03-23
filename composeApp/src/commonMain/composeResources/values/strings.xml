@@ -254,6 +254,8 @@
     <string name="label_unit">Unit</string>
     <string name="label_is_active">Active</string>
     <string name="label_device_name">Device Name</string>
+    <string name="label_client_name">Client Name</string>
+    <string name="header_client_name">CLIENT NAME</string>
     <string name="error_type_required">Device type is required</string>
     <string name="error_sector_required">Please select a sector</string>
     <string name="error_name_max_length">Name cannot exceed 100 characters</string>

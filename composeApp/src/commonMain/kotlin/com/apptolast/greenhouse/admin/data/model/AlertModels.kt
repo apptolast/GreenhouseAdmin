@@ -44,6 +44,7 @@ data class AlertResponse(
     val tenantId: Long,
     val sectorId: Long,
     val sectorCode: String? = null,
+    val clientName: String? = null,
     val alertTypeId: Short? = null,
     val alertTypeName: String? = null,
     val severityId: Short? = null,
@@ -69,6 +70,7 @@ data class AlertResponse(
 @Serializable
 data class AlertCreateRequest(
     val sectorId: Long,
+    val clientName: String? = null,
     val alertTypeId: Short? = null,
     val severityId: Short? = null,
     val message: String? = null,
@@ -81,6 +83,7 @@ data class AlertCreateRequest(
 @Serializable
 data class AlertUpdateRequest(
     val sectorId: Long? = null,
+    val clientName: String? = null,
     val alertTypeId: Short? = null,
     val severityId: Short? = null,
     val message: String? = null,
@@ -129,6 +132,7 @@ data class Alert(
     val tenantId: Long,
     val sectorId: Long,
     val sectorCode: String?,
+    val clientName: String? = null,
     val alertTypeId: Short?,
     val alertTypeName: String?,
     val severityId: Short?,
@@ -188,6 +192,7 @@ fun AlertResponse.toDomain() = Alert(
     tenantId = tenantId,
     sectorId = sectorId,
     sectorCode = sectorCode,
+    clientName = clientName,
     alertTypeId = alertTypeId,
     alertTypeName = alertTypeName,
     severityId = severityId,

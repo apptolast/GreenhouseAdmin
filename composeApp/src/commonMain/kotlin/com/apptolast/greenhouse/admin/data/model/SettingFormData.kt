@@ -5,6 +5,7 @@ package com.apptolast.greenhouse.admin.data.model
  * Manages form state for sector parameter threshold configuration.
  */
 data class SettingFormData(
+    val clientName: String = "",
     val parameterId: Short? = null,
     val actuatorStateId: Short? = null,
     val dataTypeId: Short? = null,
