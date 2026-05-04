@@ -43,27 +43,27 @@ fun createHttpClient(
             level = LogLevel.INFO
         }
 
-        // Response validator for handling 401/403 before deserialization
-        // This MUST be installed before ContentNegotiation processes the response
+        // Response validator for handling 401/403 before deserialization.
+        // 401 (Unauthorized) means the token is missing/expired/invalid → sign the user out.
+        // 403 (Forbidden) means authenticated but lacking permission for this resource →
+        // surface as an exception to the caller, but DO NOT clear tokens or sign out;
+        // call sites (e.g. dashboard per-tenant aggregations) handle this locally.
         HttpResponseValidator {
             validateResponse { response ->
                 val statusCode = response.status
+                val isAuthEndpoint = response.call.request.url.toString().contains("/auth/")
+                if (isAuthEndpoint) return@validateResponse
 
-                if (statusCode == HttpStatusCode.Unauthorized || statusCode == HttpStatusCode.Forbidden) {
-                    // Skip auth endpoints - they should handle their own errors
-                    val isAuthEndpoint = response.call.request.url.toString().contains("/auth/")
-
-                    if (!isAuthEndpoint) {
-                        // Clear tokens and emit session expired event
+                when (statusCode) {
+                    HttpStatusCode.Unauthorized -> {
                         tokenStorage.clearTokens()
                         authEventManager.tryEmitSessionExpired()
-
-                        // Throw exception to prevent deserialization attempt
-                        throw when (statusCode) {
-                            HttpStatusCode.Unauthorized -> AuthenticationException.unauthorized()
-                            else -> AuthenticationException.forbidden()
-                        }
+                        throw AuthenticationException.unauthorized()
                     }
+                    HttpStatusCode.Forbidden -> {
+                        throw AuthenticationException.forbidden()
+                    }
+                    else -> Unit
                 }
             }
         }
